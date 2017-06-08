@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--JDBC数据源 配置-->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource">
+            <bean class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+                <property name="driverClassName" value="#{jdbcConfig.driver}"/>
+                <property name="url" value="#{jdbcConfig.url}"/>
+                <property name="username" value="#{jdbcConfig.userName}"/>
+                <property name="password" value="#{jdbcConfig.password}"/>
+                <property name="initialSize" value="2"/>
+                <property name="maxTotal" value="-1"/>
+                <property name="testOnBorrow" value="true"/>
+                <property name="testOnReturn" value="true"/>
+                <property name="testWhileIdle" value="true"/>
+                <property name="validationQuery" value="select 1"/>
+                <property name="defaultAutoCommit" value="true"/>
+            </bean>
+        </property>
+    </bean>
+
+    <!--<bean id="sqlserverJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">-->
+    <!--<property name="dataSource">-->
+    <!--<bean class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">-->
+    <!--<property name="driverClassName" value="#{sqlserverConfig.driver}"/>-->
+    <!--<property name="url" value="#{sqlserverConfig.url}"/>-->
+    <!--<property name="username" value="#{sqlserverConfig.userName}"/>-->
+    <!--<property name="password" value="#{sqlserverConfig.password}"/>-->
+    <!--<property name="initialSize" value="2"/>-->
+    <!--<property name="maxTotal" value="-1"/>-->
+    <!--<property name="testOnBorrow" value="true"/>-->
+    <!--<property name="testOnReturn" value="true"/>-->
+    <!--<property name="testWhileIdle" value="true"/>-->
+    <!--<property name="validationQuery" value="select 1"/>-->
+    <!--<property name="defaultAutoCommit" value="true"/>-->
+    <!--</bean>-->
+    <!--</property>-->
+    <!--</bean>-->
+
+
+</beans>
