@@ -1,7 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.batch
 
 import cn.memedai.orientdb.sns.realtime.common.OrientDb
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -22,7 +22,7 @@ class BatchService {
     @Resource
     private JdbcTemplate jdbcTemplate
 
-    void process(ConsumerRecord record) {
+    void process(ConsumerRecords records) {
         LOG.debug(orientDb.getDb().toString())
         LOG.debug(jdbcTemplate.toString())
         //TODO

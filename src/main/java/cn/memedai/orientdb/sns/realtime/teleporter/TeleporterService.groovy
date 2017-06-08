@@ -1,7 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.teleporter
 
 import cn.memedai.orientdb.sns.realtime.common.OrientDb
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -18,7 +18,7 @@ class TeleporterService {
     @Resource
     private OrientDb orientDb
 
-    void process(ConsumerRecord record) {
+    void process(ConsumerRecords records) {
         LOG.info(orientDb.getDb().toString())
         //TODO
     }
