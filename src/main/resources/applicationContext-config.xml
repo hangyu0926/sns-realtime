@@ -19,18 +19,18 @@
     </util:properties>
 
     <!--<util:properties id="sqlserverConfig">-->
-        <!--<prop key="driver">com.mysql.jdbc.Driver</prop>-->
-        <!--&lt;!&ndash;com.microsoft.jdbc.sqlserver.SQLServerDriver&ndash;&gt;-->
-        <!--<prop key="url">jdbc:mysql://115.29.177.124:3306/MERCHANTAUDIT</prop>-->
-        <!--<prop key="userName">kisho.dai</prop>-->
-        <!--<prop key="password">djK0OyeHP</prop>-->
+    <!--<prop key="driver">com.mysql.jdbc.Driver</prop>-->
+    <!--&lt;!&ndash;com.microsoft.jdbc.sqlserver.SQLServerDriver&ndash;&gt;-->
+    <!--<prop key="url">jdbc:mysql://115.29.177.124:3306/MERCHANTAUDIT</prop>-->
+    <!--<prop key="userName">kisho.dai</prop>-->
+    <!--<prop key="password">djK0OyeHP</prop>-->
     <!--</util:properties>-->
 
     <util:properties id="kafkaProp">
         <prop key="bootstrap.servers">localhost:9092</prop>
         <prop key="group.id"></prop>
-        <prop key="enable.auto.commit">true</prop>
-        <prop key="auto.commit.interval.ms">1000</prop>
+        <prop key="enable.auto.commit">false</prop>
+        <!--<prop key="auto.commit.interval.ms">1000</prop>-->
         <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
         <prop key="value.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
     </util:properties>
