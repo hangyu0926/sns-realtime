@@ -33,7 +33,7 @@ class RealTimeMain {
             while (true) {
                 ConsumerRecords records = null
                 try {
-                    records = consumer.poll(Long)
+                    records = consumer.poll(Long.MAX_VALUE)
                     context.getBean(TeleporterService.class).process(records)
                     context.getBean(BatchService.class).process(records)
 
