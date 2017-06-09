@@ -1,8 +1,5 @@
 package cn.memedai.orientdb.sns.realtime
 
-import cn.memedai.orientdb.sns.realtime.batch.BatchService
-import cn.memedai.orientdb.sns.realtime.teleporter.TeleporterService
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,23 +22,24 @@ class RealTimeMain {
             context = new ClassPathXmlApplicationContext('applicationContext.xml')
 
             //TODO test
-            context.getBean(TeleporterService.class).process(null)
-            context.getBean(BatchService.class).process(null)
+//            while (true) {
+                context.getBean(RealTimeDispatch.class).dispatch(null)
+//                Thread.sleep(4000)
+//            }
 
-            consumer = new KafkaConsumer<>(context.getBean('kafkaProp'))
-            consumer.subscribe(context.getBean('kafkaTopics'))
-            while (true) {
-                ConsumerRecords records = null
-                try {
-                    records = consumer.poll(Long.MAX_VALUE)
-                    context.getBean(TeleporterService.class).process(records)
-                    context.getBean(BatchService.class).process(records)
-
-                    consumer.commitAsync()
-                } catch (RuntimeException e) {
-                    LOG.error("records is processed error : ${records}", e)
-                }
-            }
+//            consumer = new KafkaConsumer<>(context.getBean('kafkaProp'))
+//            consumer.subscribe(context.getBean('kafkaTopics'))
+//            while (true) {
+//                ConsumerRecords records = null
+//                try {
+//                    records = consumer.poll(Long.MAX_VALUE)
+//                    context.getBean(RealTimeDispatch.class).dispatch(records)
+//
+//                    consumer.commitAsync()
+//                } catch (RuntimeException e) {
+//                    LOG.error("records is processed error : ${records}", e)
+//                }
+//            }
 
         } catch (Throwable e) {
             LOG.error("", e)
@@ -55,4 +53,5 @@ class RealTimeMain {
         }
 
     }
+
 }
