@@ -1,5 +1,6 @@
 package cn.memedai.orientdb.sns.realtime.sql
 
+import com.orientechnologies.common.concur.ONeedRetryException
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandSQL
 import org.apache.commons.collections.CollectionUtils
@@ -38,7 +39,27 @@ class OrientSql {
         if (LOG.isDebugEnabled()) {
             LOG.debug("$sql,$args")
         }
-        getTx().command(new OCommandSQL(sql)).execute(args)
+
+        RET ret = null
+        int retry = 0
+        while (++retry <= 20) {
+            try {
+                ret = getTx().command(new OCommandSQL(sql)).execute(args)
+                break
+            } catch (ONeedRetryException e) {
+                try {
+                    Thread.sleep(100 * retry)
+                } catch (InterruptedException e1) {
+                    LOG.error('', e1)
+                }
+                continue
+            } catch (Throwable e) {
+                LOG.error("{} @ {}", sql, e.getMessage())
+                LOG.error("", e)
+                break
+            }
+        }
+        ret
     }
 
     void createEdge(String edge, String fromRid, String toRid) {
