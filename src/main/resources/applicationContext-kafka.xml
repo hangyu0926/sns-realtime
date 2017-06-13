@@ -1,0 +1,66 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="cn.memedai.orientdb.sns.realtime.service.impl"/>
+
+    <util:properties id="defaultKafkaProp">
+        <prop key="bootstrap.servers">99.48.88.104:9092</prop>
+        <prop key="group.id">test</prop>
+        <prop key="enable.auto.commit">false</prop>
+        <!--<prop key="auto.commit.interval.ms">1000</prop>-->
+        <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
+        <prop key="value.deserializer">org.apache.kafka.common.serialization.ByteArrayDeserializer</prop>
+    </util:properties>
+
+    <!--处理消息的调度配置，数据结构定义：key为topic-->
+    <util:map id="kafkaDispatchConfig">
+        <entry key="test">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "wallet.apply_info",
+                                 "type": "record",
+                                 "name": "apply_info",
+                                 "fields": [
+                                     {"name": "cellphone", "type": "string"},
+                                     {"name": "member_id",  "type": ["long"]},
+                                     {"name": "apply_no", "type": ["string"]},
+                                     {"name": "created_datetime", "type": ["string"]},
+                                     {"name": "apply_status", "type": ["int"]},
+                                     {"name": "store_id", "type": ["string","null"]},
+                                     {"name": "order_no", "type": ["string","null"]},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="applyToOrientDBServiceImpl"/>
+                        <ref bean="applyToMysqlServiceImpl"/>
+                    </list>
+                </entry>
+                <!--<entry key="kafkaProp">-->
+                <!--<props>-->
+                <!--<prop key="bootstrap.servers">99.48.88.104:9092</prop>-->
+                <!--<prop key="group.id">test</prop>-->
+                <!--<prop key="enable.auto.commit">false</prop>-->
+                <!--<prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>-->
+                <!--<prop key="value.deserializer">org.apache.kafka.common.serialization.ByteArrayDeserializer-->
+                <!--</prop>-->
+                <!--</props>-->
+                <!--</entry>-->
+            </map>
+        </entry>
+
+
+    </util:map>
+
+</beans>

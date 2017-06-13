@@ -62,7 +62,6 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
             String storeRid = storeCache.get(applyMap.store_id).value
             orientSql.createEdge('ApplyHasStore', applyRid, storeRid)
         }
-        LOG.info("processed apply => $applyMap.apply_no")
     }
 
     private Integer getStatus(def status) {

@@ -25,14 +25,18 @@
         </layout>
     </appender>
 
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout name="StandardFormat" class="ch.qos.logback.classic.PatternLayout">
             <pattern>${consoleLayoutPattern}</pattern>
         </layout>
     </appender>
 
-    <logger name="cn.memedai.orientdb.teleporter.sns" level="DEBUG" additivity="false">
+    <logger name="org.apache.kafka" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING"/>
+    </logger>
+
+    <logger name="cn.memedai.orientdb.sns.realtime" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ROLLING"/>
     </logger>

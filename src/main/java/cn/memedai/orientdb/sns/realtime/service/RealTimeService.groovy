@@ -4,6 +4,6 @@ package cn.memedai.orientdb.sns.realtime.service
  */
 interface RealTimeService {
 
-    void process(List<Map<String, Object>> dataList)
+    void process(List<Map<String, Object>> recordList)
 
 }
