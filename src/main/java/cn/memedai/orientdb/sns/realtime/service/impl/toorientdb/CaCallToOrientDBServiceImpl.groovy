@@ -11,6 +11,7 @@ import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import com.orientechnologies.orient.core.id.ORecordId
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OResultSet
+import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
@@ -48,6 +49,9 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private MysqlSql mysqlSql
 
+    @Resource
+    private Sql sql
+
     private String checkEdgeSql = 'select from (select expand(out_{0}) from {1}) where in = {2}'
 
     private String createEdgeSql = 'create edge CallTo from {0} to {1} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?'
@@ -84,41 +88,36 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
+        sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = ?') {
+            rs ->
+                while (rs.next()) {
+                    String toPhone = rs.getString("PHONE_NO")
+                    int callCnt = rs.getInt("CALL_CNT")
+                    int callLen = rs.getInt("CALL_LEN")
+                    int callInCnt = rs.getInt("CALL_IN_CNT")
+                    int callOutCnt = rs.getInt("CALL_OUT_CNT")
+                    String createTime = rs.getString("CREATE_TIME")
 
-        Connection connection = mysqlSql.getConnection()
-        PreparedStatement preparedStatement = null
-        ResultSet rs = null
-        preparedStatement = connection.prepareStatement("select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = ?")
-        preparedStatement.setString(1, appNo)
-        rs = preparedStatement.executeQuery()
+                    String toPhoneRid = null
+                    CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
+                    if (phoneCacheEntry != null) {
+                        toPhoneRid = phoneCacheEntry.value
+                    }
+                    if (StringUtils.isBlank(toPhoneRid)) {
+                        continue
+                    }
 
-        while (rs.next()) {
-            String toPhone = rs.getString("PHONE_NO")
-            int callCnt = rs.getInt("CALL_CNT")
-            int callLen = rs.getInt("CALL_LEN")
-            int callInCnt = rs.getInt("CALL_IN_CNT")
-            int callOutCnt = rs.getInt("CALL_OUT_CNT")
-            String createTime = rs.getString("CREATE_TIME")
-
-            String toPhoneRid = null
-            CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
-            if (phoneCacheEntry != null) {
-                toPhoneRid = phoneCacheEntry.value
-            }
-            if (StringUtils.isBlank(toPhoneRid)) {
-                continue
-            }
-
-            OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
-            if (CollectionUtils.isEmpty(ocrs)) {
-                orientSql.execute(MessageFormat.format(createEdgeSql, "CallTo", fromPhoneRid, toPhoneRid,
-                        callCnt, callLen, callInCnt, callOutCnt, createTime))
-            } else {
-                ODocument doc = (ODocument) ocrs.get(0);
-                ORecordId oRecordId = doc.field("@rid");
-                orientSql.execute(updateEdgeSql, MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()),
-                        callCnt, callLen, callInCnt, callOutCnt, createTime);
-            }
+                    OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
+                    if (CollectionUtils.isEmpty(ocrs)) {
+                        orientSql.execute(MessageFormat.format(createEdgeSql, "CallTo", fromPhoneRid, toPhoneRid,
+                                callCnt, callLen, callInCnt, callOutCnt, createTime))
+                    } else {
+                        ODocument doc = (ODocument) ocrs.get(0);
+                        ORecordId oRecordId = doc.field("@rid");
+                        orientSql.execute(updateEdgeSql, MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()),
+                                callCnt, callLen, callInCnt, callOutCnt, createTime);
+                    }
+                }
         }
 
         //写入缓存

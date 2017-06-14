@@ -1,6 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
 import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
+import cn.memedai.orientdb.sns.realtime.cache.IdCardCache
 import cn.memedai.orientdb.sns.realtime.cache.MemberCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
@@ -24,13 +25,28 @@ class MemberToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private MemberCache memberCache
 
+    @Resource
+    private IdCardCache idCardCache
+
     private String updateMemberSql = 'update Member set memberId=?,name=?,idNo=?,province=?,city=?,phone=?,isBlack=false,isOverdue=false upsert return after where memberId=?'
 
     void process(List<Map<String, Object>> dataList) {
         for (def i = 0; i < dataList.size(); i++){
             Map<String, Object> memberMap = dataList.get(i)
 
-            String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql, memberMap.MEMBER_ID,memberMap.NAME,memberMap.ID_NO,memberMap.PROVINCE,memberMap.CITY,
+            String idNo = memberMap.ID_NO
+            String province = memberMap.PROVINCE
+            String city = memberMap.CITY
+
+            if (idNo != null && idNo.trim().length() > 6) {
+                Map<String, String> idAddress = idCardCache.get(idNo.substring(0, 6)).value;
+                if (idAddress != null) {
+                    province = idAddress.PROVINCE
+                    city = idAddress.city
+                }
+            }
+
+            String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql, memberMap.MEMBER_ID,memberMap.NAME,idNo,province,city,
                     memberMap.MOBILE_NO,memberMap.MEMBER_ID))
 
             memberCache.put(new CacheEntry(memberMap.MEMBER_ID, memberRid))
