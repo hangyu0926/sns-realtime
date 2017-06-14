@@ -57,18 +57,30 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
     void process(List<Map<String, Object>> dataList) {
         Map<String, Object> callToMap = dataList.get(0)
 
-        String appNo = (String)callToMap.APPL_NO
-        if (StringUtils.isBlank(appNo) || applyHasDoCache.get(appNo).value != null) {
+        String appNo = (String) callToMap.APPL_NO
+        if (StringUtils.isBlank(appNo)) {
             return
         }
 
-        String appRid = applyCache.get(appNo).value
+        if ((applyHasDoCache.get(appNo) != null) && (applyHasDoCache.get(appNo).value != null)) {
+            return
+        }
+
+        String appRid = null
+        CacheEntry applyCacheEntry = applyCache.get(appNo)
+        if (applyCacheEntry != null) {
+            appRid = applyCacheEntry.value
+        }
         if (StringUtils.isBlank(appRid)) {
             return
         }
 
-        String fromPhoneRid = applyRidPhoneRidCache.get(appRid).value
-        if (StringUtils.isBlank(fromPhoneRid)){
+        String fromPhoneRid = null
+        CacheEntry applyRidPhoneRidCacheEntry = applyRidPhoneRidCache.get(appRid)
+        if (applyRidPhoneRidCacheEntry != null) {
+            fromPhoneRid = applyRidPhoneRidCacheEntry.value
+        }
+        if (StringUtils.isBlank(fromPhoneRid)) {
             return
         }
 
@@ -80,7 +92,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
         preparedStatement.setString(1, appNo)
         rs = preparedStatement.executeQuery()
 
-        while(rs.next()){
+        while (rs.next()) {
             String toPhone = rs.getString("PHONE_NO")
             int callCnt = rs.getInt("CALL_CNT")
             int callLen = rs.getInt("CALL_LEN")
@@ -88,8 +100,11 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             int callOutCnt = rs.getInt("CALL_OUT_CNT")
             String createTime = rs.getString("CREATE_TIME")
 
-            String toPhoneRid = phoneCache.get(toPhone).value
-
+            String toPhoneRid = null
+            CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
+            if (phoneCacheEntry != null) {
+                toPhoneRid = phoneCacheEntry.value
+            }
             if (StringUtils.isBlank(toPhoneRid)) {
                 continue
             }
@@ -97,17 +112,17 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
             if (CollectionUtils.isEmpty(ocrs)) {
                 orientSql.execute(MessageFormat.format(createEdgeSql, "CallTo", fromPhoneRid, toPhoneRid,
-                        callCnt,callLen,callInCnt,callOutCnt,createTime))
-            }else{
+                        callCnt, callLen, callInCnt, callOutCnt, createTime))
+            } else {
                 ODocument doc = (ODocument) ocrs.get(0);
                 ORecordId oRecordId = doc.field("@rid");
                 orientSql.execute(updateEdgeSql, MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()),
-                        callCnt,callLen,callInCnt,callOutCnt,createTime);
+                        callCnt, callLen, callInCnt, callOutCnt, createTime);
             }
         }
 
         //写入缓存
-        applyHasDoCache.put(new CacheEntry(appNo,true))
+        applyHasDoCache.put(new CacheEntry(appNo, true))
     }
 
 }
