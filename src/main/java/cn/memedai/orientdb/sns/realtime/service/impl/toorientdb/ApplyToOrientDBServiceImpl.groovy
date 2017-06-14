@@ -57,7 +57,7 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
         String phoneRid = null
         CacheEntry phoneCacheEntry = phoneCache.get(applyMap.cellphone)
         if (phoneCacheEntry != null) {
-            memberRid = phoneCacheEntry.value
+            phoneRid = phoneCacheEntry.value
         }
 
         String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateApplySql, applyMap.apply_no, getStatus(applyMap.apply_status), applyMap.apply_status, applyMap.created_datetime, applyMap.apply_no))

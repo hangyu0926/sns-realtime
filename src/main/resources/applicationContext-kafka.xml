@@ -115,6 +115,31 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 </entry>
             </map>
         </entry>
+        <entry key="phoneTag">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "wallet.ca_sys_phone_tag_merge",
+                                 "type": "record",
+                                 "name": "ca_sys_phone_tag_merge",
+                                 "fields": [
+                                     {"name": "PHONE_NO", "type": "string"},
+                                     {"name": "PHONE_TYPE", "type": "string"},
+                                     {"name": "SOURCE", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="phoneTagToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
     </util:map>
 
 </beans>

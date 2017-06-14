@@ -30,7 +30,7 @@ class ApplyRidMemberRidCache {
     CacheEntry get(appRid) {
         List<ODocument> result = orientSql.execute(getPhoneRidSql+ appRid)
         if (!StringUtils.isBlank(OrientSqlUtil.getRid(result))) {
-            String rid = OrientSqlUtil.getRid(result);
+            String rid = OrientSqlUtil.getRid(result)
             if (StringUtils.isBlank(rid)) {
                 return null
             }

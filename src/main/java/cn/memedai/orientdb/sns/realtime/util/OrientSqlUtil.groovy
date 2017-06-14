@@ -14,7 +14,7 @@ final class OrientSqlUtil {
         } else if (orientResult instanceof ODocument) {
             return orientResult.field('@rid').getIdentity().toString()
         }
-        return null;
+        return null
     }
 
 }

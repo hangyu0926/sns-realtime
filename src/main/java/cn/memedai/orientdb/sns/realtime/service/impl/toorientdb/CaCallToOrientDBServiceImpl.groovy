@@ -91,6 +91,10 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
+        LOG.info("fromPhoneRid is {}",fromPhoneRid)
+
+        String toPhoneRid = null
+
         sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = '+ appNo) {
             rs ->
                 while (rs.next()) {
@@ -101,7 +105,6 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                     int callOutCnt = rs.getInt("CALL_OUT_CNT")
                     String createTime = rs.getString("CREATE_TIME")
 
-                    String toPhoneRid = null
                     CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
                     if (phoneCacheEntry != null) {
                         toPhoneRid = phoneCacheEntry.value
@@ -110,15 +113,15 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                         continue
                     }
 
+                    def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
+
                     OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
                     if (CollectionUtils.isEmpty(ocrs)) {
-                        orientSql.execute(MessageFormat.format(createEdgeSql, "CallTo", fromPhoneRid, toPhoneRid,
-                                callCnt, callLen, callInCnt, callOutCnt, createTime))
+                        orientSql.execute(MessageFormat.format(createEdgeSql, fromPhoneRid, toPhoneRid), args)
                     } else {
-                        ODocument doc = (ODocument) ocrs.get(0);
-                        ORecordId oRecordId = doc.field("@rid");
-                        orientSql.execute(updateEdgeSql, MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()),
-                                callCnt, callLen, callInCnt, callOutCnt, createTime);
+                        ODocument doc = (ODocument) ocrs.get(0)
+                        ORecordId oRecordId = doc.field("@rid")
+                        orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()),args)
                     }
                 }
         }

@@ -30,9 +30,9 @@ class PhoneMarkCache {
 
     @Cacheable(value = 'phoneMarkCache')
     CacheEntry get(mark) {
-        List<ODocument> result = orientSql.execute(getPhoneMarkSql, phone)
+        List<ODocument> result = orientSql.execute(getPhoneMarkSql, mark)
         if (CollectionUtils.isEmpty(result)) {
-            String rid = OrientSqlUtil.getRid(orientSql.execute(updatePhoneMarkSql, phone, phone))
+            String rid = OrientSqlUtil.getRid(orientSql.execute(updatePhoneMarkSql, mark, mark))
             if(StringUtils.isBlank(rid)){
                 return null
             }

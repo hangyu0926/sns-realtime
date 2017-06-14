@@ -30,9 +30,9 @@ class PhoneSourceCache {
 
     @Cacheable(value = 'phoneSourceCache')
     CacheEntry get(source) {
-        List<ODocument> result = orientSql.execute(getPhoneSourceSql, phone)
+        List<ODocument> result = orientSql.execute(getPhoneSourceSql, source)
         if (CollectionUtils.isEmpty(result)) {
-            String rid = OrientSqlUtil.getRid(orientSql.execute(updatePhoneSourceSql, phone, phone))
+            String rid = OrientSqlUtil.getRid(orientSql.execute(updatePhoneSourceSql, source, source))
             if(StringUtils.isBlank(rid)){
                 return null
             }

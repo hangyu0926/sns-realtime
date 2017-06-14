@@ -6,7 +6,6 @@ import cn.memedai.orientdb.sns.realtime.cache.PhoneMarkCache
 import cn.memedai.orientdb.sns.realtime.cache.PhoneSourceCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
-import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -17,9 +16,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class PhoneTagOrientDBServiceImpl implements RealTimeService {
+class PhoneTagToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(PhoneTagOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(PhoneTagToOrientDBServiceImpl.class)
 
     @Resource
     private PhoneCache phoneCache
@@ -52,14 +51,14 @@ class PhoneTagOrientDBServiceImpl implements RealTimeService {
         }
 
         if (StringUtils.isNotBlank(phoneTagMap.PHONE_TYPE)) {
-            String phoneMarkRid = phoneMarkCache.get(phoneTagMap.PHONE_TYPE)
+            String phoneMarkRid = phoneMarkCache.get(phoneTagMap.PHONE_TYPE).value
             if (StringUtils.isNotBlank(phoneMarkRid) && StringUtils.isNotBlank(phoneRid)) {
                 orientSql.createEdge('HasPhoneMark', phoneRid, phoneMarkRid)
             }
         }
 
         if (StringUtils.isNotBlank(phoneTagMap.SOURCE)) {
-            String phoneSourceRid = phoneSourceCache.get(phoneTagMap.SOURCE)
+            String phoneSourceRid = phoneSourceCache.get(phoneTagMap.SOURCE).value
             if (StringUtils.isNotBlank(phoneRid) && StringUtils.isNotBlank(phoneSourceRid)) {
                 orientSql.createEdge('HasPhoneSource', phoneRid, phoneSourceRid)
             }
