@@ -140,6 +140,36 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 </entry>
             </map>
         </entry>
+        <entry key="store">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "MERCHANTAUDIT.ma_store_baseinfo",
+                                 "type": "record",
+                                 "name": "ma_store_baseinfo",
+                                 "fields": [
+                                     {"name": "STOREID", "type": "int"},
+                                     {"name": "MERCHANTID", "type": "int"},
+                                     {"name": "STORENAME", "type": "string"},
+                                     {"name": "PROVINCE", "type": "string"},
+                                     {"name": "CITY", "type": "string"},
+                                     {"name": "CREDIT_LIMIT_TYPE", "type": "int"},
+                                     {"name": "POLICY_BRACKET", "type": "string"},
+                                     {"name": "BUSINESS_FIRST_TYPE", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="storeToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
     </util:map>
 
 </beans>

@@ -38,7 +38,7 @@ class StoreToOrientDBServiceImpl implements RealTimeService {
         Map<String, Object> storeMap = dataList.get(0)
 
         String storeRid = OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeMap.STOREID, storeMap.MERCHANTID, storeMap.STORENAME, storeMap.PROVINCE, storeMap.CITY, storeMap.CREDIT_LIMIT_TYPE
-                , storeMap.POLICY_BRACKET, storeMap.BUSINESS_FIRST_TYPE))
+                , storeMap.POLICY_BRACKET, storeMap.BUSINESS_FIRST_TYPE,storeMap.STOREID))
         if (StringUtils.isNotBlank(storeRid)) {
             storeCache.put(new CacheEntry(storeMap.store_id, storeRid))
         }
