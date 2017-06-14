@@ -25,12 +25,17 @@ class LoansToOrientDBServiceImpl implements RealTimeService {
     private String updateOverDueSql = 'update Member set isOverdue=true where memberId=?'
 
     void process(List<Map<String, Object>> dataList) {
-        for (def i = 0; i < dataList.size(); i++){
+        if (dataList == null) {
+            return
+        }
+
+        int size = dataList.size()
+        for (def i = 0; i < size; i++) {
             Map<String, Object> loanMap = dataList.get(i)
 
-            if (null != loanMap.OVERDUE_DAYS && loanMap.OVERDUE_DAYS > 3){
+            if (null != loanMap.OVERDUE_DAYS && loanMap.OVERDUE_DAYS > 3) {
                 int memberId = loanMap.BORROWER_ID
-                orientSql.execute(updateOverDueSql,memberId)
+                orientSql.execute(updateOverDueSql, memberId)
             }
         }
 

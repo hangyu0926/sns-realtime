@@ -25,9 +25,16 @@ class IdCardToOrientDBServiceImpl implements RealTimeService {
     private IdCardCache idCardCache
 
     void process(List<Map<String, Object>> dataList) {
-        for (def i = 0; i < dataList.size(); i++){
+        if (dataList == null) {
+            return
+        }
+
+        int size = dataList.size()
+        for (def i = 0; i < size; i++) {
             Map<String, Object> idCardMap = dataList.get(i)
-            idCardCache.put(new CacheEntry(idCardMap.ID_PREFIX,idCardMap))
+            if (idCardMap != null) {
+                idCardCache.put(new CacheEntry(idCardMap.ID_PREFIX, idCardMap))
+            }
         }
     }
 
