@@ -33,10 +33,6 @@ class PhoneTagOrientDBServiceImpl implements RealTimeService {
     @Resource
     private OrientSql orientSql
 
-    private String updatePhoneMarkSql = 'update PhoneMark set mark=? upsert return after where mark=?'
-
-    private String updatePhoneSourceSql = 'update PhoneSource set source=? upsert return after where source=?'
-
     void process(List<Map<String, Object>> dataList) {
         Map<String, Object> phoneTagMap = dataList.get(0)
 
@@ -45,18 +41,12 @@ class PhoneTagOrientDBServiceImpl implements RealTimeService {
         String phoneRid = phoneCache.get(phone).value
 
         if (StringUtils.isNotBlank(phoneTagMap.PHONE_TYPE)) {
-            //String phoneMarkRid = OrientSqlUtil.getRid(orientSql.execute(updatePhoneMarkSql, phoneTagMap.PHONE_TYPE,phoneTagMap.PHONE_TYPE))
             String phoneMarkRid = phoneMarkCache.get(phoneTagMap.PHONE_TYPE);
-            phoneMarkCache.put(new CacheEntry(phoneTagMap.PHONE_TYPE, phoneMarkRid))
-
             orientSql.createEdge('HasPhoneMark', phoneRid, phoneMarkRid)
         }
 
         if (StringUtils.isNotBlank(phoneTagMap.SOURCE)) {
-           // String phoneSourceRid = OrientSqlUtil.getRid(orientSql.execute(updatePhoneSourceSql, phoneTagMap.SOURCE,phoneTagMap.SOURCE))
             String phoneSourceRid = phoneSourceCache.get(phoneTagMap.SOURCE)
-            phoneSourceCache.put(new CacheEntry(phoneTagMap.SOURCE, phoneSourceRid))
-
             orientSql.createEdge('HasPhoneSource', phoneRid, phoneSourceRid)
         }
 
