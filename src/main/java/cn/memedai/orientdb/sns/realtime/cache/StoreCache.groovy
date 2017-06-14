@@ -4,6 +4,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.apache.commons.collections.CollectionUtils
+import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
@@ -32,9 +33,17 @@ class StoreCache {
     CacheEntry get(storeId) {
         List<ODocument> result = orientSql.execute(getStoreSql, storeId)
         if (CollectionUtils.isEmpty(result)) {
-            return OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeId, storeId))
+            String rid = OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeId, storeId))
+            if (StringUtils.isBlank(rid)) {
+                return null
+            }
+            return new CacheEntry(storeId, rid)
         }
-        new CacheEntry(storeId, OrientSqlUtil.getRid(result))
+        String ridOther = OrientSqlUtil.getRid(result)
+        if (StringUtils.isBlank(ridOther)) {
+            return null
+        }
+        new CacheEntry(storeId, ridOther)
     }
 
     @CachePut(value = 'storeCache', key = '#cacheEntry.key')

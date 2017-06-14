@@ -4,6 +4,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.apache.commons.collections.CollectionUtils
+import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
@@ -36,6 +37,9 @@ class OrderCache {
             orderRid = OrientSqlUtil.getRid(orientSql.execute(updateOrderSql, orderNo, orderNo))
         } else {
             orderRid = OrientSqlUtil.getRid(result)
+        }
+        if (StringUtils.isBlank(orderRid)) {
+            return null
         }
         new CacheEntry(orderNo, orderRid)
     }

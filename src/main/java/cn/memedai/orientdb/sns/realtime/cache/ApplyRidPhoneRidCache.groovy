@@ -31,9 +31,14 @@ class ApplyRidPhoneRidCache {
     @Cacheable(value = 'applyRidPhoneRidCache')
     CacheEntry get(appRid) {
         List<ODocument> result = orientSql.execute(getPhoneRidSql, appRid)
-        if (!StringUtils.isBlank(OrientSqlUtil.getRid(result))){
-            new CacheEntry(appRid, OrientSqlUtil.getRid(result))
+        if (!StringUtils.isBlank(OrientSqlUtil.getRid(result))) {
+            String rid = OrientSqlUtil.getRid(result);
+            if (StringUtils.isBlank(rid)) {
+                return null
+            }
+            return new CacheEntry(appRid, rid)
         }
+        return null
     }
 
     @CachePut(value = 'applyRidPhoneRidCache', key = '#cacheEntry.key')
