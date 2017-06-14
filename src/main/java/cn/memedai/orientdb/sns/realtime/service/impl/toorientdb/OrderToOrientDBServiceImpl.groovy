@@ -9,6 +9,7 @@ import cn.memedai.orientdb.sns.realtime.cache.StoreCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
+import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -43,23 +44,55 @@ class OrderToOrientDBServiceImpl implements RealTimeService {
     private String updateOrderSql = 'update Order set orderNo=?,status=?,originalStatus=?,amount=?,createdDatetime=? upsert return after where orderNo=?'
 
     void process(List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return
+        }
+
+        if (dataList.size() == 0) {
+            return
+        }
         Map<String, Object> orderMap = dataList.get(0)
 
-        String memberRid = memberCache.get(orderMap.member_id).value
+        String memberRid = null
+        CacheEntry memberCacheEntry = memberCache.get(orderMap.member_id)
+        if (memberCacheEntry != null) {
+            memberRid = memberCacheEntry.value
+        }
 
-        String phoneRid = phoneCache.get(orderMap.mobile).value
+        String phoneRid = null
+        CacheEntry phoneCacheEntry = phoneCache.get(orderMap.mobile)
+        if (phoneCacheEntry != null) {
+            phoneRid = phoneCacheEntry.value
+        }
 
         String orderRid = OrientSqlUtil.getRid(orientSql.execute(updateOrderSql, orderMap.order_no, getStatus(orderMap.status), orderMap.status,
-                (orderMap.pay_amount)/100, orderMap.created_datetime, orderMap.order_no))
-        orderCache.put(new CacheEntry(orderMap.order_no, orderRid))
+                (orderMap.pay_amount) / 100, orderMap.created_datetime, orderMap.order_no))
+        if (StringUtils.isNotBlank(orderRid)) {
+            orderCache.put(new CacheEntry(orderMap.order_no, orderRid))
+        }
 
-        orientSql.createEdge('HasPhone', memberRid, phoneRid)
-        orientSql.createEdge('MemberHasOrder', memberRid, orderRid)
-        orientSql.createEdge('PhoneHasOrder', phoneRid, orderRid)
+        if (StringUtils.isNotBlank(memberRid) && StringUtils.isNotBlank(phoneRid)) {
+            orientSql.createEdge('HasPhone', memberRid, phoneRid)
+        }
+
+        if (StringUtils.isNotBlank(memberRid) && StringUtils.isNotBlank(orderRid)) {
+            orientSql.createEdge('MemberHasOrder', memberRid, orderRid)
+        }
+
+        if (StringUtils.isNotBlank(phoneRid) && StringUtils.isNotBlank(orderRid)) {
+            orientSql.createEdge('PhoneHasOrder', phoneRid, orderRid)
+        }
 
         if (orderMap.store_id != null) {
-            String storeRid = storeCache.get(orderMap.store_id).value
-            orientSql.createEdge('OrderHasStore', orderRid, storeRid)
+            String storeRid = null
+            CacheEntry storeCacheEntry = storeCache.get(orderMap.store_id)
+            if (storeCacheEntry != null) {
+                storeRid = storeCacheEntry.value
+            }
+
+            if (StringUtils.isNotBlank(orderRid) && StringUtils.isNotBlank(storeRid)) {
+                orientSql.createEdge('OrderHasStore', orderRid, storeRid)
+            }
         }
 
     }

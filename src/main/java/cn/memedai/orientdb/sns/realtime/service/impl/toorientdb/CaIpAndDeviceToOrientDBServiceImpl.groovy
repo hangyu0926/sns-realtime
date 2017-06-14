@@ -37,6 +37,13 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
     private ApplyRidMemberRidCache applyRidMemberRidCache
 
     void process(List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return
+        }
+
+        if (dataList.size() == 0) {
+            return
+        }
         Map<String, Object> caIpAndDeviceMap = dataList.get(0)
 
         String appNo = caIpAndDeviceMap.APPL_NO

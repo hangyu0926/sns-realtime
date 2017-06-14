@@ -59,6 +59,13 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
     private String updateEdgeSql = 'update edge {0} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?'
 
     void process(List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return
+        }
+
+        if (dataList.size() == 0) {
+            return
+        }
         Map<String, Object> callToMap = dataList.get(0)
 
         String appNo = (String) callToMap.APPL_NO

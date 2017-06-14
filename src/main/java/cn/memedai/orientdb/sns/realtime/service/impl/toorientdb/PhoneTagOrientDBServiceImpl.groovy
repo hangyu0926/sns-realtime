@@ -34,20 +34,35 @@ class PhoneTagOrientDBServiceImpl implements RealTimeService {
     private OrientSql orientSql
 
     void process(List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return
+        }
+
+        if (dataList.size() == 0) {
+            return
+        }
         Map<String, Object> phoneTagMap = dataList.get(0)
 
         String phone = (String) phoneTagMap.PHONE_NO
 
-        String phoneRid = phoneCache.get(phone).value
+        String phoneRid = null
+        CacheEntry phoneCacheEntry = phoneCache.get(phone)
+        if (phoneCacheEntry != null) {
+            phoneRid = phoneCacheEntry.value
+        }
 
         if (StringUtils.isNotBlank(phoneTagMap.PHONE_TYPE)) {
-            String phoneMarkRid = phoneMarkCache.get(phoneTagMap.PHONE_TYPE);
-            orientSql.createEdge('HasPhoneMark', phoneRid, phoneMarkRid)
+            String phoneMarkRid = phoneMarkCache.get(phoneTagMap.PHONE_TYPE)
+            if (StringUtils.isNotBlank(phoneMarkRid) && StringUtils.isNotBlank(phoneRid)) {
+                orientSql.createEdge('HasPhoneMark', phoneRid, phoneMarkRid)
+            }
         }
 
         if (StringUtils.isNotBlank(phoneTagMap.SOURCE)) {
             String phoneSourceRid = phoneSourceCache.get(phoneTagMap.SOURCE)
-            orientSql.createEdge('HasPhoneSource', phoneRid, phoneSourceRid)
+            if (StringUtils.isNotBlank(phoneRid) && StringUtils.isNotBlank(phoneSourceRid)) {
+                orientSql.createEdge('HasPhoneSource', phoneRid, phoneSourceRid)
+            }
         }
 
     }

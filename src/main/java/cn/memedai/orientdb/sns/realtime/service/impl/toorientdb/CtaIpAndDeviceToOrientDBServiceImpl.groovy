@@ -35,6 +35,13 @@ class CtaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
     private OrderRidMemberRidCache orderRidMemberRidCache
 
     void process(List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return
+        }
+
+        if (dataList.size() == 0) {
+            return
+        }
         Map<String, Object> ctaIpAndDeviceMap = dataList.get(0)
 
         String orderNo = ctaIpAndDeviceMap.ORDER_ID

@@ -39,6 +39,13 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
     private String updateApplySql = 'update Apply set applyNo=?,status=?,originalStatus=?,createdDatetime=? upsert return after where applyNo=?'
 
     void process(List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return
+        }
+
+        if (dataList.size() == 0) {
+            return
+        }
         Map<String, Object> applyMap = dataList.get(0)
 
         String memberRid = null
@@ -54,20 +61,19 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
         }
 
         String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateApplySql, applyMap.apply_no, getStatus(applyMap.apply_status), applyMap.apply_status, applyMap.created_datetime, applyMap.apply_no))
-        if (StringUtils.isBlank(applyRid)) {
-            return
+        if (StringUtils.isNotBlank(applyRid)) {
+            applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
         }
-        applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
 
         if (StringUtils.isNotBlank(memberRid) && StringUtils.isNotBlank(phoneRid)) {
             orientSql.createEdge('HasPhone', memberRid, phoneRid)
         }
 
-        if (StringUtils.isNotBlank(memberRid)) {
+        if (StringUtils.isNotBlank(memberRid) && StringUtils.isNotBlank(applyRid)) {
             orientSql.createEdge('MemberHasApply', memberRid, applyRid)
         }
 
-        if (StringUtils.isNotBlank(phoneRid)) {
+        if (StringUtils.isNotBlank(phoneRid) && StringUtils.isNotBlank(applyRid)) {
             orientSql.createEdge('PhoneHasApply', phoneRid, applyRid)
         }
 
@@ -87,7 +93,9 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
                     orientSql.createEdge('PhoneHasOrder', phoneRid, orderRid)
                 }
 
-                orientSql.createEdge('ApplyHasOrder', applyRid, orderRid)
+                if (StringUtils.isNotBlank(applyRid)) {
+                    orientSql.createEdge('ApplyHasOrder', applyRid, orderRid)
+                }
             }
         }
 
@@ -98,7 +106,7 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
                 storeRid = storeCacheEntry.value
             }
 
-            if (StringUtils.isNotBlank(storeRid)) {
+            if (StringUtils.isNotBlank(storeRid) && StringUtils.isNotBlank(applyRid)) {
                 orientSql.createEdge('ApplyHasStore', applyRid, storeRid)
             }
         }

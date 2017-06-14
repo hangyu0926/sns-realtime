@@ -5,6 +5,7 @@ import cn.memedai.orientdb.sns.realtime.cache.StoreCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
+import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -27,13 +28,19 @@ class StoreExecutionStrategyToOrientDBServiceImpl implements RealTimeService {
     private String updateStoreSql = 'update Store set storeId=?,merchantId=?,storeName=?,province=?,city=?,creditLimitType=?,policyBracket=?,businessFirstType=? upsert return after where storeId = ?'
 
     void process(List<Map<String, Object>> dataList) {
-        for (def i = 0; i < dataList.size(); i++){
+        if (dataList == null) {
+            return
+        }
+
+        int size = dataList.size()
+        for (def i = 0; i < size; i++) {
             Map<String, Object> storeMap = dataList.get(i)
 
-            String storeRid = OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeMap.STOREID,storeMap.MERCHANTID,storeMap.STORENAME,storeMap.PROVINCE,storeMap.CITY,storeMap.CREDIT_LIMIT_TYPE
-                    ,storeMap.POLICY_BRACKET,storeMap.BUSINESS_FIRST_TYPE ))
-
-            storeCache.put(new CacheEntry(storeMap.store_id, storeRid))
+            String storeRid = OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeMap.STOREID, storeMap.MERCHANTID, storeMap.STORENAME, storeMap.PROVINCE, storeMap.CITY, storeMap.CREDIT_LIMIT_TYPE
+                    , storeMap.POLICY_BRACKET, storeMap.BUSINESS_FIRST_TYPE))
+            if (StringUtils.isNotBlank(storeRid)) {
+                storeCache.put(new CacheEntry(storeMap.store_id, storeRid))
+            }
         }
     }
 
