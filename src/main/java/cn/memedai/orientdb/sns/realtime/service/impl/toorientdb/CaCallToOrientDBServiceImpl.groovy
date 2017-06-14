@@ -5,7 +5,7 @@ import cn.memedai.orientdb.sns.realtime.cache.ApplyHasDoCache
 import cn.memedai.orientdb.sns.realtime.cache.ApplyRidPhoneRidCache
 import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
 import cn.memedai.orientdb.sns.realtime.cache.PhoneCache
-import cn.memedai.orientdb.sns.realtime.sql.MysqlSql
+
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import com.orientechnologies.orient.core.id.ORecordId
@@ -18,9 +18,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.text.MessageFormat
 
 /**
@@ -45,9 +42,6 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
     @Resource
     private OrientSql orientSql
-
-    @Resource
-    private MysqlSql mysqlSql
 
     @Resource
     private Sql sql

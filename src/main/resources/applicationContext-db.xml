@@ -18,13 +18,6 @@
         <prop key="password">djK0OyeHP</prop>
     </util:properties>
 
-    <util:properties id="mysqlJdbcConfig">
-        <prop key="driver">com.mysql.jdbc.Driver</prop>
-        <prop key="url">jdbc:mysql://115.29.177.124:3306/network</prop>
-        <prop key="userName">kisho.dai</prop>
-        <prop key="password">djK0OyeHP</prop>
-    </util:properties>
-
     <!--<util:properties id="sqlserverConfig">-->
     <!--<prop key="driver">com.mysql.jdbc.Driver</prop>-->
     <!--&lt;!&ndash;com.microsoft.jdbc.sqlserver.SQLServerDriver&ndash;&gt;-->
