@@ -27,14 +27,12 @@ class StoreToOrientDBServiceImpl implements RealTimeService {
     private String updateStoreSql = 'update Store set storeId=?,merchantId=?,storeName=?,province=?,city=?,creditLimitType=?,policyBracket=?,businessFirstType=? upsert return after where storeId = ?'
 
     void process(List<Map<String, Object>> dataList) {
-        for (def i = 0; i < dataList.size(); i++){
-            Map<String, Object> storeMap = dataList.get(i)
+        Map<String, Object> storeMap = dataList.get(0)
 
-            String storeRid = OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeMap.STOREID,storeMap.MERCHANTID,storeMap.STORENAME,storeMap.PROVINCE,storeMap.CITY,storeMap.CREDIT_LIMIT_TYPE
-                    ,storeMap.POLICY_BRACKET,storeMap.BUSINESS_FIRST_TYPE ))
+        String storeRid = OrientSqlUtil.getRid(orientSql.execute(updateStoreSql, storeMap.STOREID,storeMap.MERCHANTID,storeMap.STORENAME,storeMap.PROVINCE,storeMap.CITY,storeMap.CREDIT_LIMIT_TYPE
+                ,storeMap.POLICY_BRACKET,storeMap.BUSINESS_FIRST_TYPE ))
 
-            storeCache.put(new CacheEntry(storeMap.store_id, storeRid))
-        }
+        storeCache.put(new CacheEntry(storeMap.store_id, storeRid))
 
 
     }

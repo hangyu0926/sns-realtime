@@ -1,5 +1,8 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
+import cn.memedai.orientdb.sns.realtime.cache.IdCardCache
+import cn.memedai.orientdb.sns.realtime.cache.MemberCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import org.slf4j.LoggerFactory
@@ -18,9 +21,14 @@ class IdCardToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private OrientSql orientDb
 
+    @Resource
+    private IdCardCache idCardCache
+
     void process(List<Map<String, Object>> dataList) {
-        println dataList
-        //TODO
+        for (def i = 0; i < dataList.size(); i++){
+            Map<String, Object> idCardMap = dataList.get(i)
+            idCardCache.put(new CacheEntry(idCardMap.ID_PREFIX,idCardMap))
+        }
     }
 
 }

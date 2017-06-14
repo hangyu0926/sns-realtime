@@ -1,5 +1,6 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.cache.MemberCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import org.slf4j.LoggerFactory
@@ -18,9 +19,21 @@ class LoansToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private OrientSql orientSql
 
+    @Resource
+    private MemberCache memberCache
+
+    private String updateOverDueSql = 'update Member set isOverdue=true where memberId=?'
+
     void process(List<Map<String, Object>> dataList) {
-        println dataList
-        //TODO
+        for (def i = 0; i < dataList.size(); i++){
+            Map<String, Object> loanMap = dataList.get(i)
+
+            if (null != loanMap.OVERDUE_DAYS && loanMap.OVERDUE_DAYS > 3){
+                int memberId = loanMap.BORROWER_ID
+                orientSql.execute(updateOverDueSql,memberId)
+            }
+        }
+
     }
 
 }
