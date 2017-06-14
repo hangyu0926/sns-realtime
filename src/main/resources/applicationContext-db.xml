@@ -6,7 +6,7 @@
                 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <util:properties id="orientDbConfig">
-        <prop key="url">remote:localhost/sns</prop>
+        <prop key="url">remote:99.48.88.104/sns</prop>
         <prop key="userName">admin</prop>
         <prop key="password">admin</prop>
     </util:properties>

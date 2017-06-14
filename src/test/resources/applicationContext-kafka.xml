@@ -60,7 +60,61 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
             </map>
         </entry>
 
+        <entry key="order">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "wallet.money_box_order",
+                                 "type": "record",
+                                 "name": "money_box_order",
+                                 "fields": [
+                                     {"name": "mobile", "type": "string"},
+                                     {"name": "member_id",  "type": ["long"]},
+                                     {"name": "order_no", "type": ["string"]},
+                                     {"name": "created_datetime", "type": ["string"]},
+                                     {"name": "status", "type": ["int"]},
+                                     {"name": "store_id", "type": ["string","null"]},
+                                     {"name": "pay_amount", "type": ["int"]},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="orderToOrientDBServiceImpl"/>
+                        <ref bean="orderToMysqlServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
 
+        <entry key="caCallTo">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "wallet.ca_bur_operator_contact",
+                                 "type": "record",
+                                 "name": "ca_bur_operator_contact",
+                                 "fields": [
+                                     {"name": "APPL_NO", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="caCallToOrientDBServiceImpl"/>
+                        <ref bean="caCallToMysqlServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
     </util:map>
 
 </beans>

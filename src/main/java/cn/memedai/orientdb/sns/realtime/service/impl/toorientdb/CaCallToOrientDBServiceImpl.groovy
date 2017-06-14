@@ -63,6 +63,8 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
         Map<String, Object> callToMap = dataList.get(0)
 
         String appNo = (String) callToMap.APPL_NO
+
+        LOG.info("appNo is {}",appNo)
         if (StringUtils.isBlank(appNo)) {
             return
         }
@@ -89,7 +91,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
-        sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = ?') {
+        sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = '+ appNo) {
             rs ->
                 while (rs.next()) {
                     String toPhone = rs.getString("PHONE_NO")
