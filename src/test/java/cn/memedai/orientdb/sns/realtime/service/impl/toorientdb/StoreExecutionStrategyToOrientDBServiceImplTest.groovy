@@ -19,7 +19,7 @@ import javax.annotation.Resource
  * Created by hangyu on 2017/6/15.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class MemberToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+class StoreExecutionStrategyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 
@@ -28,7 +28,7 @@ class MemberToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
 
     @Test
     void testProcess() {
-        String topic = 'member'
+        String topic = 'storeStrategy'
 
         Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic].avroSchema)
 
@@ -40,12 +40,9 @@ class MemberToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
 
         GenericRecord record = new GenericData.Record(schema)
 
-        record.put('MEMBER_ID', 1695737)
-        record.put('MOBILE_NO', '18847731939')
-     /*   record.put('NAME', '余永莲1')
-        record.put('ID_NO', '152726199503290028')
-        record.put('PROVINCE', '内蒙古1')
-        record.put('CITY', '伊克昭1')*/
+        record.put('STOREID', 1)
+        record.put('POLICY_BRACKET', 'R1')
+        record.put('BUSINESS_FIRST_TYPE', '消费贷')
         record.put('__op', 'create') //必须字段
 
         dataFileWriter.append(record)

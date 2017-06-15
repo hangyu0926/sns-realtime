@@ -29,7 +29,7 @@ class MemberToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private IdCardCache idCardCache
 
-    private String updateMemberSql = 'update Member set memberId=?,name=?,idNo=?,province=?,city=?,phone=?,isBlack=false,isOverdue=false upsert return after where memberId=?'
+    private String updateMemberSql = 'update Member set memberId=?,phone=?,isBlack=false,isOverdue=false upsert return after where memberId=?'
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -39,27 +39,13 @@ class MemberToOrientDBServiceImpl implements RealTimeService {
         int size = dataList.size()
         for (def i = 0; i < size; i++) {
             Map<String, Object> memberMap = dataList.get(i)
-
-            String idNo = memberMap.ID_NO
-            String province = memberMap.PROVINCE
-            String city = memberMap.CITY
-
-            if (idNo != null && idNo.trim().length() > 6) {
-                Map<String, String> idAddress = null
-                CacheEntry idCardCacheEntry = idCardCache.get(idNo.substring(0, 6))
-                if (idCardCacheEntry != null) {
-                    idAddress = idCardCacheEntry.value
-                }
-                if (idAddress != null) {
-                    province = idAddress.PROVINCE
-                    city = idAddress.CITY
-                }
-            }
-
-            String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql, memberMap.MEMBER_ID, memberMap.NAME, idNo, province, city,
+            String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql, memberMap.MEMBER_ID,
                     memberMap.MOBILE_NO, memberMap.MEMBER_ID))
             if (StringUtils.isNotBlank(memberRid)) {
-                memberCache.put(new CacheEntry(memberMap.MEMBER_ID, memberRid))
+                CacheEntry cacheEntry =  memberCache.get(memberMap.MEMBER_ID)
+                if (null == cacheEntry ){
+                    memberCache.put(new CacheEntry(memberMap.MEMBER_ID, memberRid))
+                }
             }
         }
     }

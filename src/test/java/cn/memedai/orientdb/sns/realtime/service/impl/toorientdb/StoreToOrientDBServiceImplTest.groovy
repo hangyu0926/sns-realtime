@@ -42,12 +42,10 @@ class StoreToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
 
         record.put('STOREID', 1)
         record.put('MERCHANTID', 100634)
-        record.put('STORENAME', '南京路店')
-        record.put('PROVINCE', '上海市')
-        record.put('CITY', '上海市')
+        record.put('STORENAME', '新街口店')
+        record.put('PROVINCE', '江苏省')
+        record.put('CITY', '南京市')
         record.put('CREDIT_LIMIT_TYPE', 1)
-        record.put('POLICY_BRACKET', 'R2')
-        record.put('BUSINESS_FIRST_TYPE', '培训贷')
         record.put('__op', 'create') //必须字段
 
         dataFileWriter.append(record)

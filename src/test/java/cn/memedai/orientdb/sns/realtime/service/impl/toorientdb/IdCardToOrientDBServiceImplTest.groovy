@@ -40,10 +40,11 @@ class IdCardToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
 
         GenericRecord record = new GenericData.Record(schema)
 
-        record.put('ID_PREFIX', '110000')
+        record.put('MEMBER_ID', 1695737)
+        record.put('NAME', '余永莲')
+        record.put('ID_NO', '152726199503290028')
         record.put('PROVINCE', '江苏')
         record.put('CITY', '南京')
-        record.put('AREA', '雨花台区大数据产业基地')
         record.put('__op', 'create') //必须字段
 
         dataFileWriter.append(record)

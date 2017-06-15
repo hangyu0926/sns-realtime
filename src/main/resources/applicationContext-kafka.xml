@@ -155,6 +155,29 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                                      {"name": "PROVINCE", "type": "string"},
                                      {"name": "CITY", "type": "string"},
                                      {"name": "CREDIT_LIMIT_TYPE", "type": "int"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="storeToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
+        <entry key="storeStrategy">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "MERCHANTAUDIT.ma_execution_strategy",
+                                 "type": "record",
+                                 "name": "ma_execution_strategy",
+                                 "fields": [
+                                     {"name": "STOREID", "type": "int"},
                                      {"name": "POLICY_BRACKET", "type": "string"},
                                      {"name": "BUSINESS_FIRST_TYPE", "type": "string"},
                                      {"name": "__op", "type": ["string"]}
@@ -165,7 +188,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 </entry>
                 <entry key="services">
                     <list>
-                        <ref bean="storeToOrientDBServiceImpl"/>
+                        <ref bean="storeExecutionStrategyToOrientDBServiceImpl"/>
                     </list>
                 </entry>
             </map>
@@ -233,10 +256,6 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                                  "fields": [
                                      {"name": "MEMBER_ID", "type": "int"},
                                      {"name": "MOBILE_NO", "type": "string"},
-                                     {"name": "NAME", "type": "string"},
-                                     {"name": "ID_NO", "type": "string"},
-                                     {"name": "PROVINCE", "type": "string"},
-                                     {"name": "CITY", "type": "string"},
                                      {"name": "__op", "type": ["string"]}
                                  ]
                                 }
@@ -279,14 +298,15 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 <entry key="avroSchema">
                     <value>
                         <![CDATA[
-                                {"namespace": "credit_audit.ca_sys_value_id_area",
+                                {"namespace": "credit_audit.ID_CARD",
                                  "type": "record",
-                                 "name": "ca_sys_value_id_area",
+                                 "name": "ID_CARD",
                                  "fields": [
-                                     {"name": "ID_PREFIX", "type": ["string"]},
+                                     {"name": "MEMBER_ID", "type": "int"},
+                                     {"name": "NAME", "type": "string"},
+                                     {"name": "ID_NO", "type": "string"},
                                      {"name": "PROVINCE", "type": "string"},
                                      {"name": "CITY", "type": "string"},
-                                     {"name": "AREA", "type": "string"},
                                      {"name": "__op", "type": ["string"]}
                                  ]
                                 }
