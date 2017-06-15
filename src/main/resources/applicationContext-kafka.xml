@@ -170,6 +170,136 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 </entry>
             </map>
         </entry>
+        <entry key="caIpAndDevice">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "network.ca_appl_member_device",
+                                 "type": "record",
+                                 "name": "ca_appl_member_device",
+                                 "fields": [
+                                     {"name": "APPL_NO", "type": "string"},
+                                     {"name": "DEVICE_ID", "type": "string"},
+                                     {"name": "IP", "type": "string"},
+                                     {"name": "IP_CITY", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="caIpAndDeviceToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
+        <entry key="ctaIpAndDevice">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "network.cta_order_deviceinfo",
+                                 "type": "record",
+                                 "name": "cta_order_deviceinfo",
+                                 "fields": [
+                                     {"name": "ORDER_ID", "type": "string"},
+                                     {"name": "DEVICE_ID", "type": "string"},
+                                     {"name": "IP", "type": "string"},
+                                     {"name": "IP_CITY", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="ctaIpAndDeviceToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
+        <entry key="member">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "memedai.MEMBER",
+                                 "type": "record",
+                                 "name": "MEMBER",
+                                 "fields": [
+                                     {"name": "MEMBER_ID", "type": "int"},
+                                     {"name": "MOBILE_NO", "type": "string"},
+                                     {"name": "NAME", "type": "string"},
+                                     {"name": "ID_NO", "type": "string"},
+                                     {"name": "PROVINCE", "type": "string"},
+                                     {"name": "CITY", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="memberToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
+        <entry key="loan">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "memedai.LOANS",
+                                 "type": "record",
+                                 "name": "LOANS",
+                                 "fields": [
+                                     {"name": "BORROWER_ID", "type": ["long"]},
+                                     {"name": "OVERDUE_DAYS", "type": "int"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="loansToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
+        <entry key="idCard">
+            <map>
+                <entry key="avroSchema">
+                    <value>
+                        <![CDATA[
+                                {"namespace": "credit_audit.ca_sys_value_id_area",
+                                 "type": "record",
+                                 "name": "ca_sys_value_id_area",
+                                 "fields": [
+                                     {"name": "ID_PREFIX", "type": ["string"]},
+                                     {"name": "PROVINCE", "type": "string"},
+                                     {"name": "CITY", "type": "string"},
+                                     {"name": "AREA", "type": "string"},
+                                     {"name": "__op", "type": ["string"]}
+                                 ]
+                                }
+                           ]]>
+                    </value>
+                </entry>
+                <entry key="services">
+                    <list>
+                        <ref bean="idCardToOrientDBServiceImpl"/>
+                    </list>
+                </entry>
+            </map>
+        </entry>
     </util:map>
 
 </beans>

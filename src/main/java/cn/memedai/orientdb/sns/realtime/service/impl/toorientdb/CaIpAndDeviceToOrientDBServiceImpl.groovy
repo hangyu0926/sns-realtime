@@ -8,6 +8,7 @@ import cn.memedai.orientdb.sns.realtime.cache.IpCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
+import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -47,25 +48,56 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
         Map<String, Object> caIpAndDeviceMap = dataList.get(0)
 
         String appNo = caIpAndDeviceMap.APPL_NO
-        if (null == appNo){
+        if (StringUtils.isBlank(appNo)) {
             return
         }
 
-        String applyRid = applyCache.get(appNo).value
-        if (null == applyRid){
+        String applyRid = null
+        CacheEntry applyCacheEntry = applyCache.get(appNo)
+        if (applyCacheEntry != null) {
+            applyRid = applyCacheEntry.value
+        }
+
+        if (StringUtils.isBlank(applyRid)) {
             return
         }
 
-        String deviceRid = deviceCache.get(caIpAndDeviceMap.DEVICE_ID).value
-        orientSql.createEdge('ApplyHasDevice', applyRid, deviceRid)
+        String deviceRid = null
+        CacheEntry deviceCacheEntry = deviceCache.get(caIpAndDeviceMap.DEVICE_ID)
+        if (deviceCacheEntry != null) {
+            deviceRid = deviceCacheEntry.value
+        }
 
-        String ipRid = ipCache.get(caIpAndDeviceMap.IP+"|"+caIpAndDeviceMap.IP_CITY).value
-        orientSql.createEdge('ApplyHasIp', applyRid, ipRid)
+        if (StringUtils.isNotBlank(deviceRid)) {
+            orientSql.createEdge('ApplyHasDevice', applyRid, deviceRid)
+        }
 
+        String ipRid = null
+        CacheEntry ipCacheEntry = ipCache.get(caIpAndDeviceMap.IP + "|" + caIpAndDeviceMap.IP_CITY)
+        if (ipCacheEntry != null) {
+            ipRid = ipCacheEntry.value
+        }
 
-        String memberRid = applyRidMemberRidCache.get(applyRid).value
-        orientSql.createEdge('MemberHasDevice', memberRid, deviceRid)
-        orientSql.createEdge('MemberHasIp', memberRid, ipRid)
+        if (StringUtils.isNotBlank(ipRid)) {
+            orientSql.createEdge('ApplyHasIp', applyRid, ipRid)
+        }
+
+        CacheEntry applyRidMemberRidCacheEntry = applyRidMemberRidCache.get(applyRid)
+
+        String memberRid = null
+        if (null != applyRidMemberRidCacheEntry) {
+            memberRid = applyRidMemberRidCacheEntry.value
+        }
+
+        if (StringUtils.isNotBlank(memberRid)) {
+            if (StringUtils.isNotBlank(deviceRid)) {
+                orientSql.createEdge('MemberHasDevice', memberRid, deviceRid)
+            }
+            if (StringUtils.isNotBlank(ipRid)) {
+                orientSql.createEdge('MemberHasIp', memberRid, ipRid)
+            }
+        }
+
     }
 
 }

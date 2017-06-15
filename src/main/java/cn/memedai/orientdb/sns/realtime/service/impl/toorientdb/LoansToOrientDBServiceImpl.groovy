@@ -34,7 +34,7 @@ class LoansToOrientDBServiceImpl implements RealTimeService {
             Map<String, Object> loanMap = dataList.get(i)
 
             if (null != loanMap.OVERDUE_DAYS && loanMap.OVERDUE_DAYS > 3) {
-                int memberId = loanMap.BORROWER_ID
+                long memberId = loanMap.BORROWER_ID
                 orientSql.execute(updateOverDueSql, memberId)
             }
         }

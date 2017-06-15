@@ -31,8 +31,8 @@ class IpCache {
     @Cacheable(value = 'ipCache')
     CacheEntry get(ip) {
         String ipAndipCity = ip
-        String tempIp = ipAndipCity.split("|")[0]
-        String tempIpCity =ipAndipCity.split("|")[1]
+        String tempIp = ipAndipCity.split("\\|")[0]
+        String tempIpCity =ipAndipCity.split("\\|")[1]
 
         List<ODocument> result = orientSql.execute(getIpSql, tempIp)
         if (CollectionUtils.isEmpty(result)) {

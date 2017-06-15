@@ -3,6 +3,7 @@ package cn.memedai.orientdb.sns.realtime.cache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import com.orientechnologies.orient.core.record.impl.ODocument
+import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,15 +29,16 @@ class ApplyRidMemberRidCache {
 
     @Cacheable(value = 'applyRidMemberRidCache')
     CacheEntry get(appRid) {
-        List<ODocument> result = orientSql.execute(getPhoneRidSql+ appRid)
-        if (!StringUtils.isBlank(OrientSqlUtil.getRid(result))) {
-            String rid = OrientSqlUtil.getRid(result)
-            if (StringUtils.isBlank(rid)) {
-                return null
-            }
-            return new CacheEntry(appRid, rid)
+        List<ODocument> result = orientSql.execute(getPhoneRidSql + appRid)
+        if (CollectionUtils.isEmpty(result)) {
+            return null
         }
-        return null
+
+        String rid = OrientSqlUtil.getRid(result)
+        if (StringUtils.isBlank(rid)) {
+            return null
+        }
+        return new CacheEntry(appRid, rid)
     }
 
     @CachePut(value = 'applyRidMemberRidCache', key = '#cacheEntry.key')

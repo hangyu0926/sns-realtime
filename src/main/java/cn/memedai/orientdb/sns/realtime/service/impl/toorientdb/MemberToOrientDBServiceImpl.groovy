@@ -52,7 +52,7 @@ class MemberToOrientDBServiceImpl implements RealTimeService {
                 }
                 if (idAddress != null) {
                     province = idAddress.PROVINCE
-                    city = idAddress.city
+                    city = idAddress.CITY
                 }
             }
 
