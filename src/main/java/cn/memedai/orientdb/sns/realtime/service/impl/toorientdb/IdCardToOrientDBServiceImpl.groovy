@@ -1,5 +1,6 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.RealTimeDispatch
 import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
 import cn.memedai.orientdb.sns.realtime.cache.IdCardCache
 import cn.memedai.orientdb.sns.realtime.cache.MemberCache
@@ -48,20 +49,13 @@ class IdCardToOrientDBServiceImpl implements RealTimeService {
             String city = idCardMap.CITY
 
             if (idNo != null && idNo.trim().length() > 6) {
-                Map<String, String> idAddress = null
-                CacheEntry idCardCacheEntry = idCardCache.get(idNo.substring(0, 6))
-                if (idCardCacheEntry != null) {
-                    idAddress = idCardCacheEntry.value
-                }
-                if (idAddress != null) {
-                    province = idAddress.PROVINCE
-                    city = idAddress.CITY
+                Map<String,String> map = null
+                map = RealTimeDispatch.idCardMap.get(idNo.substring(0, 6))
+                if (map != null) {
+                    province = map.get("PROVINCE")
+                    city = map.get("CITY")
                 }
             }
-
-            /*if (idCardMap != null) {
-                idCardCache.put(new CacheEntry(idCardMap.ID_PREFIX, idCardMap))
-            }*/
 
             String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql,memberId,
                     name,idNo, province, city,memberId))

@@ -95,7 +95,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
         String toPhoneRid = null
 
-        sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = '+ appNo) {
+        sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = "'+ appNo+'"') {
             rs ->
                 while (rs.next()) {
                     String toPhone = rs.getString("PHONE_NO")
@@ -105,7 +105,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                     int callOutCnt = rs.getInt("CALL_OUT_CNT")
                     String createTime = rs.getString("CREATE_TIME")
 
-                    CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
+                   CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
                     if (phoneCacheEntry != null) {
                         toPhoneRid = phoneCacheEntry.value
                     }

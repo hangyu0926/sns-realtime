@@ -2,6 +2,7 @@ package cn.memedai.orientdb.sns.realtime
 
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import groovy.json.JsonSlurper
+import groovy.sql.Sql
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileReader
 import org.apache.avro.file.SeekableByteArrayInput
@@ -42,6 +43,11 @@ class RealTimeDispatch {
     private Map<String, List<RealTimeService>> topic2ServicesMap = [:]
 
     private Map<String, Properties> topic2KafkaProMap = [:]
+
+    public static Map<String,Map<String,String>> idCardMap = [:]
+
+    @Resource
+    private Sql sql
 
     void start() {
         //单线程跑
@@ -95,6 +101,25 @@ class RealTimeDispatch {
                 }
 
                 topic2KafkaProMap[key] = value.kafkaProp == null ? defaultKafkaProp : value.kafkaProp
+        }
+    }
+
+    @PostConstruct
+    void getIdCardMap(){
+        sql.query('select ID_PREFIX,PROVINCE,CITY from credit_audit.ca_sys_value_id_area') {
+            rs ->
+                while (rs.next()) {
+                    String ID_PREFIX = rs.getString("ID_PREFIX")
+                    String PROVINCE = rs.getString("PROVINCE")
+                    String CITY = rs.getString("CITY")
+
+                    Map<String,String> map = [:]
+                    map.put("ID_PREFIX",ID_PREFIX)
+                    map.put("PROVINCE",PROVINCE)
+                    map.put("CITY",CITY)
+
+                    idCardMap.put(ID_PREFIX,map)
+                }
         }
     }
 
