@@ -11,8 +11,8 @@ import javax.annotation.Resource
  * Created by hangyu on 2017/6/15.
  */
 @Service
-class caIpAndDeviceToMysqlServiceImpl {
-    private static final LOG = LoggerFactory.getLogger(caIpAndDeviceToMysqlServiceImpl.class)
+class CaIpAndDeviceToMysqlServiceImpl {
+    private static final LOG = LoggerFactory.getLogger(CaIpAndDeviceToMysqlServiceImpl.class)
 
     @Resource
     private OrientSql orientSql
