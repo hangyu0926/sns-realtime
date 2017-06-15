@@ -36,6 +36,9 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private StoreCache storeCache
 
+    @Resource
+    private ApplyNoOrderNoCache applyNoOrderNoCache
+
     private String updateApplySql = 'update Apply set applyNo=?,status=?,originalStatus=?,createdDatetime=? upsert return after where applyNo=?'
 
     void process(List<Map<String, Object>> dataList) {
@@ -78,6 +81,9 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
         }
 
         if (applyMap.order_no != null) {
+            //将apply和order关系放入缓存
+            applyNoOrderNoCache.put(new CacheEntry(applyMap.apply_no,applyMap.order_no))
+
             String orderRid = null
             CacheEntry orderCacheEntry = orderCache.get(applyMap.order_no)
             if (orderCacheEntry != null) {
