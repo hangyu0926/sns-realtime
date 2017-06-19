@@ -241,8 +241,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                         <!--table service Start-->
                         <entry key="services">
                             <list>
-                                <ref bean="caCallToOrientDBServiceImpl"/>
-                                <ref bean="caCallToMysqlServiceImpl"/>
+                                <ref bean="creditAuditApplyToOrientDBServiceImpl"/>
                             </list>
                         </entry>
                         <!--table service End-->
@@ -329,7 +328,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                         <!--table service Start-->
                         <entry key="services">
                             <list>
-
+                                <ref bean="cashLoanApplyToOrientDBServiceImpl"/>
                             </list>
                         </entry>
                         <!--table service End-->
@@ -365,7 +364,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                         <!--table service Start-->
                         <entry key="services">
                             <list>
-
+                                <ref bean="cashLoanOrderToOrientDBServiceImpl"/>
                             </list>
                         </entry>
                         <!--table service End-->
@@ -405,7 +404,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                         <!--table service Start-->
                         <entry key="services">
                             <list>
-
+                                <ref bean="antifraudPhoneTagToOrientDBServiceImpl"/>
                             </list>
                         </entry>
                         <!--table service End-->

@@ -24,13 +24,13 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String, String>> kafkaDispatchConfig
+    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
 
     @Test
     void testProcess() {
-        String topic = 'phoneTag'
+        String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_sys_phone_tag_merge'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -43,13 +43,15 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
         record.put('PHONE_NO', '13168786240')
         record.put('PHONE_TYPE', '贷款中介')
         record.put('SOURCE', '58')
-        record.put('__op', 'create') //必须字段
+        record.put('__op', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-        producer.send(new ProducerRecord<String, Byte[]>(topic, Integer.toString(10000), oos.toByteArray()))
+        [0..10].each {
+            producer.send(new ProducerRecord<String, Byte[]>(topic, ['credit_audit.ca_sys_phone_tag_merge'], oos.toByteArray()))
+        }
         producer.close()
     }
 }

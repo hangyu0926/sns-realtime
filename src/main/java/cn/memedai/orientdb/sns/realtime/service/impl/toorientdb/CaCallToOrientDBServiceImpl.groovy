@@ -95,22 +95,31 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
         String toPhoneRid = null
 
-        sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = "'+ appNo+'"') {
+       /* sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = "'+ appNo+'"') {
             rs ->
                 while (rs.next()) {
-                    String toPhone = rs.getString("PHONE_NO")
+                       String toPhone = rs.getString("PHONE_NO")
                     int callCnt = rs.getInt("CALL_CNT")
                     int callLen = rs.getInt("CALL_LEN")
                     int callInCnt = rs.getInt("CALL_IN_CNT")
                     int callOutCnt = rs.getInt("CALL_OUT_CNT")
                     String createTime = rs.getString("CREATE_TIME")
+                */
+          sql.eachRow('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = "'+ appNo+'"'){
+                row ->
+                    String toPhone = row.PHONE_NO
+                    int callCnt = row.CALL_CNT
+                    int callLen = row.CALL_LEN
+                    int callInCnt = row.CALL_IN_CNT
+                    int callOutCnt = row.CALL_OUT_CNT
+                    String createTime = row.CREATE_TIME
 
-                   CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
+                    CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
                     if (phoneCacheEntry != null) {
                         toPhoneRid = phoneCacheEntry.value
                     }
                     if (StringUtils.isBlank(toPhoneRid)) {
-                        continue
+                        return
                     }
 
                     def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
@@ -124,7 +133,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                         orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()),args)
                     }
                 }
-        }
+       // }
 
         //写入缓存
         applyHasDoCache.put(new CacheEntry(appNo, true))

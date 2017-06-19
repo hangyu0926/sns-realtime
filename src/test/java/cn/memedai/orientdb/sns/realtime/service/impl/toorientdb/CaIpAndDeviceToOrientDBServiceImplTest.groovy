@@ -25,13 +25,13 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String, String>> kafkaDispatchConfig
+    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
 
     @Test
     void testProcess() {
-        String topic = 'caIpAndDevice'
+        String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_appl_member_device'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -45,13 +45,15 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
         record.put('DEVICE_ID', '862095026190972')
         record.put('IP', '221.226.85.146')
         record.put('IP_CITY', '南京市')
-        record.put('__op', 'create') //必须字段
+        record.put('__op', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-        producer.send(new ProducerRecord<String, Byte[]>(topic, Integer.toString(10000), oos.toByteArray()))
+        [0..10].each {
+            producer.send(new ProducerRecord<String, Byte[]>(topic, ['credit_audit.ca_appl_member_device'], oos.toByteArray()))
+        }
         producer.close()
     }
 }

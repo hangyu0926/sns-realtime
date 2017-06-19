@@ -513,15 +513,17 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
     private void addIndexDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
                                       long direct, long indirect) {
-        IndexData indexData = new IndexData()
-        indexData.setMemberId(memberId)
-        indexData.setMobile(mobile)
-        indexData.setDirect(direct)
-        indexData.setIndirect(indirect)
-        indexData.setApplyNo(applyNo)
-        indexData.setOrderNo(orderNo)
-        indexData.setIndexName(indexName)
-        indexDatas.add(indexData)
+        if (null != indexName){
+            IndexData indexData = new IndexData()
+            indexData.setMemberId(memberId)
+            indexData.setMobile(mobile)
+            indexData.setDirect(direct)
+            indexData.setIndirect(indirect)
+            indexData.setApplyNo(applyNo)
+            indexData.setOrderNo(orderNo)
+            indexData.setIndexName(indexName)
+            indexDatas.add(indexData)
+        }
     }
 
     private void addIndexMemberDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
