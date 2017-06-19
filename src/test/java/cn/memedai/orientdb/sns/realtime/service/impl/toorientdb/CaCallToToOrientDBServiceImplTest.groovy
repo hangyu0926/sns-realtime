@@ -40,7 +40,9 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
 
         GenericRecord record = new GenericData.Record(schema)
 
-        record.put('APPL_NO', '1485313547297000')
+        //record.put('APPL_NO', '1485313547297000')
+        record.put('APPL_NO', '1481017008452006')
+
         record.put('__op', 'create') //必须字段
 
         dataFileWriter.append(record)
