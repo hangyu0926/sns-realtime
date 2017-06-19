@@ -1,7 +1,6 @@
 package cn.memedai.orientdb.sns.realtime.cache
 
 import groovy.sql.Sql
-import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
@@ -33,7 +32,6 @@ class IdCache {
             row ->
                 idMap[row.ID_PREFIX] = ['ID_PREFIX': row.ID_PREFIX, 'PROVINCE': row.ID_PREFIX, 'CITY': row.CITY]
         }
-        LoggerFactory.getLogger("xx").info('' + idMap)
     }
 
 }
