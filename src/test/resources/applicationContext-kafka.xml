@@ -8,319 +8,413 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 
     <context:component-scan base-package="cn.memedai.orientdb.sns.realtime.service.impl"/>
 
-    <util:properties id="defaultKafkaProp">
-        <prop key="bootstrap.servers">99.48.88.104:9092</prop>
-        <prop key="group.id">test</prop>
-        <prop key="enable.auto.commit">false</prop>
-        <!--<prop key="auto.commit.interval.ms">1000</prop>-->
-        <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
-        <prop key="value.deserializer">org.apache.kafka.common.serialization.ByteArrayDeserializer</prop>
-    </util:properties>
+    <util:map id="defaultKafkaMap">
+        <entry key="bootstrap.servers" value="99.48.88.104:9092"/>
+        <entry key="group.id" value="sns"/><!--此值为前缀，程序为将拼接上数据库实例名-->
+        <entry key="enable.auto.commit" value="false"/>
+        <!--<sns key="auto.commit.interval.ms" value="1000"/>-->
+        <entry key="key.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer"/>
+        <entry key="value.deserializer" value="org.apache.kafka.common.serialization.ByteArrayDeserializer"/>
+    </util:map>
 
-    <!--处理消息的调度配置，数据结构定义：key为topic-->
+    <!-- key为topic, value为kafka配置-->
+    <util:map id="kafkaConfigMap">
+        <entry key="wallet" value-ref="defaultKafkaMap"/>
+    </util:map>
+
+    <!--kafka消费的调度配置-->
+    <!--key为topic: 每个topic对应数据库实例-->
     <util:map id="kafkaDispatchConfig">
-        <entry key="test">
+        <!-- topic Start-->
+        <entry key="wallet">
             <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "wallet.apply_info",
-                                 "type": "record",
-                                 "name": "apply_info",
-                                 "fields": [
-                                     {"name": "cellphone", "type": "string"},
-                                     {"name": "member_id",  "type": ["long"]},
-                                     {"name": "apply_no", "type": ["string"]},
-                                     {"name": "created_datetime", "type": ["string"]},
-                                     {"name": "apply_status", "type": ["int"]},
-                                     {"name": "store_id", "type": ["string","null"]},
-                                     {"name": "order_no", "type": ["string","null"]},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
+                <!--table Start-->
+                <entry key="wallet.apply_info">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "wallet.apply_info",
+                                     "type": "record",
+                                     "name": "apply_info",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string","null"]},
+                                         {"name": "member_id",  "type": ["long"]},
+                                         {"name": "cellphone", "type": "string"},
+                                         {"name": "apply_no", "type": ["string"]},
+                                         {"name": "created_datetime", "type": ["string"]},
+                                         {"name": "apply_status", "type": ["int"]},
+                                         {"name": "store_id", "type": ["string","null"]},
+                                         {"name": "order_no", "type": ["string","null"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="applyToOrientDBServiceImpl"/>
+                                <ref bean="applyToMysqlServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="applyToOrientDBServiceImpl"/>
-                        <ref bean="applyToMysqlServiceImpl"/>
-                    </list>
-                </entry>
-                <!--<entry key="kafkaProp">-->
-                <!--<props>-->
-                <!--<prop key="bootstrap.servers">99.48.88.104:9092</prop>-->
-                <!--<prop key="group.id">test</prop>-->
-                <!--<prop key="enable.auto.commit">false</prop>-->
-                <!--<prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>-->
-                <!--<prop key="value.deserializer">org.apache.kafka.common.serialization.ByteArrayDeserializer-->
-                <!--</prop>-->
-                <!--</props>-->
-                <!--</entry>-->
-            </map>
-        </entry>
+                <!-- table End-->
 
-        <entry key="order">
-            <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
+                <!--table Start-->
+                <entry key="wallet.money_box_order">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
                                 {"namespace": "wallet.money_box_order",
                                  "type": "record",
                                  "name": "money_box_order",
                                  "fields": [
-                                     {"name": "mobile", "type": "string"},
+                                     {"name":"__schemaid__","type":["string"]},
                                      {"name": "member_id",  "type": ["long"]},
+                                     {"name": "mobile", "type": "string"},
                                      {"name": "order_no", "type": ["string"]},
                                      {"name": "created_datetime", "type": ["string"]},
                                      {"name": "status", "type": ["int"]},
                                      {"name": "store_id", "type": ["string","null"]},
                                      {"name": "pay_amount", "type": ["int"]},
-                                     {"name": "__op", "type": ["string"]}
+                                     {"name": "__op__", "type": ["string"]}
                                  ]
                                 }
                            ]]>
-                    </value>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="orderToOrientDBServiceImpl"/>
+                                <ref bean="orderToMysqlServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="orderToOrientDBServiceImpl"/>
-                        <ref bean="orderToMysqlServiceImpl"/>
-                    </list>
-                </entry>
+                <!-- table End-->
             </map>
         </entry>
+        <!-- topic End-->
 
-        <entry key="caCallTo">
-            <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "wallet.ca_bur_operator_contact",
-                                 "type": "record",
-                                 "name": "ca_bur_operator_contact",
-                                 "fields": [
-                                     {"name": "APPL_NO", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
-                </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="caCallToOrientDBServiceImpl"/>
-                        <ref bean="caCallToMysqlServiceImpl"/>
-                    </list>
-                </entry>
-            </map>
-        </entry>
 
-        <entry key="phoneTag">
+        <!-- topic Start-->
+        <entry key="credit_audit">
             <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "wallet.ca_sys_phone_tag_merge",
+                <!--table Start-->
+                <entry key="credit_audit.ca_appl_member_device">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "credit_audit.ca_appl_member_device",
+                                     "type": "record",
+                                     "name": "ca_appl_member_device",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "APPL_NO", "type": ["string"]},
+                                         {"name": "DEVICE_ID", "type": ["string"]},
+                                         {"name": "IP", "type": ["string"]},
+                                         {"name": "IP_CITY", "type": ["string"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="caIpAndDeviceToOrientDBServiceImpl"/>
+                                <ref bean="caIpAndDeviceToMysqlServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
+                </entry>
+                <!-- table End-->
+
+                <!--table Start-->
+                <entry key="credit_audit.ca_sys_phone_tag_merge">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                {"namespace": "credit_audit.ca_sys_phone_tag_merge",
                                  "type": "record",
                                  "name": "ca_sys_phone_tag_merge",
                                  "fields": [
+                                     {"name":"__schemaid__","type":["string"]},
                                      {"name": "PHONE_NO", "type": "string"},
-                                     {"name": "PHONE_TYPE", "type": "string"},
-                                     {"name": "SOURCE", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
+                                     {"name": "PHONE_TYPE",  "type": ["string"]},
+                                     {"name": "SOURCE", "type": ["string"]},
+                                     {"name": "__op__", "type": ["string"]}
                                  ]
                                 }
                            ]]>
-                    </value>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="phoneTagToOrientDBServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="phoneTagToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
-            </map>
-        </entry>
-        <entry key="store">
-            <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "MERCHANTAUDIT.ma_store_baseinfo",
+                <!-- table End-->
+
+                <!--table Start-->
+                <entry key="credit_audit.ca_bur_operator_contact">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                {"namespace": "credit_audit.ca_bur_operator_contact",
                                  "type": "record",
-                                 "name": "ma_store_baseinfo",
+                                 "name": "ca_bur_operator_contact",
                                  "fields": [
-                                     {"name": "STOREID", "type": "int"},
-                                     {"name": "MERCHANTID", "type": "int"},
-                                     {"name": "STORENAME", "type": "string"},
-                                     {"name": "PROVINCE", "type": "string"},
-                                     {"name": "CITY", "type": "string"},
-                                     {"name": "CREDIT_LIMIT_TYPE", "type": "int"},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
-                </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="storeToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
-            </map>
-        </entry>
-        <entry key="storeStrategy">
-            <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "MERCHANTAUDIT.ma_execution_strategy",
-                                 "type": "record",
-                                 "name": "ma_execution_strategy",
-                                 "fields": [
-                                     {"name": "STOREID", "type": "int"},
-                                     {"name": "POLICY_BRACKET", "type": "string"},
-                                     {"name": "BUSINESS_FIRST_TYPE", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
-                </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="storeExecutionStrategyToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
-            </map>
-        </entry>
-        <entry key="caIpAndDevice">
-            <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "network.ca_appl_member_device",
-                                 "type": "record",
-                                 "name": "ca_appl_member_device",
-                                 "fields": [
+                                     {"name":"__schemaid__","type":["string"]},
                                      {"name": "APPL_NO", "type": "string"},
-                                     {"name": "DEVICE_ID", "type": "string"},
-                                     {"name": "IP", "type": "string"},
-                                     {"name": "IP_CITY", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
+                                     {"name": "PHONE_NO",  "type": ["string"]},
+                                     {"name": "CALL_CNT", "type": ["int"]},
+                                     {"name": "CALL_LEN", "type": ["int"]},
+                                     {"name": "CALL_IN_CNT", "type": ["int"]},
+                                     {"name": "CALL_OUT_CNT", "type": ["int"]},
+                                     {"name": "CREATE_TIME", "type": ["string"]},
+                                     {"name": "__op__", "type": ["string"]}
                                  ]
                                 }
                            ]]>
-                    </value>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="caCallToOrientDBServiceImpl"/>
+                                <ref bean="caCallToMysqlServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="caIpAndDeviceToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
-            </map>
-        </entry>
-        <entry key="ctaIpAndDevice">
-            <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "network.cta_order_deviceinfo",
+                <!-- table End-->
+
+                <!--table Start-->
+                <entry key="credit_audit.ca_str_result">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                {"namespace": "credit_audit.ca_str_result",
                                  "type": "record",
-                                 "name": "cta_order_deviceinfo",
+                                 "name": "ca_str_result",
                                  "fields": [
-                                     {"name": "ORDER_ID", "type": "string"},
-                                     {"name": "DEVICE_ID", "type": "string"},
-                                     {"name": "IP", "type": "string"},
-                                     {"name": "IP_CITY", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
+                                     {"name":"__schemaid__","type":["string"]},
+                                     {"name": "APPL_NO", "type": "string"},
+                                     {"name": "PASS",  "type": ["string"]},
+                                     {"name": "__op__", "type": ["string"]}
                                  ]
                                 }
                            ]]>
-                    </value>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="caCallToOrientDBServiceImpl"/>
+                                <ref bean="caCallToMysqlServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="ctaIpAndDeviceToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
+                <!-- table End-->
             </map>
         </entry>
-        <entry key="member">
+        <!-- topic End-->
+
+
+        <!-- topic Start-->
+        <entry key="credit_trade_audit">
             <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "memedai.MEMBER",
-                                 "type": "record",
-                                 "name": "MEMBER",
-                                 "fields": [
-                                     {"name": "MEMBER_ID", "type": "int"},
-                                     {"name": "MOBILE_NO", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
+                <!--table Start-->
+                <entry key="credit_trade_audit.cta_order_deviceinfo">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "credit_trade_audit.cta_order_deviceinfo",
+                                     "type": "record",
+                                     "name": "cta_order_deviceinfo",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "ORDER_ID", "type": ["string","null"]},
+                                         {"name": "DEVICE_ID", "type": ["string","null"]},
+                                         {"name": "IP", "type": ["string","null"]},
+                                         {"name": "IP_CITY", "type": ["string","null"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="ctaIpAndDeviceToOrientDBServiceImpl"/>
+                                <ref bean="ctaIpAndDeviceToMysqlServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="memberToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
+                <!-- table End-->
             </map>
         </entry>
-        <entry key="loan">
+        <!-- topic End-->
+
+
+        <!-- topic Start-->
+        <entry key="cashloan">
             <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "memedai.LOANS",
-                                 "type": "record",
-                                 "name": "LOANS",
-                                 "fields": [
-                                     {"name": "BORROWER_ID", "type": ["long"]},
-                                     {"name": "OVERDUE_DAYS", "type": "int"},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
+                <!--table Start-->
+                <entry key="cashloan.apply_info">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "cashloan.apply_info",
+                                     "type": "record",
+                                     "name": "apply_info",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "member_id", "type": ["long"]},
+                                         {"name": "apply_no", "type": ["string"]},
+                                         {"name": "cellphone", "type": ["string"]},
+                                         {"name": "source", "type": ["string","null"]},
+                                         {"name": "created_datetime", "type": ["string"]},
+                                         {"name": "ip1", "type": ["string","null"]},
+                                         {"name": "ip1_city", "type": ["string","null"]},
+                                         {"name": "device_id", "type": ["string","null"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="loansToOrientDBServiceImpl"/>
-                    </list>
+                <!-- table End-->
+                <!--table Start-->
+                <entry key="cashloan.cash_loan_order">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "cashloan.cash_loan_order",
+                                     "type": "record",
+                                     "name": "cash_loan_order",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "member_id", "type": ["long"]},
+                                         {"name": "order_no", "type": ["string"]},
+                                         {"name": "phoneNo", "type": ["string","null"]},
+                                         {"name": "amount", "type": ["int"]},
+                                         {"name": "status", "type": ["string"]},
+                                         {"name": "source", "type": ["string","null"]},
+                                         {"name": "created_datetime", "type": ["string","null"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
+                <!-- table End-->
             </map>
         </entry>
-        <entry key="idCard">
+        <!-- topic End-->
+
+
+        <!-- topic Start-->
+        <entry key="antifraud">
             <map>
-                <entry key="avroSchema">
-                    <value>
-                        <![CDATA[
-                                {"namespace": "credit_audit.ID_CARD",
-                                 "type": "record",
-                                 "name": "ID_CARD",
-                                 "fields": [
-                                     {"name": "MEMBER_ID", "type": "int"},
-                                     {"name": "NAME", "type": "string"},
-                                     {"name": "ID_NO", "type": "string"},
-                                     {"name": "PROVINCE", "type": "string"},
-                                     {"name": "CITY", "type": "string"},
-                                     {"name": "__op", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                    </value>
+                <!--table Start-->
+                <entry key="antifraud.phone_tag_merge_crawler_all">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "antifraud.phone_tag_merge_crawler_all",
+                                     "type": "record",
+                                     "name": "phone_tag_merge_crawler_all",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "phone_no", "type": ["long"]},
+                                         {"name": "phone_type", "type": ["string"]},
+                                         {"name": "source", "type": ["string"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
                 </entry>
-                <entry key="services">
-                    <list>
-                        <ref bean="idCardToOrientDBServiceImpl"/>
-                    </list>
-                </entry>
+                <!-- table End-->
             </map>
         </entry>
+        <!-- topic End-->
     </util:map>
 
 </beans>

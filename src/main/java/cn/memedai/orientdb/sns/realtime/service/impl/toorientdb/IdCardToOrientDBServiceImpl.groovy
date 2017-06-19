@@ -1,11 +1,11 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
-import cn.memedai.orientdb.sns.realtime.RealTimeDispatch
 import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
+import cn.memedai.orientdb.sns.realtime.cache.IdCache
 import cn.memedai.orientdb.sns.realtime.cache.IdCardCache
 import cn.memedai.orientdb.sns.realtime.cache.MemberCache
-import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
+import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
@@ -30,6 +30,9 @@ class IdCardToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private IdCardCache idCardCache
 
+    @Resource
+    private IdCache idCache
+
     private String updateMemberSql = 'update Member set memberId=?,name=?,idNo=?,province=?,city=? upsert return after where memberId=?'
 
 
@@ -49,19 +52,18 @@ class IdCardToOrientDBServiceImpl implements RealTimeService {
             String city = idCardMap.CITY
 
             if (idNo != null && idNo.trim().length() > 6) {
-                Map<String,String> map = null
-                map = RealTimeDispatch.idCardMap.get(idNo.substring(0, 6))
+                Map<String, String> map = idCache.get(idNo.substring(0, 6)).value
                 if (map != null) {
                     province = map.get("PROVINCE")
                     city = map.get("CITY")
                 }
             }
 
-            String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql,memberId,
-                    name,idNo, province, city,memberId))
+            String memberRid = OrientSqlUtil.getRid(orientSql.execute(updateMemberSql, memberId,
+                    name, idNo, province, city, memberId))
             if (StringUtils.isNotBlank(memberRid)) {
-                CacheEntry cacheEntry =  memberCache.get(memberId)
-                if (null == cacheEntry ){
+                CacheEntry cacheEntry = memberCache.get(memberId)
+                if (null == cacheEntry) {
                     memberCache.put(new CacheEntry(memberId, memberRid))
                 }
             }

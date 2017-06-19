@@ -25,16 +25,15 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String, String>> kafkaDispatchConfig
+    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
 
-  /*  @Resource
-    private ApplyToOrientDBServiceImpl applyTeleporterService*/
+    /*  @Resource
+      private ApplyToOrientDBServiceImpl applyTeleporterService*/
 
     @Test
     void testProcess() {
-        String topic = 'test'
-
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic].avroSchema)
+        String topic = 'wallet'
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['wallet.apply_info'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -44,6 +43,7 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
 
         GenericRecord record = new GenericData.Record(schema)
 
+        record.put('__schemaid__', '123456')
         record.put('cellphone', '15821180279')
         record.put('apply_no', '1485313547297000')
         record.put('member_id', 715157L)
@@ -51,13 +51,15 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
         record.put('apply_status', 4000)
         record.put('store_id', '2759')
         record.put('order_no', '1496921804405003')
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-        producer.send(new ProducerRecord<String, Byte[]>(topic, Integer.toString(10000), oos.toByteArray()))
+        [0..10].each {
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'wallet.apply_info', oos.toByteArray()))
+        }
         producer.close()
     }
 }

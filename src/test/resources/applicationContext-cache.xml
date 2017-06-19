@@ -24,6 +24,40 @@
 
                 <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
                       p:name="storeCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="applyHasDoCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="phoneMarkCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="phoneSourceCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="deviceCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="ipCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="idCardCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="applyRidMemberRidCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="applyRidPhoneRidCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="orderRidMemberRidCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="applyNoOrderNoCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="idCache"/>
+
             </set>
         </property>
     </bean>

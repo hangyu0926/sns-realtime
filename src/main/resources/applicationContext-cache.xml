@@ -54,6 +54,10 @@
 
                 <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
                       p:name="applyNoOrderNoCache"/>
+
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="idCache"/>
+
             </set>
         </property>
     </bean>
