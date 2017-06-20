@@ -41,6 +41,7 @@ class OrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
 
         GenericRecord record = new GenericData.Record(schema)
 
+        record.put('__schemaid__', '123456')
         record.put('mobile', '15821180279')
         record.put('member_id', 715157L)
         record.put('order_no', '1496921804405004')
@@ -48,7 +49,7 @@ class OrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
         record.put('status', 1051)
         record.put('store_id', '2759')
         record.put('pay_amount', 100)
-        record.put('__op', 'insert') //必须字段
+        record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

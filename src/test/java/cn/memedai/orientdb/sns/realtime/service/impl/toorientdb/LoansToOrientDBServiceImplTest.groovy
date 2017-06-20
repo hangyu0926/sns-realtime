@@ -42,7 +42,7 @@ class LoansToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
 
         record.put('BORROWER_ID', 1695737L)
         record.put('OVERDUE_DAYS', 4)
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

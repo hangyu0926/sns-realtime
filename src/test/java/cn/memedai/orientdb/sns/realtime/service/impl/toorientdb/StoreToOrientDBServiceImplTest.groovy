@@ -46,7 +46,7 @@ class StoreToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
         record.put('PROVINCE', '江苏省')
         record.put('CITY', '南京市')
         record.put('CREDIT_LIMIT_TYPE', 1)
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

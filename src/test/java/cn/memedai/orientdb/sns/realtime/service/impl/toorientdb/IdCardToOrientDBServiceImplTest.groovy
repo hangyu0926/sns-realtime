@@ -45,7 +45,7 @@ class IdCardToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
         record.put('ID_NO', '152726199503290028')
         record.put('PROVINCE', '江苏')
         record.put('CITY', '南京')
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

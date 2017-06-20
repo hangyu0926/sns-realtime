@@ -16,10 +16,10 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 import javax.annotation.Resource
 
 /**
- * Created by hangyu on 2017/6/14.
+ * Created by hangyu on 2017/6/20.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
+class CreditAuditApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 
@@ -30,7 +30,7 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
     void testProcess() {
         String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_sys_phone_tag_merge'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_str_result'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -41,9 +41,8 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('PHONE_NO', '13168786240')
-        record.put('PHONE_TYPE', '贷款中介')
-        record.put('SOURCE', '58')
+        record.put('APPL_NO', '0326063174631357')
+        record.put('PASS', Integer.valueOf('1'))
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
@@ -51,7 +50,7 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_sys_phone_tag_merge', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_str_result', oos.toByteArray()))
         }
         producer.close()
     }

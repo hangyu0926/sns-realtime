@@ -42,7 +42,7 @@ class AntifraudPhoneTagToOrientDBServiceImpl implements RealTimeService {
         }
         Map<String, Object> phoneTagMap = dataList.get(0)
 
-        String phone = (String) phoneTagMap.PHONE_NO
+        String phone = (String) phoneTagMap.phone_no
 
         String phoneRid = null
         CacheEntry phoneCacheEntry = phoneCache.get(phone)
@@ -50,15 +50,15 @@ class AntifraudPhoneTagToOrientDBServiceImpl implements RealTimeService {
             phoneRid = phoneCacheEntry.value
         }
 
-        if (StringUtils.isNotBlank(phoneTagMap.PHONE_TYPE)) {
-            String phoneMarkRid = phoneMarkCache.get(phoneTagMap.PHONE_TYPE).value
+        if (StringUtils.isNotBlank(phoneTagMap.phone_type)) {
+            String phoneMarkRid = phoneMarkCache.get(phoneTagMap.phone_type).value
             if (StringUtils.isNotBlank(phoneMarkRid) && StringUtils.isNotBlank(phoneRid)) {
                 orientSql.createEdge('HasPhoneMark', phoneRid, phoneMarkRid)
             }
         }
 
-        if (StringUtils.isNotBlank(phoneTagMap.SOURCE)) {
-            String phoneSourceRid = phoneSourceCache.get(phoneTagMap.SOURCE).value
+        if (StringUtils.isNotBlank(phoneTagMap.source)) {
+            String phoneSourceRid = phoneSourceCache.get(phoneTagMap.source).value
             if (StringUtils.isNotBlank(phoneRid) && StringUtils.isNotBlank(phoneSourceRid)) {
                 orientSql.createEdge('HasPhoneSource', phoneRid, phoneSourceRid)
             }

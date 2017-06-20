@@ -40,17 +40,23 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
 
         GenericRecord record = new GenericData.Record(schema)
 
-        //record.put('APPL_NO', '1485313547297000')
+        record.put('__schemaid__', '123456')
         record.put('APPL_NO', '1481017008452006')
+        record.put('PHONE_NO', null)
+        record.put('CALL_CNT', null)
+        record.put('CALL_LEN', null)
+        record.put('CALL_IN_CNT', null)
+        record.put('CALL_OUT_CNT', null)
+        record.put('CREATE_TIME', null)
 
-        record.put('__op', 'insert') //必须字段
+        record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, ['credit_audit.ca_bur_operator_contact'], oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_bur_operator_contact', oos.toByteArray()))
         }
         producer.close()
     }

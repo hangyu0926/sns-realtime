@@ -16,10 +16,10 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 import javax.annotation.Resource
 
 /**
- * Created by hangyu on 2017/6/14.
+ * Created by hangyu on 2017/6/20.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
+class CashLoanApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 
@@ -28,9 +28,9 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
 
     @Test
     void testProcess() {
-        String topic = 'credit_audit'
+        String topic = 'cashloan'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_sys_phone_tag_merge'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['cashloan.apply_info'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -41,9 +41,14 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('PHONE_NO', '13168786240')
-        record.put('PHONE_TYPE', '贷款中介')
-        record.put('SOURCE', '58')
+        record.put('member_id', 1529357L)
+        record.put('apply_no', '0326063174631357')
+        record.put('cellphone', '1')
+        record.put('source', '0')
+        record.put('created_datetime', '2017-03-26 11:57:11')
+        record.put('ip1', '2')
+        record.put('ip1_city', '银川市')
+        record.put('device_id', 'eyJvcyI6IkFuZHJvaWQiLCJ2ZXJzaW9uIjoiMi4wLjkiLCJzZXNzaW9uX2lkIjoibWVtZWRhaWUyYmUxMzFmZDhkNWQ4MzEyNzE3M2IzYjMxNzE0MmQzIiwiZGV2aWNlX2lkIjoicFBVdU1QTXdPNTJySnpCYlhTdGJYbXNrSjQzdDFEWW5JbnNjSFR3YjE5ZHRWb2c2Nm9WVTZSXC9LMExrRSIsImJ1bmRsZSI6ImNuLm1lbWVkYWkubW1kXzIxMCIsImRhdGUiOiIxNDkwNTAwODM1NjAxIiwiZGF0YSI6IlNyOVNzZDlTQmVmYUEyMXFxMkdCb0k4QmhRbT0ifQ==')
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
@@ -51,7 +56,7 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_sys_phone_tag_merge', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'cashloan.apply_info', oos.toByteArray()))
         }
         producer.close()
     }

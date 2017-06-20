@@ -46,7 +46,7 @@ class MemberToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
         record.put('ID_NO', '152726199503290028')
         record.put('PROVINCE', '内蒙古1')
         record.put('CITY', '伊克昭1')*/
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

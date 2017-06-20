@@ -230,7 +230,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                                  "fields": [
                                      {"name":"__schemaid__","type":["string"]},
                                      {"name": "APPL_NO", "type": "string"},
-                                     {"name": "PASS",  "type": ["string"]},
+                                     {"name": "PASS",  "type": ["int"]},
                                      {"name": "__op__", "type": ["string"]}
                                  ]
                                 }
@@ -391,7 +391,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                                      "name": "phone_tag_merge_crawler_all",
                                      "fields": [
                                          {"name":"__schemaid__","type":["string"]},
-                                         {"name": "phone_no", "type": ["long"]},
+                                         {"name": "phone_no", "type": ["string"]},
                                          {"name": "phone_type", "type": ["string"]},
                                          {"name": "source", "type": ["string"]},
                                          {"name": "__op__", "type": ["string"]}

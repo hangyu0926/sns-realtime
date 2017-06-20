@@ -41,18 +41,19 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
 
         GenericRecord record = new GenericData.Record(schema)
 
+        record.put('__schemaid__', '123456')
         record.put('APPL_NO', '0320018345966835')
         record.put('DEVICE_ID', '862095026190972')
         record.put('IP', '221.226.85.146')
         record.put('IP_CITY', '南京市')
-        record.put('__op', 'insert') //必须字段
+        record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, ['credit_audit.ca_appl_member_device'], oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_appl_member_device', oos.toByteArray()))
         }
         producer.close()
     }

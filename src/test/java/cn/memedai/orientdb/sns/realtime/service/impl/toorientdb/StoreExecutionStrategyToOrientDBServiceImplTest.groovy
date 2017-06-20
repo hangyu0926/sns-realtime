@@ -43,7 +43,7 @@ class StoreExecutionStrategyToOrientDBServiceImplTest extends AbstractJUnit4Spri
         record.put('STOREID', 1)
         record.put('POLICY_BRACKET', 'R1')
         record.put('BUSINESS_FIRST_TYPE', '消费贷')
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

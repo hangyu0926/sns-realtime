@@ -41,18 +41,19 @@ class CtaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContex
 
         GenericRecord record = new GenericData.Record(schema)
 
+        record.put('__schemaid__', '123456')
         record.put('ORDER_ID', '1486790611282001')
         record.put('DEVICE_ID', '869949026162329')
         record.put('IP', '116.228.236.198')
         record.put('IP_CITY', '上海市')
-        record.put('__op', 'create') //必须字段
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, ['credit_trade_audit.cta_order_deviceinfo'], oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_trade_audit.cta_order_deviceinfo', oos.toByteArray()))
         }
         producer.close()
     }
