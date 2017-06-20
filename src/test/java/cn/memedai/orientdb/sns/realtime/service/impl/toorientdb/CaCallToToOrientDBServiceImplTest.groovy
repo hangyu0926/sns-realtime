@@ -41,14 +41,13 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('APPL_NO', '1481017008452006')
-        record.put('PHONE_NO', null)
-        record.put('CALL_CNT', null)
-        record.put('CALL_LEN', null)
-        record.put('CALL_IN_CNT', null)
-        record.put('CALL_OUT_CNT', null)
-        record.put('CREATE_TIME', null)
-
+        record.put('APPL_NO', '1497885791454002')
+        record.put('PHONE_NO', '1')
+        record.put('CALL_CNT', 0)
+        record.put('CALL_LEN', 0)
+        record.put('CALL_IN_CNT', 0)
+        record.put('CALL_OUT_CNT', 0)
+        record.put('CREATE_TIME', '2017-06-19 23:57:10')
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)

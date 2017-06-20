@@ -59,7 +59,6 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
         String appNo = (String) callToMap.APPL_NO
 
-        LOG.info("appNo is {}", appNo)
         if (StringUtils.isBlank(appNo)) {
             return
         }
@@ -86,20 +85,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
-        LOG.info("fromPhoneRid is {}", fromPhoneRid)
-
         String toPhoneRid = null
-
-        /* sql.query('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO = "'+ appNo+'"') {
-             rs ->
-                 while (rs.next()) {
-                        String toPhone = rs.getString("PHONE_NO")
-                     int callCnt = rs.getInt("CALL_CNT")
-                     int callLen = rs.getInt("CALL_LEN")
-                     int callInCnt = rs.getInt("CALL_IN_CNT")
-                     int callOutCnt = rs.getInt("CALL_OUT_CNT")
-                     String createTime = rs.getString("CREATE_TIME")
-                 */
 
         jdbcTemplate.queryForList('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?',
                 appNo).each {
@@ -110,7 +96,6 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             int callInCnt = row.CALL_IN_CNT
             int callOutCnt = row.CALL_OUT_CNT
             String createTime = row.CREATE_TIME
-            LOG.info(toPhone)
             CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
             if (phoneCacheEntry != null) {
                 toPhoneRid = phoneCacheEntry.value
@@ -130,7 +115,6 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                 orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()), args)
             }
         }
-        // }
 
         //写入缓存
         applyHasDoCache.put(new CacheEntry(appNo, true))

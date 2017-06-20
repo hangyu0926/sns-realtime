@@ -7,7 +7,6 @@ import cn.memedai.orientdb.sns.realtime.bean.MemberDeviceAndApplyAndOrderBean
 import cn.memedai.orientdb.sns.realtime.cache.ApplyCache
 import cn.memedai.orientdb.sns.realtime.cache.ApplyNoOrderNoCache
 import cn.memedai.orientdb.sns.realtime.cache.ApplyRidPhoneRidCache
-import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
 import cn.memedai.orientdb.sns.realtime.cache.PhoneCache
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
@@ -21,11 +20,13 @@ import com.orientechnologies.orient.core.sql.query.OResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.BatchPreparedStatementSetter
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
-import java.sql.Connection
 import java.sql.PreparedStatement
+import java.sql.SQLException
 
 /**
  * Created by kisho on 2017/6/8.
@@ -39,7 +40,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
     private OrientSql orientSql
 
     @Resource
-    private Sql mysqlSql
+    private JdbcTemplate jdbcTemplate
 
     @Resource
     private ApplyCache applyCache
@@ -108,6 +109,10 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
         ODocument phoneInfo = (ODocument) phoneInfos.get(0)
         ORecordLazyList members0 = phoneInfo.field("members0")
+
+        if (members0.isEmpty()){
+            return
+        }
         ODocument member = (ODocument) members0.get(0)
         String memberId = member.field("memberId")
 
@@ -170,7 +175,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         ORecordLazyList ocrs = phoneInfo.field("callTos")
         Map<String, String> tempMap = [:]
         Map<String, String> tempCallLenMap = [:]
-        List<String> directPhones = [:]
+        List<String> directPhones = []
 
         //一度联系人过件个数
         int contactAccept = 0
@@ -326,7 +331,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
                         //判断通话时长超过120S
                         if (directCallLength >= ConstantHelper.CALL_LEN) {
-                            String callMark = mark + ConstantHelper.MARK_CALL_LEN;
+                            String callMark = mark + ConstantHelper.MARK_CALL_LEN
                             hasCallLendirectMap.put(phone, callMark)
                             if (map.containsKey(callMark)) {
                                 Integer count = map.get(callMark) + 1
@@ -371,7 +376,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
                         String originalStatus = null
 
-                        ORidBag out_MemberHasOrder = member1.field("out_MemberHasOrder");
+                        ORidBag out_MemberHasOrder = member1.field("out_MemberHasOrder")
                         if (null != out_MemberHasOrder && !out_MemberHasOrder.isEmpty()) {
                             long lastTime = 0
                             Iterator<OIdentifiable> it1 = out_MemberHasOrder.iterator()
@@ -416,7 +421,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
                 //将tempMap改造成map2
                 //判断该标签是否包含一度数据
-                Set<Map.Entry<String, String>> tempSet = tempMap.entrySet();
+                Set<Map.Entry<String, String>> tempSet = tempMap.entrySet()
                 for (Map.Entry<String, String> en : tempSet) {
                     String mark = en.getValue()
                     if (map2.containsKey(mark)) {
@@ -485,13 +490,21 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                         "values(?,?,?,?,?,?,?,now())"
 
                 int indexDataSize = indexDatas.size()
-                for (int i = 0; i < indexDataSize; i++) {
-                    mysqlSql.withBatch(indexDataSize, sql) { ps ->
-                        ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(),indexDatas.get(i).getOrderNo(),
-                                indexDatas.get(i).getMobile(),indexDatas.get(i).getIndexName(),indexDatas.get(i).getDirect(),
-                                indexDatas.get(i).getIndirect())
+                jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+                    int getBatchSize() {
+                        return indexDataSize
                     }
-                }
+                    void setValues(PreparedStatement ps, int i)throws SQLException {
+                        IndexData indexData = indexDatas.get(i)
+                        ps.setInt(1, indexData.getMemberId())
+                        ps.setString(2, indexData.getApplyNo())
+                        ps.setString(3, indexData.getOrderNo())
+                        ps.setString(4, indexData.getMobile())
+                        ps.setString(5, indexData.getIndexName())
+                        ps.setInt(6, indexData.getDirect())
+                        ps.setInt(7, indexData.getIndirect())
+                    }
+                })
         }
     }
 
@@ -501,13 +514,22 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                     "values(?,?,?,?,?,?,now(),?,?)"
 
             int indexDataSize = indexDatas.size()
-            for (int i = 0; i < indexDataSize; i++) {
-                mysqlSql.withBatch(indexDataSize, sql) { ps ->
-                    ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(),indexDatas.get(i).getOrderNo(),
-                            indexDatas.get(i).getMobile(),indexDatas.get(i).getIndexName(),indexDatas.get(i).getDirect(),
-                            indexDatas.get(i).getApplyStatus(),indexDatas.get(i).getOrderStatus())
+            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+                 int getBatchSize() {
+                    return indexDataSize
                 }
-            }
+                 void setValues(PreparedStatement ps, int i)throws SQLException {
+                    IndexData indexData = indexDatas.get(i)
+                    ps.setInt(1, indexData.getMemberId())
+                    ps.setString(2, indexData.getApplyNo())
+                    ps.setString(3, indexData.getOrderNo())
+                    ps.setString(4, indexData.getMobile())
+                    ps.setString(5, indexData.getIndexName())
+                    ps.setInt(6, indexData.getDirect())
+                    ps.setString(7, indexData.getApplyStatus())
+                    ps.setString(8, indexData.getOrderStatus())
+                }
+            })
         }
     }
 
