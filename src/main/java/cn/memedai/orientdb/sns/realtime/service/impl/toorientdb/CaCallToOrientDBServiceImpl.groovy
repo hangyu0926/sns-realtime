@@ -47,6 +47,8 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
     private String updateEdgeSql = 'update edge {0} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?'
 
+    private String selectCallToInfoSql = 'select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?'
+
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
             return
@@ -87,22 +89,22 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
         String toPhoneRid = null
 
-        jdbcTemplate.queryForList('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?',
-                appNo).each {
-            def row = it
-            String toPhone = row.PHONE_NO
-            int callCnt = row.CALL_CNT
-            int callLen = row.CALL_LEN
-            int callInCnt = row.CALL_IN_CNT
-            int callOutCnt = row.CALL_OUT_CNT
-            String createTime = row.CREATE_TIME
-            CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
-            if (phoneCacheEntry != null) {
-                toPhoneRid = phoneCacheEntry.value
-            }
-            if (StringUtils.isBlank(toPhoneRid)) {
-                return
-            }
+        jdbcTemplate.queryForList(selectCallToInfoSql, appNo).each {
+            row ->
+                String toPhone = row.PHONE_NO
+                int callCnt = row.CALL_CNT
+                int callLen = row.CALL_LEN
+                int callInCnt = row.CALL_IN_CNT
+                int callOutCnt = row.CALL_OUT_CNT
+                String createTime = row.CREATE_TIME
+
+                CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
+                if (phoneCacheEntry != null) {
+                    toPhoneRid = phoneCacheEntry.value
+                }
+                if (StringUtils.isBlank(toPhoneRid)) {
+                    return
+                }
 
             def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
 
