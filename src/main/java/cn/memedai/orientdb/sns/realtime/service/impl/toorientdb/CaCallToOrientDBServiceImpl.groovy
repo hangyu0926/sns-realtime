@@ -47,6 +47,8 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
     private String updateEdgeSql = 'update edge {0} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?'
 
+    private String selectCallToInfoSql = 'select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?'
+
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
             return
@@ -101,34 +103,33 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                      String createTime = rs.getString("CREATE_TIME")
                  */
 
-        jdbcTemplate.queryForList('select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?',
-                appNo).each {
-            def row = it
-            String toPhone = row.PHONE_NO
-            int callCnt = row.CALL_CNT
-            int callLen = row.CALL_LEN
-            int callInCnt = row.CALL_IN_CNT
-            int callOutCnt = row.CALL_OUT_CNT
-            String createTime = row.CREATE_TIME
-            LOG.info(toPhone)
-            CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
-            if (phoneCacheEntry != null) {
-                toPhoneRid = phoneCacheEntry.value
-            }
-            if (StringUtils.isBlank(toPhoneRid)) {
-                return
-            }
+        jdbcTemplate.queryForList(selectCallToInfoSql, appNo).each {
+            row ->
+                String toPhone = row.PHONE_NO
+                int callCnt = row.CALL_CNT
+                int callLen = row.CALL_LEN
+                int callInCnt = row.CALL_IN_CNT
+                int callOutCnt = row.CALL_OUT_CNT
+                String createTime = row.CREATE_TIME
+                LOG.info(toPhone)
+                CacheEntry phoneCacheEntry = phoneCache.get(toPhone)
+                if (phoneCacheEntry != null) {
+                    toPhoneRid = phoneCacheEntry.value
+                }
+                if (StringUtils.isBlank(toPhoneRid)) {
+                    return
+                }
 
-            def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
+                def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
 
-            OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
-            if (CollectionUtils.isEmpty(ocrs)) {
-                orientSql.execute(MessageFormat.format(createEdgeSql, fromPhoneRid, toPhoneRid), args)
-            } else {
-                ODocument doc = (ODocument) ocrs.get(0)
-                ORecordId oRecordId = doc.field("@rid")
-                orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()), args)
-            }
+                OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
+                if (CollectionUtils.isEmpty(ocrs)) {
+                    orientSql.execute(MessageFormat.format(createEdgeSql, fromPhoneRid, toPhoneRid), args)
+                } else {
+                    ODocument doc = (ODocument) ocrs.get(0)
+                    ORecordId oRecordId = doc.field("@rid")
+                    orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()), args)
+                }
         }
         // }
 
