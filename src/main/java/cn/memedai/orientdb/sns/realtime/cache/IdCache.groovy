@@ -1,7 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.cache
 
-import groovy.sql.Sql
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -16,7 +16,7 @@ class IdCache {
     private Map<String, Map<String, String>> idMap = [:]
 
     @Resource
-    private Sql sql
+    private JdbcTemplate jdbcTemplate
 
     private String idSql = 'select ID_PREFIX,PROVINCE,CITY from credit_audit.ca_sys_value_id_area'
 
@@ -28,7 +28,7 @@ class IdCache {
 
     @PostConstruct
     private void getIdCardMap() {
-        sql.eachRow(idSql) {
+        jdbcTemplate.queryForList(idSql).each {
             row ->
                 idMap[row.ID_PREFIX] = ['ID_PREFIX': row.ID_PREFIX, 'PROVINCE': row.ID_PREFIX, 'CITY': row.CITY]
         }
