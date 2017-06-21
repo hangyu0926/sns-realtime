@@ -17,7 +17,6 @@ import com.orientechnologies.orient.core.db.record.ridbag.ORidBag
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import com.orientechnologies.orient.core.sql.query.OResultSet
-import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -69,7 +68,6 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
         String appNo = (String) callToMap.APPL_NO
 
-        LOG.info("appNo is {}",appNo)
         if (StringUtils.isBlank(appNo)) {
             return
         }
@@ -82,7 +80,6 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         if (StringUtils.isBlank(phone)){
             return
         }
-        LOG.info("phone is {}",phone)
 
         String orderNo = null
         String orderStatus = null
@@ -94,9 +91,11 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         //如果缓存中没有再去查询
         if (orderNo == null){
             OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql,appNo)
-            ODocument orderNoDocument = orderNoResult.get(0)
-            orderNo =  orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
-            orderStatus = orderNoDocument.field("orderStatus") != null ? orderNoDocument.field("orderStatus").toString() : null
+            if (null != orderNoResult){
+                ODocument orderNoDocument = orderNoResult.get(0)
+                orderNo =  orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
+                orderStatus = orderNoDocument.field("orderStatus") != null ? orderNoDocument.field("orderStatus").toString() : null
+            }
         }
 
         //查询一度二度
@@ -150,22 +149,22 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
 
         addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_accept_member_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberNum(), 0,applyStatus,orderStatus)
+                "contact_accept_member_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberNum(),applyStatus,orderStatus)
         addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_refuse_member_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberNum(), 0,applyStatus,orderStatus)
+                "contact_refuse_member_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberNum(),applyStatus,orderStatus)
         addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_overdue_member_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberNum(), 0,applyStatus,orderStatus)
+                "contact_overdue_member_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberNum(),applyStatus,orderStatus)
         addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_black_member_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberNum(), 0,applyStatus,orderStatus)
+                "contact_black_member_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberNum(),applyStatus,orderStatus)
 
         addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_accept_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberCallLenNum(), 0,applyStatus,orderStatus)
+                "contact_accept_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberCallLenNum(),applyStatus,orderStatus)
         addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_refuse_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberCallLenNum(), 0,applyStatus,orderStatus)
+                "contact_refuse_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberCallLenNum(),applyStatus,orderStatus)
         addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_overdue_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberCallLenNum(), 0,applyStatus,orderStatus)
+                "contact_overdue_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberCallLenNum(),applyStatus,orderStatus)
         addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
-                "contact_black_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberCallLenNum(), 0,applyStatus,orderStatus)
+                "contact_black_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberCallLenNum(),applyStatus,orderStatus)
 
         insertMemberIndex(memberIndexDatas)
     }
@@ -199,7 +198,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         Map<String, String> hasCallLendirectMap = [:]
         if (ocrs != null && !ocrs.isEmpty()) {
             int ocrSize = ocrs.size()
-            for (int j = 0; j < 10; j++) {
+            for (int j = 0; j < ocrSize; j++) {
                 ODocument ocr = (ODocument) ocrs.get(j)
                 //一度联系人的通话时长
                 //通话时长
@@ -549,12 +548,11 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
     }
 
     private void addIndexMemberDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                                            long direct, long indirect,String applyStatus,String orderStatus) {
+                                            long direct,String applyStatus,String orderStatus) {
         IndexData indexData = new IndexData()
         indexData.setMemberId(memberId)
         indexData.setMobile(mobile)
         indexData.setDirect(direct)
-        indexData.setIndirect(indirect)
         indexData.setApplyNo(applyNo)
         indexData.setOrderNo(orderNo)
         indexData.setIndexName(indexName)
