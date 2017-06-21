@@ -91,7 +91,10 @@ class RealTimeDispatch {
                                 try {
                                     //执行service
                                     table2ServicesMap[record.key()].each {
-                                        it.process(dataList)
+                                        service ->
+                                            long start2 = System.currentTimeMillis()
+                                            service.process(dataList)
+                                            cLog.info('service#process->{}, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
                                     }
                                     cLog.info('consumer result->{},topic->{},table-{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
                                 } catch (Throwable e) {

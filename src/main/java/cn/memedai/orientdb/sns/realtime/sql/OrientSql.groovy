@@ -36,9 +36,7 @@ class OrientSql {
     }
 
     public <RET> RET execute(String sql, Object... args) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("$sql,$args")
-        }
+        long start = System.currentTimeMillis()
 
         RET ret = null
         int retry = 0
@@ -58,6 +56,9 @@ class OrientSql {
                 LOG.error("", e)
                 break
             }
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("$sql,$args,${System.currentTimeMillis() - start}ms")
         }
         ret
     }
