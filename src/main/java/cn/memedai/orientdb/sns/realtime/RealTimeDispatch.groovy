@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 import javax.annotation.Resource
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
 
 /**
  * Created by kisho on 2017/6/8.
@@ -49,13 +50,17 @@ class RealTimeDispatch {
     private Sql sql
 
     void start() {
+        List<Future> futures = []
         kafkaDispatchConfig.keySet().each {
-            executorService.submit(new Runnable() {
+            futures.add(executorService.submit(new Runnable() {
                 @Override
                 void run() {
                     startConsumerThread(it)
                 }
-            })
+            }))
+        }
+        futures.each {
+            it.get()
         }
     }
 
