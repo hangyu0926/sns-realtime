@@ -199,7 +199,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         Map<String, String> hasCallLendirectMap = [:]
         if (ocrs != null && !ocrs.isEmpty()) {
             int ocrSize = ocrs.size()
-            for (int j = 0; j < ocrSize; j++) {
+            for (int j = 0; j < 10; j++) {
                 ODocument ocr = (ODocument) ocrs.get(j)
                 //一度联系人的通话时长
                 //通话时长
@@ -496,13 +496,13 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                     }
                     void setValues(PreparedStatement ps, int i)throws SQLException {
                         IndexData indexData = indexDatas.get(i)
-                        ps.setInt(1, indexData.getMemberId())
+                        ps.setLong(1, indexData.getMemberId())
                         ps.setString(2, indexData.getApplyNo())
                         ps.setString(3, indexData.getOrderNo())
                         ps.setString(4, indexData.getMobile())
                         ps.setString(5, indexData.getIndexName())
-                        ps.setInt(6, indexData.getDirect())
-                        ps.setInt(7, indexData.getIndirect())
+                        ps.setLong(6, indexData.getDirect())
+                        ps.setLong(7, indexData.getIndirect())
                     }
                 })
         }
@@ -520,14 +520,14 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                 }
                  void setValues(PreparedStatement ps, int i)throws SQLException {
                     IndexData indexData = indexDatas.get(i)
-                    ps.setInt(1, indexData.getMemberId())
+                    ps.setLong(1, indexData.getMemberId())
                     ps.setString(2, indexData.getApplyNo())
                     ps.setString(3, indexData.getOrderNo())
                     ps.setString(4, indexData.getMobile())
                     ps.setString(5, indexData.getIndexName())
-                    ps.setInt(6, indexData.getDirect())
-                    ps.setString(7, indexData.getApplyStatus())
-                    ps.setString(8, indexData.getOrderStatus())
+                    ps.setLong(6, indexData.getDirect())
+                    ps.setInt(7, indexData.getApplyStatus())
+                    ps.setInt(8, indexData.getOrderStatus())
                 }
             })
         }
@@ -549,7 +549,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
     }
 
     private void addIndexMemberDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                                            long direct, long indirect,Integer applyStatus,Integer orderStatus) {
+                                            long direct, long indirect,String applyStatus,String orderStatus) {
         IndexData indexData = new IndexData()
         indexData.setMemberId(memberId)
         indexData.setMobile(mobile)
@@ -559,10 +559,10 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         indexData.setOrderNo(orderNo)
         indexData.setIndexName(indexName)
         if (null != applyStatus){
-            indexData.setApplyStatus(applyStatus)
+            indexData.setApplyStatus(Integer.valueOf(applyStatus))
         }
         if (null != orderStatus){
-            indexData.setOrderStatus(orderStatus)
+            indexData.setOrderStatus(Integer.valueOf(orderStatus))
         }
         indexDatas.add(indexData)
     }

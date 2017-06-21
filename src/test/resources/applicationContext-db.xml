@@ -26,13 +26,6 @@
     <!--<prop key="password">djK0OyeHP</prop>-->
     <!--</util:properties>-->
 
-    <!--JDBC数据源 配置-->
-    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource">
-            <ref bean="dataSource"/>
-        </property>
-    </bean>
-
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="#{jdbcConfig.driver}"/>
         <property name="url" value="#{jdbcConfig.url}"/>
