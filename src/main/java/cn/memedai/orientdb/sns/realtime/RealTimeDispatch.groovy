@@ -70,6 +70,7 @@ class RealTimeDispatch {
         KafkaConsumer consumer = new KafkaConsumer<>(topic2KafkaProMap[topic])
         consumer.subscribe([topic])
         cLog.info("Subscribed the topic {} successfully!", topic)
+        long processdCount = 0
         while (true) {
             try {
                 ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
@@ -96,7 +97,7 @@ class RealTimeDispatch {
                                             service.process(dataList)
                                             cLog.info('service#process->{}, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
                                     }
-                                    cLog.info('consumer result->{},topic->{},table-{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
+                                    cLog.info('consumer result->{},processed count->{},topic->{},table-{},used time->{}ms', 'success', ++processdCount, topic, record.key(), (System.currentTimeMillis() - start))
                                 } catch (Throwable e) {
                                     cLog.error("", e)
                                     cLog.warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dateListText)
