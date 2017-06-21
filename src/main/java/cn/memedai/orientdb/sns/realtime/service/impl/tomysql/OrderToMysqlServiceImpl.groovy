@@ -37,7 +37,7 @@ class OrderToMysqlServiceImpl implements RealTimeService {
     private selectMemberSql = 'select out("MemberHasDevice").size() as MemberHasDeviceSize,out("MemberHasIp").size() as MemberHasIpSize,' +
             'out("MemberHasApply").size() as MemberHasApplySize,out("MemberHasOrder").size() as MemberHasOrderSize,@rid as members0 from member where memberId = ?'
 
-    private selectApplyCountSql = 'SELECT * FROM member_index where apply_no = ? and order_no is null'
+    private selectApplyCountSql = 'SELECT id FROM member_index where apply_no = ? and order_no is null'
 
     private updateMemberOrderSql ='update member_index set order_no = ? where apply_no = ?'
 
