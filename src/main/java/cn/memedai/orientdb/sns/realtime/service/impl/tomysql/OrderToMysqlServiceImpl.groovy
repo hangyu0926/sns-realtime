@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.PreparedStatementSetter
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -35,6 +36,10 @@ class OrderToMysqlServiceImpl implements RealTimeService {
 
     private selectMemberSql = 'select out("MemberHasDevice").size() as MemberHasDeviceSize,out("MemberHasIp").size() as MemberHasIpSize,' +
             'out("MemberHasApply").size() as MemberHasApplySize,out("MemberHasOrder").size() as MemberHasOrderSize,@rid as members0 from member where memberId = ?'
+
+    private selectApplyCountSql = 'SELECT id FROM member_index where apply_no = ? and order_no is null'
+
+    private updateMemberOrderSql ='update member_index set order_no = ? where apply_no = ?'
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null || dataList.size() == 0) {
@@ -69,6 +74,21 @@ class OrderToMysqlServiceImpl implements RealTimeService {
                 applyStatus = orderNoDocument.field("applyStatus") != null ? orderNoDocument.field("applyStatus").toString() : null
             }
         }
+
+        //如何申请不为空，去sns中查询是否计算过一度二度联系人指标
+        if (null != appNo){
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectApplyCountSql,appNo)
+            if (list.size() > 0){
+                jdbcTemplate.update(updateMemberOrderSql, new PreparedStatementSetter(){
+                    @Override
+                     void setValues(PreparedStatement ps) throws SQLException {
+                        ps.setString(1, orderNo);
+                        ps.setString(2, appNo);
+                    }
+                })
+            }
+        }
+
 
         OBasicResultSet memberResult =  orientSql.execute(selectMemberSql,memberId)
         if (null != memberResult){
