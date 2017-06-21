@@ -116,7 +116,10 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         String memberId = member.field("memberId")
 
         MemberDeviceAndApplyAndOrderBean memberDeviceAndApplyAndOrderBean = new MemberDeviceAndApplyAndOrderBean()
+
+        long start = System.currentTimeMillis()
         queryDirectRelationDataByPhoneNo(phone,map,map2,phoneInfo,memberDeviceAndApplyAndOrderBean)
+        LOG.debug('queryDirectRelationDataByPhoneNo used time->{}ms',  (System.currentTimeMillis() - start))
 
         //插入一度和二度联系人指标开始
         List<IndexData> indexDatas = new ArrayList<IndexData>()
