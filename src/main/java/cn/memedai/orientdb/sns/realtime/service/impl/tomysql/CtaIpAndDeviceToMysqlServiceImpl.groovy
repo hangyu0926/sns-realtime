@@ -8,6 +8,7 @@ import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -123,47 +124,51 @@ class CtaIpAndDeviceToMysqlServiceImpl {
     }
 
     void insertDeviceAndIpIndex (List<IndexData> deviceIndexDatas, List<IndexData> ipIndexDatas) {
-        def sql = "insert into device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) " +
-                " values(?,?,?,?,?,?,?,now())"
+        try {
+            def sql = "insert into device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) " +
+                    " values(?,?,?,?,?,?,?,now())"
 
-        int indexDataSize = deviceIndexDatas.size()
-        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            int getBatchSize() {
-                return indexDataSize
-            }
+            int indexDataSize = deviceIndexDatas.size()
+            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+                int getBatchSize() {
+                    return indexDataSize
+                }
 
-            void setValues(PreparedStatement ps, int i) throws SQLException {
-                IndexData indexData = deviceIndexDatas.get(i)
-                ps.setLong(1, indexData.getMemberId())
-                ps.setString(2, indexData.getApplyNo())
-                ps.setString(3, indexData.getOrderNo())
-                ps.setString(4, indexData.getMobile())
-                ps.setString(5, indexData.getDeviceId())
-                ps.setString(6, indexData.getIndexName())
-                ps.setLong(7, indexData.getDirect())
-            }
-        })
+                void setValues(PreparedStatement ps, int i) throws SQLException {
+                    IndexData indexData = deviceIndexDatas.get(i)
+                    ps.setLong(1, indexData.getMemberId())
+                    ps.setString(2, indexData.getApplyNo())
+                    ps.setString(3, indexData.getOrderNo())
+                    ps.setString(4, indexData.getMobile())
+                    ps.setString(5, indexData.getDeviceId())
+                    ps.setString(6, indexData.getIndexName())
+                    ps.setLong(7, indexData.getDirect())
+                }
+            })
 
-        def ipSql = "insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) " +
-                " values(?,?,?,?,?,?,?,now())"
+            def ipSql = "insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) " +
+                    " values(?,?,?,?,?,?,?,now())"
 
-        int indexIpDataSize = ipIndexDatas.size()
-        jdbcTemplate.batchUpdate(ipSql, new BatchPreparedStatementSetter() {
-            int getBatchSize() {
-                return indexIpDataSize
-            }
+            int indexIpDataSize = ipIndexDatas.size()
+            jdbcTemplate.batchUpdate(ipSql, new BatchPreparedStatementSetter() {
+                int getBatchSize() {
+                    return indexIpDataSize
+                }
 
-            void setValues(PreparedStatement ps, int i) throws SQLException {
-                IndexData indexData = ipIndexDatas.get(i)
-                ps.setLong(1, indexData.getMemberId())
-                ps.setString(2, indexData.getApplyNo())
-                ps.setString(3, indexData.getOrderNo())
-                ps.setString(4, indexData.getMobile())
-                ps.setString(5, indexData.getIp())
-                ps.setString(6, indexData.getIndexName())
-                ps.setLong(7, indexData.getDirect())
-            }
-        })
+                void setValues(PreparedStatement ps, int i) throws SQLException {
+                    IndexData indexData = ipIndexDatas.get(i)
+                    ps.setLong(1, indexData.getMemberId())
+                    ps.setString(2, indexData.getApplyNo())
+                    ps.setString(3, indexData.getOrderNo())
+                    ps.setString(4, indexData.getMobile())
+                    ps.setString(5, indexData.getIp())
+                    ps.setString(6, indexData.getIndexName())
+                    ps.setLong(7, indexData.getDirect())
+                }
+            })
+        } catch (DuplicateKeyException e) {
+            LOG.error(e.toString())
+        }
     }
 
     void addIndexDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,

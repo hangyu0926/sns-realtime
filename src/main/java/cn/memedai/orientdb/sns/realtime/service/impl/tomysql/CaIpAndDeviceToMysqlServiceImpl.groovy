@@ -9,6 +9,7 @@ import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -63,10 +64,10 @@ class CaIpAndDeviceToMysqlServiceImpl {
         String orderNo = null
 
         //如果同设备中存在该applyNo，说明已经统计过不做操作
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(selectDeviceIndexSql, appNo,deviceId)
+        /*List<Map<String, Object>> list = jdbcTemplate.queryForList(selectDeviceIndexSql, appNo,deviceId)
         if (list != null && list.size() > 0) {
             return
-        }
+        }*/
 
         OBasicResultSet orderNoResult = orientSql.execute(selectFromApplyOrientSql, appNo)
         if (null != orderNoResult && orderNoResult.size() > 0) {
@@ -117,10 +118,10 @@ class CaIpAndDeviceToMysqlServiceImpl {
                 "equal_ip_member_num", sameIpCount, null, ip);
 
         //如果同设备中存在该applyNo，说明已经统计过不做操作
-        List<Map<String, Object>> devicelist = jdbcTemplate.queryForList(selectDeviceIndexSql, appNo,deviceId)
+       /* List<Map<String, Object>> devicelist = jdbcTemplate.queryForList(selectDeviceIndexSql, appNo,deviceId)
         if (devicelist != null && devicelist.size() > 0) {
             return
-        }
+        }*/
         insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
     }
 
@@ -167,9 +168,8 @@ class CaIpAndDeviceToMysqlServiceImpl {
                     ps.setLong(7, indexData.getDirect())
                 }
             })
-        } catch (Exception e) {
-            LOG.error(e)
-            e
+        } catch (DuplicateKeyException e) {
+            LOG.error(e.toString())
         }
     }
 
