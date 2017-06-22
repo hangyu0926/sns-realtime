@@ -42,10 +42,10 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('APPL_NO', '0320018345966835')
-        record.put('DEVICE_ID', '862095026190972')
-        record.put('IP', '221.226.85.146')
-        record.put('IP_CITY', '南京市')
+        record.put('APPL_NO', '1498060857052003')
+        record.put('DEVICE_ID', 'ADFCA33B-BF8A-4FD8-937D-0F1A0ED4F2A9')
+        record.put('IP', '117.136.67.71')
+        record.put('IP_CITY', '苏州市')
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
