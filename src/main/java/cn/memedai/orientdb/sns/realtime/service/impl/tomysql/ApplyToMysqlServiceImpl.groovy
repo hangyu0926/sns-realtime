@@ -40,15 +40,15 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
 
     private selectDirectMemberCountSql = 'SELECT id FROM member_index where apply_no = ? and order_no is null and direct = "contact_accept_member_num"'
 
-    private updateDirectMemberOrderSql ='update member_index set order_no = ? where apply_no = ?'
+    private updateDirectMemberOrderSql = 'update member_index set order_no = ? where apply_no = ?'
 
     private selectPhoneTagCountSql = 'SELECT id FROM phonetag_index where apply_no = ? and order_no is null'
 
-    private updatePhoneTagOrderSql ='update phonetag_index set order_no = ? where apply_no = ?'
+    private updatePhoneTagOrderSql = 'update phonetag_index set order_no = ? where apply_no = ?'
 
     private selectMemberCountSql = 'SELECT id FROM member_index where order_no = ? and direct = "has_device_num"'
 
-    private updateMemberOrderSql ='update member_index set apply_no = ? where order_no = ?'
+    private updateMemberOrderSql = 'update member_index set apply_no = ? where order_no = ?'
 
 
     void process(List<Map<String, Object>> dataList) {
@@ -71,25 +71,26 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
             return
         }
 
-        String applyStatus = (String)applyMap.apply_status
+        String applyStatus = (String) applyMap.apply_status
 
         String orderNo = null
         String orderStatus = null
 
-        if (orderNo == null){
-            OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql,appNo)
-            if (null != orderNoResult){
+        if (orderNo == null) {
+            OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql, appNo)
+            if (null != orderNoResult && orderNoResult.size() > 0) {
+                //获取到apply关联的order的no以及状态
                 ODocument orderNoDocument = orderNoResult.get(0)
-                orderNo =  orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
+                orderNo = orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
                 orderStatus = orderNoDocument.field("orderStatus") != null ? orderNoDocument.field("orderStatus").toString() : null
             }
         }
 
         //如何申请不为空，去sns中查询是否计算过一度二度联系人指标
-        if (null != appNo && null != orderNo){
-            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectDirectMemberCountSql,appNo)
-            if (list.size() > 0){
-                jdbcTemplate.update(updateDirectMemberOrderSql, new PreparedStatementSetter(){
+        if (null != appNo && null != orderNo) {
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectDirectMemberCountSql, appNo)
+            if (list != null && list.size() > 0) {
+                jdbcTemplate.update(updateDirectMemberOrderSql, new PreparedStatementSetter() {
                     @Override
                     void setValues(PreparedStatement ps) throws SQLException {
                         ps.setString(1, orderNo);
@@ -98,9 +99,9 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
                 })
             }
 
-            List<Map<String, Object>> phonelist = jdbcTemplate.queryForList(selectPhoneTagCountSql,appNo)
-            if (phonelist.size() > 0){
-                jdbcTemplate.update(updatePhoneTagOrderSql, new PreparedStatementSetter(){
+            List<Map<String, Object>> phonelist = jdbcTemplate.queryForList(selectPhoneTagCountSql, appNo)
+            if (phonelist != null && phonelist.size() > 0) {
+                jdbcTemplate.update(updatePhoneTagOrderSql, new PreparedStatementSetter() {
                     @Override
                     void setValues(PreparedStatement ps) throws SQLException {
                         ps.setString(1, orderNo);
@@ -112,24 +113,26 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
 
         //如果这个applyNo的order跑过则只需要把appNo update进去即可
         int listSize = 0
-        if (null != orderNo){
-            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectMemberCountSql,orderNo)
-            listSize = list.size()
-            if (listSize > 0){
-                jdbcTemplate.update(updateMemberOrderSql, new PreparedStatementSetter(){
-                    @Override
-                    void setValues(PreparedStatement ps) throws SQLException {
-                        ps.setString(1, appNo);
-                        ps.setString(2, orderNo);
-                    }
-                })
+        if (null != orderNo) {
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectMemberCountSql, orderNo)
+            if (list != null) {
+                listSize = list.size()
+                if (listSize > 0) {
+                    jdbcTemplate.update(updateMemberOrderSql, new PreparedStatementSetter() {
+                        @Override
+                        void setValues(PreparedStatement ps) throws SQLException {
+                            ps.setString(1, appNo);
+                            ps.setString(2, orderNo);
+                        }
+                    })
+                }
             }
         }
 
         //如果order是空或者order没有先跑则做统计插入操作
-        if (null == orderNo || listSize == 0){
-            OBasicResultSet memberResult =  orientSql.execute(selectMemberSql,memberId)
-            if (null != memberResult) {
+        if (null == orderNo || listSize == 0) {
+            OBasicResultSet memberResult = orientSql.execute(selectMemberSql, memberId)
+            if (null != memberResult && memberResult.size() > 0) {
                 ODocument memberDocument = memberResult.get(0)
                 int memberHasDeviceSize = memberDocument.field("MemberHasDeviceSize") != null ? memberDocument.field("MemberHasDeviceSize") : 0
                 int memberHasIp = memberDocument.field("MemberHasIp") != null ? memberDocument.field("MemberHasIp") : 0
@@ -203,10 +206,10 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
         indexData.setApplyNo(applyNo)
         indexData.setOrderNo(orderNo)
         indexData.setIndexName(indexName)
-        if (null != applyStatus){
+        if (null != applyStatus) {
             indexData.setApplyStatus(Integer.valueOf(applyStatus))
         }
-        if (null != orderStatus){
+        if (null != orderStatus) {
             indexData.setOrderStatus(Integer.valueOf(orderStatus))
         }
         indexDatas.add(indexData)
@@ -222,7 +225,8 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
                 int getBatchSize() {
                     return indexDataSize
                 }
-                void setValues(PreparedStatement ps, int i)throws SQLException {
+
+                void setValues(PreparedStatement ps, int i) throws SQLException {
                     IndexData indexData = indexDatas.get(i)
                     ps.setLong(1, indexData.getMemberId())
                     ps.setString(2, indexData.getApplyNo())
@@ -236,4 +240,5 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
             })
         }
     }
+
 }
