@@ -1,6 +1,5 @@
 package cn.memedai.orientdb.sns.realtime
 
-import groovy.json.JsonSlurper
 import groovy.sql.Sql
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
@@ -33,27 +32,19 @@ class BatchTest extends AbstractJUnit4SpringContextTests {
     @Test
     void batchTest() {
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-        producer.send(new ProducerRecord<String, Byte[]>(
+
+        send(producer,
+                'select * from network.apply_info where id >= 643473',
                 'wallet',
-                'wallet.apply_info',
-                getData('select * from network.apply_info where id >= 643473',
-                        'wallet',
-                        'wallet.apply_info')
-        )
-        )
+                'wallet.apply_info')
         //TODO
         producer.close()
     }
 
-    private byte[] getData(String sql, String topic, String key) {
+    private void send(Producer producer, String sql, String topic, String key) {
         Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic][key].avroSchema)
-
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema)
-        DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter)
-
-        ByteArrayOutputStream oos = new ByteArrayOutputStream()
-        dataFileWriter.create(schema, oos)
-
+        long i = 0
         groovySql.eachRow(sql,
                 {
                     row ->
@@ -72,27 +63,20 @@ class BatchTest extends AbstractJUnit4SpringContextTests {
                                 record.put(field['name'], fieldValue == null ? null : fieldValue)
                         }
 
+
+                        DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter)
+                        ByteArrayOutputStream oos = new ByteArrayOutputStream()
+                        dataFileWriter.create(schema, oos)
                         dataFileWriter.append(record)
+                        producer.send(new ProducerRecord<String, Byte[]>(
+                                topic,
+                                key,
+                                oos.toByteArray()))
+                        println("send the ${++i}")
+                        dataFileWriter.close()
                 })
 
-        dataFileWriter.close()
 
-        oos.toByteArray()
-    }
-
-    @Test
-    void test1() {
-        def schemaData = new JsonSlurper().parseText(kafkaDispatchConfig['wallet']['wallet.apply_info'].avroSchema)
-        groovySql.eachRow('select * from network.apply_info limit 10', {
-            row ->
-                schemaData['fields'].each {
-                    filed ->
-                        if (filed['name'] == '__schemaid__' || filed['name'] == '__op__') {
-                            return
-                        }
-                        println(row.(filed['name']))
-                }
-        })
     }
 
 }
