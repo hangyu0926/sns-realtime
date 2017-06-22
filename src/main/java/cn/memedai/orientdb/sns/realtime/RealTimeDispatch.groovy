@@ -95,9 +95,9 @@ class RealTimeDispatch {
                                         service ->
                                             long start2 = System.currentTimeMillis()
                                             service.process(dataList)
-                                            cLog.info('service#process->{}, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
+                                            cLog.info('{}#process, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
                                     }
-                                    cLog.info('consumer result->{},processed count->{},topic->{},table-{},used time->{}ms', 'success', ++processdCount, topic, record.key(), (System.currentTimeMillis() - start))
+                                    cLog.info('consumer result->{},processed count->{},topic->{},table->{},used time->{}ms', 'success', ++processdCount, topic, record.key(), (System.currentTimeMillis() - start))
                                 } catch (Throwable e) {
                                     cLog.error("", e)
                                     cLog.warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dateListText)
