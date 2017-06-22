@@ -57,28 +57,26 @@ class OrderToMysqlServiceImpl implements RealTimeService {
             return
         }
 
-        String orderStatus = (String)orderMap.status
+        String orderStatus = (String) orderMap.status
 
         String appNo = null
         String applyStatus = null
 
-        if (appNo == null){
-            OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql,orderNo)
-            if (null != orderNoResult){
-                ODocument orderNoDocument = orderNoResult.get(0)
-                appNo =  orderNoDocument.field("applyNo") != null ? orderNoDocument.field("applyNo").toString() : null
-                applyStatus = orderNoDocument.field("applyStatus") != null ? orderNoDocument.field("applyStatus").toString() : null
-            }
+        OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql, orderNo)
+        if (null != orderNoResult && orderNoResult.size() > 0) {
+            ODocument orderNoDocument = orderNoResult.get(0)
+            appNo = orderNoDocument.field("applyNo") != null ? orderNoDocument.field("applyNo").toString() : null
+            applyStatus = orderNoDocument.field("applyStatus") != null ? orderNoDocument.field("applyStatus").toString() : null
         }
 
         //如果存在appNo说明apply已经先来了不需要做任何操作
-        if (null != appNo){
+        if (null != appNo) {
             return
         }
         //如果不存在说明Order先来或者压根没有apply都只要做统计插入即可
-        if (appNo == null){
-            OBasicResultSet memberResult =  orientSql.execute(selectMemberSql,memberId)
-            if (null != memberResult) {
+        if (appNo == null) {
+            OBasicResultSet memberResult = orientSql.execute(selectMemberSql, memberId)
+            if (null != memberResult && memberResult.size() > 0) {
                 ODocument memberDocument = memberResult.get(0)
                 int memberHasDeviceSize = memberDocument.field("MemberHasDeviceSize") != null ? memberDocument.field("MemberHasDeviceSize") : 0
                 int memberHasIp = memberDocument.field("MemberHasIp") != null ? memberDocument.field("MemberHasIp") : 0
@@ -152,10 +150,10 @@ class OrderToMysqlServiceImpl implements RealTimeService {
         indexData.setApplyNo(applyNo)
         indexData.setOrderNo(orderNo)
         indexData.setIndexName(indexName)
-        if (null != applyStatus){
+        if (null != applyStatus) {
             indexData.setApplyStatus(Integer.valueOf(applyStatus))
         }
-        if (null != orderStatus){
+        if (null != orderStatus) {
             indexData.setOrderStatus(Integer.valueOf(orderStatus))
         }
         indexDatas.add(indexData)
@@ -171,7 +169,8 @@ class OrderToMysqlServiceImpl implements RealTimeService {
                 int getBatchSize() {
                     return indexDataSize
                 }
-                void setValues(PreparedStatement ps, int i)throws SQLException {
+
+                void setValues(PreparedStatement ps, int i) throws SQLException {
                     IndexData indexData = indexDatas.get(i)
                     ps.setLong(1, indexData.getMemberId())
                     ps.setString(2, indexData.getApplyNo())
