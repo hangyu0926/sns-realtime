@@ -76,7 +76,7 @@ class CaIpAndDeviceToMysqlServiceImpl {
 
         //如果orientDb查不到就去mysql回查
         if (null == phone){
-            this.sql.eachRow(selectFromApplyMysql,appNo) {
+            this.sql.rows(selectFromApplyMysql,appNo).each{
                 row ->
                     memberId = row.memberId
                     phone = row.phone
@@ -175,7 +175,7 @@ class CaIpAndDeviceToMysqlServiceImpl {
 
             this.sql.withBatch(indexIpDataSize, ipSql) { ps ->
                 for (int i = 0; i < indexIpDataSize; i++) {
-                    ps.addBatch(deviceIndexDatas.get(i).getDirect(), deviceIndexDatas.get(i).getApplyNo(),deviceIndexDatas.get(i).getIp())
+                    ps.addBatch(ipIndexDatas.get(i).getDirect(), ipIndexDatas.get(i).getApplyNo(),ipIndexDatas.get(i).getIp())
                 }
             }
         } catch (DuplicateKeyException e) {

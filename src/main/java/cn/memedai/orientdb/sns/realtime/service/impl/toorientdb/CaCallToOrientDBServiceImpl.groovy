@@ -101,7 +101,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
         String toPhoneRid = null
 
-        sql.eachRow(selectCallToInfoSql, appNo) {
+        sql.rows(selectCallToInfoSql, appNo).each {
             row ->
                 String toPhone = row.PHONE_NO
                 int callCnt = row.CALL_CNT
