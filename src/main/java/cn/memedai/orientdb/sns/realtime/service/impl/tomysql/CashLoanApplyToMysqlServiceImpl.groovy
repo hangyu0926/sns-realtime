@@ -128,7 +128,7 @@ class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
 
 
             //device,ip
-            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[])
+            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[]).num
             if (deviceNum > 0) {
                 return
             }

@@ -329,6 +329,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                         <entry key="services">
                             <list>
                                 <ref bean="cashLoanApplyToOrientDBServiceImpl"/>
+                                <ref bean="cashLoanApplyToMysqlServiceImpl"/>
                             </list>
                         </entry>
                         <!--table service End-->
@@ -365,6 +366,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                         <entry key="services">
                             <list>
                                 <ref bean="cashLoanOrderToOrientDBServiceImpl"/>
+                                <ref bean="cashLoanOrderToMysqlServiceImpl"/>
                             </list>
                         </entry>
                         <!--table service End-->

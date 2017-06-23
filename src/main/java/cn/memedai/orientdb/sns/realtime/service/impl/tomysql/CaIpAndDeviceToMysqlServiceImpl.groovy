@@ -116,7 +116,7 @@ class CaIpAndDeviceToMysqlServiceImpl {
 
         //如果同设备中存在该applyNo，说明已经统计过不做操作,防止插入多余数据
         if ("insert".equals(op)){
-            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[])
+            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[]).num
             if (deviceNum > 0) {
                 return
             }

@@ -48,7 +48,7 @@ class CashLoanApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
         record.put('created_datetime', '2017-03-26 11:57:11')
         record.put('ip1', '2')
         record.put('ip1_city', '银川市')
-        record.put('device_id', 'eyJvcyI6IkFuZHJvaWQiLCJ2ZXJzaW9uIjoiMi4wLjkiLCJzZXNzaW9uX2lkIjoibWVtZWRhaWUyYmUxMzFmZDhkNWQ4MzEyNzE3M2IzYjMxNzE0MmQzIiwiZGV2aWNlX2lkIjoicFBVdU1QTXdPNTJySnpCYlhTdGJYbXNrSjQzdDFEWW5JbnNjSFR3YjE5ZHRWb2c2Nm9WVTZSXC9LMExrRSIsImJ1bmRsZSI6ImNuLm1lbWVkYWkubW1kXzIxMCIsImRhdGUiOiIxNDkwNTAwODM1NjAxIiwiZGF0YSI6IlNyOVNzZDlTQmVmYUEyMXFxMkdCb0k4QmhRbT0ifQ==')
+        record.put('device_id', '477FF9FD-0D4D-425A-9909-0944B0159D69')
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)

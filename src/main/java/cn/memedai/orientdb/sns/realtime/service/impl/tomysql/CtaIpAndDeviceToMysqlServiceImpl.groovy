@@ -115,7 +115,7 @@ class CtaIpAndDeviceToMysqlServiceImpl {
 
         //如果同设备中存在该orderNo，说明已经统计过不做操作
         if ("insert".equals(op)){
-            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [orderNo,deviceId] as Object[])
+            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [orderNo,deviceId] as Object[]).num
             if (deviceNum > 0) {
                 return
             }
