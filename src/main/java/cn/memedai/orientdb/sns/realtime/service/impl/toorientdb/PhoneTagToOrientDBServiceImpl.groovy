@@ -4,8 +4,8 @@ import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
 import cn.memedai.orientdb.sns.realtime.cache.PhoneCache
 import cn.memedai.orientdb.sns.realtime.cache.PhoneMarkCache
 import cn.memedai.orientdb.sns.realtime.cache.PhoneSourceCache
-import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
+import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

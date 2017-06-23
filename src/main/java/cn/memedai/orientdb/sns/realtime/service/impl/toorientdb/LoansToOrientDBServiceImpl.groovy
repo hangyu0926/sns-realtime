@@ -1,8 +1,8 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
 import cn.memedai.orientdb.sns.realtime.cache.MemberCache
-import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
+import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 

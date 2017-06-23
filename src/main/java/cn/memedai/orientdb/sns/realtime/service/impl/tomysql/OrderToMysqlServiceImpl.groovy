@@ -7,16 +7,12 @@ import com.orientechnologies.orient.core.db.record.OIdentifiable
 import com.orientechnologies.orient.core.db.record.ridbag.ORidBag
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OBasicResultSet
+import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.BatchPreparedStatementSetter
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.PreparedStatementSetter
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
-import java.sql.PreparedStatement
-import java.sql.SQLException
 
 /**
  * Created by kisho on 2017/6/8.
@@ -30,7 +26,7 @@ class OrderToMysqlServiceImpl implements RealTimeService {
     private OrientSql orientSql
 
     @Resource
-    private JdbcTemplate jdbcTemplate
+    private Sql sql
 
     private selectOrderFromApplySql = 'select in("ApplyHasOrder").applyNo as applyNo,in("ApplyHasOrder").originalStatus as applyStatus from order where orderNo = ? unwind applyNo,applyStatus'
 
@@ -163,25 +159,15 @@ class OrderToMysqlServiceImpl implements RealTimeService {
         if (null != indexDatas) {
             def sql = "insert into member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) " +
                     "values(?,?,?,?,?,?,now(),?,?)"
-
             int indexDataSize = indexDatas.size()
-            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-                int getBatchSize() {
-                    return indexDataSize
-                }
 
-                void setValues(PreparedStatement ps, int i) throws SQLException {
-                    IndexData indexData = indexDatas.get(i)
-                    ps.setLong(1, indexData.getMemberId())
-                    ps.setString(2, indexData.getApplyNo())
-                    ps.setString(3, indexData.getOrderNo())
-                    ps.setString(4, indexData.getMobile())
-                    ps.setString(5, indexData.getIndexName())
-                    ps.setLong(6, indexData.getDirect())
-                    ps.setInt(7, indexData.getApplyStatus())
-                    ps.setInt(8, indexData.getOrderStatus())
+            this.sql.withBatch(indexDataSize, sql) { ps ->
+                for (int i = 0; i < indexDataSize; i++) {
+                    ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(), indexDatas.get(i).getOrderNo(),
+                            indexDatas.get(i).getMobile(), indexDatas.get(i).getIndexName(), indexDatas.get(i).getDirect(),
+                            indexDatas.get(i).getApplyStatus(), indexDatas.get(i).getOrderStatus())
                 }
-            })
+            }
         }
     }
 }

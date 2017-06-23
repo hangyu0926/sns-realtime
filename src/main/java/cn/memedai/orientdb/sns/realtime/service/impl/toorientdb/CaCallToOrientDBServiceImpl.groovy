@@ -6,10 +6,10 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import com.orientechnologies.orient.core.id.ORecordId
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OResultSet
+import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -39,7 +39,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
     private OrientSql orientSql
 
     @Resource
-    private JdbcTemplate jdbcTemplate
+    private Sql sql
 
     private String checkEdgeSql = 'select from (select expand(out_{0}) from {1}) where in = {2}'
 
@@ -89,7 +89,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
         String toPhoneRid = null
 
-        jdbcTemplate.queryForList(selectCallToInfoSql, appNo).each {
+        sql.query(selectCallToInfoSql, appNo) {
             row ->
                 String toPhone = row.PHONE_NO
                 int callCnt = row.CALL_CNT

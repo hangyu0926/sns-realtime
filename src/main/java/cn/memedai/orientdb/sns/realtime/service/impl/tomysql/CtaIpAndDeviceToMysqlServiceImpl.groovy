@@ -9,13 +9,9 @@ import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.jdbc.core.BatchPreparedStatementSetter
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
-import java.sql.PreparedStatement
-import java.sql.SQLException
 
 /**
  * Created by hangyu on 2017/6/15.
@@ -30,14 +26,11 @@ class CtaIpAndDeviceToMysqlServiceImpl {
     @Resource
     private Sql sql
 
-    @Resource
-    private JdbcTemplate jdbcTemplate
-
     private selectFromOrderOrientSql = 'select in("PhoneHasOrder").phone as phone,in("MemberHasOrder").memberId as memberId,in("ApplyHasOrder").applyNo as applyNo from order where orderNo = ? unwind phone,memberId,applyNo'
 
     private selectFromOrderMysql = 'select a.member_id as memberId,a.mobile as phone,b.apply_no as applyNo from network.money_box_order a left join network.apply_info b on a.order_no = b.order_no where a.order_no = ?'
 
-    private selectDeviceIndexSql = 'SELECT id FROM device_index where order_no = ? and deviceId = ?'
+    private selectDeviceIndexSql = 'SELECT COUNT(*) AS num FROM device_index where order_no = ? and deviceId = ?'
 
     private selectDeviceSql = 'select @rid as device0 from device where deviceId = ?'
 
@@ -62,8 +55,9 @@ class CtaIpAndDeviceToMysqlServiceImpl {
         String appNo = null
 
         //如果同设备中存在该orderNo，说明已经统计过不做操作
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(selectDeviceIndexSql, orderNo,deviceId)
-        if (list != null && list.size() > 0) {
+        def args = [appNo, deviceId] as Object[]
+        int num = sql.firstRow(selectDeviceIndexSql,args).num
+        if (num > 0){
             return
         }
 
@@ -77,7 +71,7 @@ class CtaIpAndDeviceToMysqlServiceImpl {
 
         //如果orientDb查不到就去mysql回查
         if (null == phone || null == memberId){
-            jdbcTemplate.queryForList(selectFromOrderMysql,orderNo).each {
+            sql.query(selectFromOrderMysql,orderNo) {
                 row ->
                     memberId = row.memberId
                     phone = row.phone
@@ -116,8 +110,8 @@ class CtaIpAndDeviceToMysqlServiceImpl {
                 "equal_ip_member_num", sameIpCount, null, ip);
 
         //如果同设备中存在该orderNo，说明已经统计过不做操作
-        List<Map<String, Object>> deviceList = jdbcTemplate.queryForList(selectDeviceIndexSql, orderNo,deviceId)
-        if (deviceList != null && deviceList.size() > 0) {
+        int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[])
+        if (deviceNum > 0) {
             return
         }
         insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
@@ -127,45 +121,26 @@ class CtaIpAndDeviceToMysqlServiceImpl {
         try {
             def sql = "insert into device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) " +
                     " values(?,?,?,?,?,?,?,now())"
+            int indexDeviceDataSize = deviceIndexDatas.size()
 
-            int indexDataSize = deviceIndexDatas.size()
-            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-                int getBatchSize() {
-                    return indexDataSize
+            this.sql.withBatch(indexDeviceDataSize, sql) { ps ->
+                for (int i = 0; i < indexDeviceDataSize; i++) {
+                    ps.addBatch(deviceIndexDatas.get(i).getMemberId(), deviceIndexDatas.get(i).getApplyNo(), deviceIndexDatas.get(i).getOrderNo(),
+                            deviceIndexDatas.get(i).getMobile(),deviceIndexDatas.get(i).getDeviceId(), deviceIndexDatas.get(i).getIndexName(), deviceIndexDatas.get(i).getDirect())
                 }
-
-                void setValues(PreparedStatement ps, int i) throws SQLException {
-                    IndexData indexData = deviceIndexDatas.get(i)
-                    ps.setLong(1, indexData.getMemberId())
-                    ps.setString(2, indexData.getApplyNo())
-                    ps.setString(3, indexData.getOrderNo())
-                    ps.setString(4, indexData.getMobile())
-                    ps.setString(5, indexData.getDeviceId())
-                    ps.setString(6, indexData.getIndexName())
-                    ps.setLong(7, indexData.getDirect())
-                }
-            })
+            }
 
             def ipSql = "insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) " +
                     " values(?,?,?,?,?,?,?,now())"
 
-            int indexIpDataSize = ipIndexDatas.size()
-            jdbcTemplate.batchUpdate(ipSql, new BatchPreparedStatementSetter() {
-                int getBatchSize() {
-                    return indexIpDataSize
-                }
+            int indexIpDataSize = deviceIndexDatas.size()
 
-                void setValues(PreparedStatement ps, int i) throws SQLException {
-                    IndexData indexData = ipIndexDatas.get(i)
-                    ps.setLong(1, indexData.getMemberId())
-                    ps.setString(2, indexData.getApplyNo())
-                    ps.setString(3, indexData.getOrderNo())
-                    ps.setString(4, indexData.getMobile())
-                    ps.setString(5, indexData.getIp())
-                    ps.setString(6, indexData.getIndexName())
-                    ps.setLong(7, indexData.getDirect())
+            this.sql.withBatch(indexIpDataSize, ipSql) { ps ->
+                for (int i = 0; i < indexIpDataSize; i++) {
+                    ps.addBatch(ipIndexDatas.get(i).getMemberId(), ipIndexDatas.get(i).getApplyNo(), ipIndexDatas.get(i).getOrderNo(),
+                            ipIndexDatas.get(i).getMobile(),ipIndexDatas.get(i).getIp(), ipIndexDatas.get(i).getIndexName(), ipIndexDatas.get(i).getDirect())
                 }
-            })
+            }
         } catch (DuplicateKeyException e) {
             LOG.error(e.toString())
         }

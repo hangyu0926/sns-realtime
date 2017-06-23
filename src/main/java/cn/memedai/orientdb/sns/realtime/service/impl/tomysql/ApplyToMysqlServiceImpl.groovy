@@ -10,14 +10,9 @@ import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.BatchPreparedStatementSetter
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.PreparedStatementSetter
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
-import java.sql.PreparedStatement
-import java.sql.SQLException
 
 /**
  * Created by kisho on 2017/6/8.
@@ -31,22 +26,22 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
     private OrientSql orientSql
 
     @Resource
-    private JdbcTemplate jdbcTemplate
+    private Sql sql
 
     private selectOrderFromApplySql = 'select out("ApplyHasOrder").orderNo as orderNo,out("ApplyHasOrder").originalStatus as orderStatus from apply where applyNo = ? unwind orderNo,orderStatus'
 
     private selectMemberSql = 'select out("MemberHasDevice").size() as MemberHasDeviceSize,out("MemberHasIp").size() as MemberHasIpSize,' +
             'out("MemberHasApply").size() as MemberHasApplySize,out("MemberHasOrder").size() as MemberHasOrderSize,@rid as members0 from member where memberId = ?'
 
-    private selectDirectMemberCountSql = 'SELECT id FROM member_index where apply_no = ? and order_no is null and direct = "contact_accept_member_num"'
+    private selectDirectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and order_no is null and direct = "contact_accept_member_num"'
 
     private updateDirectMemberOrderSql = 'update member_index set order_no = ? where apply_no = ?'
 
-    private selectPhoneTagCountSql = 'SELECT id FROM phonetag_index where apply_no = ? and order_no is null'
+    private selectPhoneTagCountSql = 'SELECT COUNT(*) AS num FROM phonetag_index where apply_no = ? and order_no is null'
 
     private updatePhoneTagOrderSql = 'update phonetag_index set order_no = ? where apply_no = ?'
 
-    private selectMemberCountSql = 'SELECT id FROM member_index where order_no = ? and direct = "has_device_num"'
+    private selectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where order_no = ? and direct = "has_device_num"'
 
     private updateMemberOrderSql = 'update member_index set apply_no = ? where order_no = ?'
 
@@ -88,49 +83,28 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
 
         //如何申请不为空，去sns中查询是否计算过一度二度联系人指标
         if (null != appNo && null != orderNo) {
-            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectDirectMemberCountSql, appNo)
-            if (list != null && list.size() > 0) {
-                jdbcTemplate.update(updateDirectMemberOrderSql, new PreparedStatementSetter() {
-                    @Override
-                    void setValues(PreparedStatement ps) throws SQLException {
-                        ps.setString(1, orderNo);
-                        ps.setString(2, appNo);
-                    }
-                })
+            int num = sql.firstRow(selectDirectMemberCountSql,[appNo] as Object[]).num
+            if (num > 0){
+                sql.execute(updateDirectMemberOrderSql,[orderNo,appNo] as Object[])
             }
 
-            List<Map<String, Object>> phonelist = jdbcTemplate.queryForList(selectPhoneTagCountSql, appNo)
-            if (phonelist != null && phonelist.size() > 0) {
-                jdbcTemplate.update(updatePhoneTagOrderSql, new PreparedStatementSetter() {
-                    @Override
-                    void setValues(PreparedStatement ps) throws SQLException {
-                        ps.setString(1, orderNo);
-                        ps.setString(2, appNo);
-                    }
-                })
+            int phoneNum = sql.firstRow(selectPhoneTagCountSql,[appNo] as Object[]).num
+            if (phoneNum > 0){
+                sql.execute(updatePhoneTagOrderSql,[orderNo,appNo] as Object[])
             }
         }
 
         //如果这个applyNo的order跑过则只需要把appNo update进去即可
-        int listSize = 0
+        int memberCount = 0
         if (null != orderNo) {
-            List<Map<String, Object>> list = jdbcTemplate.queryForList(selectMemberCountSql, orderNo)
-            if (list != null) {
-                listSize = list.size()
-                if (listSize > 0) {
-                    jdbcTemplate.update(updateMemberOrderSql, new PreparedStatementSetter() {
-                        @Override
-                        void setValues(PreparedStatement ps) throws SQLException {
-                            ps.setString(1, appNo);
-                            ps.setString(2, orderNo);
-                        }
-                    })
-                }
+             memberCount = sql.firstRow(selectMemberCountSql,[orderNo] as Object[]).num
+            if (memberCount > 0){
+                sql.execute(updateMemberOrderSql,[appNo,orderNo] as Object[])
             }
         }
 
         //如果order是空或者order没有先跑则做统计插入操作
-        if (null == orderNo || listSize == 0) {
+        if (null == orderNo || memberCount == 0) {
             OBasicResultSet memberResult = orientSql.execute(selectMemberSql, memberId)
             if (null != memberResult && memberResult.size() > 0) {
                 ODocument memberDocument = memberResult.get(0)
@@ -219,25 +193,15 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
         if (null != indexDatas) {
             def sql = "insert into member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) " +
                     "values(?,?,?,?,?,?,now(),?,?)"
-
             int indexDataSize = indexDatas.size()
-            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-                int getBatchSize() {
-                    return indexDataSize
-                }
 
-                void setValues(PreparedStatement ps, int i) throws SQLException {
-                    IndexData indexData = indexDatas.get(i)
-                    ps.setLong(1, indexData.getMemberId())
-                    ps.setString(2, indexData.getApplyNo())
-                    ps.setString(3, indexData.getOrderNo())
-                    ps.setString(4, indexData.getMobile())
-                    ps.setString(5, indexData.getIndexName())
-                    ps.setLong(6, indexData.getDirect())
-                    ps.setInt(7, indexData.getApplyStatus())
-                    ps.setInt(8, indexData.getOrderStatus())
+            this.sql.withBatch(indexDataSize, sql) { ps ->
+                for (int i = 0; i < indexDataSize; i++) {
+                    ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(), indexDatas.get(i).getOrderNo(),
+                            indexDatas.get(i).getMobile(), indexDatas.get(i).getIndexName(), indexDatas.get(i).getDirect(),
+                            indexDatas.get(i).getApplyStatus(), indexDatas.get(i).getOrderStatus())
                 }
-            })
+            }
         }
     }
 
