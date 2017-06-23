@@ -53,6 +53,8 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
     private selectCallToFromPhoneSql = 'select @rid as phoneRid0,phone as phone, unionall(in_CallTo,out_CallTo) as callTos,in("HasPhone") as members0 from Phone where phone = ?'
 
+    private selectDirectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and direct = "contact_accept_member_num"'
+
     @Resource
     private ApplyNoOrderNoCache applyNoOrderNoCache
 
@@ -70,6 +72,16 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         }
 
         if ((applyHasDoCache.get(appNo) != null) && (applyHasDoCache.get(appNo).value != null)) {
+            return
+        }
+
+        String op =  callToMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
+        int num = sql.firstRow(selectDirectMemberCountSql,[appNo] as Object[]).num
+        if (num > 0){
             return
         }
 

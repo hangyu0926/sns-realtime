@@ -62,6 +62,12 @@ class OrderToOrientDBServiceImpl implements RealTimeService {
 
         String orderRid = OrientSqlUtil.getRid(orientSql.execute(updateOrderSql, orderMap.order_no, getStatus(orderMap.status), orderMap.status,
                 (orderMap.pay_amount) / 100, orderMap.created_datetime, orderMap.order_no))
+
+        String op =  orderMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
         if (StringUtils.isNotBlank(orderRid)) {
             orderCache.put(new CacheEntry(orderMap.order_no, orderRid))
         }

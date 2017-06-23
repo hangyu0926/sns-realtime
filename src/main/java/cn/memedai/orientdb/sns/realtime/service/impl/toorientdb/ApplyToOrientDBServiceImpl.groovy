@@ -68,6 +68,11 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
             applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
         }
 
+        String op =  applyMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
         if (StringUtils.isNotBlank(memberRid) && StringUtils.isNotBlank(phoneRid)) {
             orientSql.createEdge('HasPhone', memberRid, phoneRid)
         }

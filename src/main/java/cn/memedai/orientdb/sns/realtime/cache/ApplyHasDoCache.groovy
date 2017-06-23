@@ -31,7 +31,7 @@ class ApplyHasDoCache {
         return cacheEntry
     }
 
-    @Scheduled(cron = '0 0 0 * * ?')
+    //@Scheduled(cron = '0 0 0 * * ?')
     @CacheEvict(value = "applyHasDoCache", allEntries = true, beforeInvocation = true)
     void clear() {
         LOG.debug("clear cache : applyHasDoCache")

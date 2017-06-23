@@ -57,6 +57,11 @@ class CashLoanApplyToOrientDBServiceImpl implements RealTimeService {
         }
         Map<String, Object> applyMap = dataList.get(0)
 
+        String op =  applyMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
         String memberRid = null
         CacheEntry memberCacheEntry = memberCache.get(applyMap.member_id)
         if (memberCacheEntry != null) {

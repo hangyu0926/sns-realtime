@@ -54,12 +54,17 @@ class CaIpAndDeviceToMysqlServiceImpl {
         String memberId  = null
         String orderNo = null
 
+        String op =  applyMap.__op__
+
         //如果同设备中存在该applyNo，说明已经统计过不做操作
-        def args = [appNo, deviceId] as Object[]
-        int num = sql.firstRow(selectDeviceIndexSql,args).num
-        if (num > 0){
-            return
+        if ("insert".equals(op)){
+            def args = [appNo, deviceId] as Object[]
+            int num = sql.firstRow(selectDeviceIndexSql,args).num
+            if (num > 0){
+                return
+            }
         }
+
 
         OBasicResultSet orderNoResult = orientSql.execute(selectFromApplyOrientSql, appNo)
         if (null != orderNoResult && orderNoResult.size() > 0) {
@@ -109,12 +114,19 @@ class CaIpAndDeviceToMysqlServiceImpl {
         addIndexDatas(ipIndexDataList, Long.valueOf(memberId), phone, appNo, orderNo,
                 "equal_ip_member_num", sameIpCount, null, ip);
 
-        //如果同设备中存在该applyNo，说明已经统计过不做操作
-        int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[])
-        if (deviceNum > 0) {
-            return
+        //如果同设备中存在该applyNo，说明已经统计过不做操作,防止插入多余数据
+        if ("insert".equals(op)){
+            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[])
+            if (deviceNum > 0) {
+                return
+            }
+            insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
         }
-        insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+
+        if ("update".equals(op)){
+            updateDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+        }
+
     }
 
     void insertDeviceAndIpIndex (List<IndexData> deviceIndexDatas, List<IndexData> ipIndexDatas) {
@@ -133,7 +145,7 @@ class CaIpAndDeviceToMysqlServiceImpl {
             def ipSql = "insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) " +
                     " values(?,?,?,?,?,?,?,now())"
 
-            int indexIpDataSize = deviceIndexDatas.size()
+            int indexIpDataSize = ipIndexDatas.size()
 
             this.sql.withBatch(indexIpDataSize, ipSql) { ps ->
                 for (int i = 0; i < indexIpDataSize; i++) {
@@ -145,6 +157,32 @@ class CaIpAndDeviceToMysqlServiceImpl {
             LOG.error(e.toString())
         }
     }
+
+    void updateDeviceAndIpIndex (List<IndexData> deviceIndexDatas, List<IndexData> ipIndexDatas) {
+        try {
+            def sql = "update device_index set  direct = ? ,update_time = now() where apply_no = ? and deviceId = ?"
+            int indexDeviceDataSize = deviceIndexDatas.size()
+
+            this.sql.withBatch(indexDeviceDataSize, sql) { ps ->
+                for (int i = 0; i < indexDeviceDataSize; i++) {
+                    ps.addBatch(deviceIndexDatas.get(i).getDirect(), deviceIndexDatas.get(i).getApplyNo(),deviceIndexDatas.get(i).getDeviceId())
+                }
+            }
+
+            def ipSql = "update ip_index set  direct = ? ,update_time = now() where apply_no = ? and ip = ? "
+
+            int indexIpDataSize = ipIndexDatas.size()
+
+            this.sql.withBatch(indexIpDataSize, ipSql) { ps ->
+                for (int i = 0; i < indexIpDataSize; i++) {
+                    ps.addBatch(deviceIndexDatas.get(i).getDirect(), deviceIndexDatas.get(i).getApplyNo(),deviceIndexDatas.get(i).getIp())
+                }
+            }
+        } catch (DuplicateKeyException e) {
+            LOG.error(e.toString())
+        }
+    }
+
 
     void addIndexDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
                                       long direct, String deviceId, String ip) {

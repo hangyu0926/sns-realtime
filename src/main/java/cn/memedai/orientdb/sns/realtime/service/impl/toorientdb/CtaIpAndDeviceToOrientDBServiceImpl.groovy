@@ -47,6 +47,11 @@ class CtaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
+        String op =  ctaIpAndDeviceMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
         String orderRid = null
         CacheEntry orderCacheEntry = orderCache.get(orderNo)
         if (orderCacheEntry != null) {

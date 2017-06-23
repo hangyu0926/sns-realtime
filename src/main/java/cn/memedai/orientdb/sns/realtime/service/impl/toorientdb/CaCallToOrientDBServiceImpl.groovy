@@ -49,6 +49,8 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
 
     private String selectCallToInfoSql = 'select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?'
 
+    private selectDirectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and direct = "contact_accept_member_num"'
+
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
             return
@@ -66,6 +68,16 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
         }
 
         if ((applyHasDoCache.get(appNo) != null) && (applyHasDoCache.get(appNo).value != null)) {
+            return
+        }
+
+        String op =  callToMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
+        int num = sql.firstRow(selectDirectMemberCountSql,[appNo] as Object[]).num
+        if (num > 0){
             return
         }
 
@@ -106,16 +118,16 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                     return
                 }
 
-            def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
+                def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
 
-            OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
-            if (CollectionUtils.isEmpty(ocrs)) {
-                orientSql.execute(MessageFormat.format(createEdgeSql, fromPhoneRid, toPhoneRid), args)
-            } else {
-                ODocument doc = (ODocument) ocrs.get(0)
-                ORecordId oRecordId = doc.field("@rid")
-                orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()), args)
-            }
+                OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
+                if (CollectionUtils.isEmpty(ocrs)) {
+                    orientSql.execute(MessageFormat.format(createEdgeSql, fromPhoneRid, toPhoneRid), args)
+                } else {
+                    ODocument doc = (ODocument) ocrs.get(0)
+                    ORecordId oRecordId = doc.field("@rid")
+                    orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()), args)
+                }
         }
 
         //写入缓存

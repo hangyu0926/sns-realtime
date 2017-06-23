@@ -47,6 +47,11 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
+        String op =  caIpAndDeviceMap.__op__
+        if ("update".equals(op)){
+            return
+        }
+
         String applyRid = null
         CacheEntry applyCacheEntry = applyCache.get(appNo)
         if (applyCacheEntry != null) {
