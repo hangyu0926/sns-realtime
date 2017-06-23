@@ -89,9 +89,9 @@ class OrderToMysqlServiceImpl implements RealTimeService {
             int memberCount = 0
             memberCount = sql.firstRow(selectMemberCountFromOrderSql,[orderNo] as Object[]).num
             if (memberCount > 0){
-                insertMemberIndex(memberIndexDatas)
-            }else{
                 updateMemberIndex(memberIndexDatas)
+            }else{
+                insertMemberIndex(memberIndexDatas)
             }
         }
     }

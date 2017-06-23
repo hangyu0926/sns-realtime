@@ -75,7 +75,7 @@ class CtaIpAndDeviceToMysqlServiceImpl {
 
         //如果orientDb查不到就去mysql回查
         if (null == phone || null == memberId){
-            sql.query(selectFromOrderMysql,orderNo) {
+            sql.eachRow(selectFromOrderMysql,orderNo) {
                 row ->
                     memberId = row.memberId
                     phone = row.phone

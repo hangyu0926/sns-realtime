@@ -28,7 +28,7 @@ class IdCache {
 
     @PostConstruct
     private void getIdCardMap() {
-        sql.query(idSql) {
+        sql.eachRow(idSql) {
             row ->
                 idMap[row.ID_PREFIX] = ['ID_PREFIX': row.ID_PREFIX, 'PROVINCE': row.ID_PREFIX, 'CITY': row.CITY]
         }

@@ -76,7 +76,7 @@ class CaIpAndDeviceToMysqlServiceImpl {
 
         //如果orientDb查不到就去mysql回查
         if (null == phone){
-            this.sql.query(selectFromApplyMysql,appNo) {
+            this.sql.eachRow(selectFromApplyMysql,appNo) {
                 row ->
                     memberId = row.memberId
                     phone = row.phone

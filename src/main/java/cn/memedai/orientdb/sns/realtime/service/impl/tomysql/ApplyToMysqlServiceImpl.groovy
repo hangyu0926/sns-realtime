@@ -122,9 +122,9 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
             int memberCount = 0
             memberCount = sql.firstRow(selectMemberCountFromApplySql,[appNo] as Object[]).num
             if (memberCount > 0){
-                insertMemberIndex(memberIndexDatas)
-            }else{
                 updateMemberIndex(memberIndexDatas)
+            }else{
+                insertMemberIndex(memberIndexDatas)
             }
         }
 
