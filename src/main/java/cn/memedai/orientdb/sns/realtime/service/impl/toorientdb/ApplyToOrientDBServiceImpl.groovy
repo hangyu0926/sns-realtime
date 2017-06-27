@@ -6,6 +6,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -36,10 +37,24 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private StoreCache storeCache
 
+    //在CaCallToMysql中用到
     @Resource
     private ApplyNoOrderNoCache applyNoOrderNoCache
 
-    private String updateApplySql = 'update Apply set applyNo=?,status=?,originalStatus=?,createdDatetime=? upsert return after where applyNo=?'
+    //在CaCallToMysql中用到
+    @Resource
+    private ApplyNoPhoneCache applyNoPhoneCache
+
+    //在CaIpOrientDb中用到
+    @Resource
+    private ApplyRidMemberRidCache applyRidMemberRidCache
+
+    //在CaCallToOrientDb中用到
+    @Resource
+    private ApplyRidPhoneRidCache applyRidPhoneRidCache
+
+    @Value("#{snsOrientSqlProp.updateApplySql}")
+    private String updateApplySql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -66,7 +81,11 @@ class ApplyToOrientDBServiceImpl implements RealTimeService {
         String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateApplySql, applyMap.apply_no, getStatus(applyMap.apply_status), applyMap.apply_status, applyMap.created_datetime, applyMap.apply_no))
         if (StringUtils.isNotBlank(applyRid)) {
             applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
+            applyRidMemberRidCache.put(new CacheEntry(applyRid, memberRid))
         }
+
+        //将apply和phone关系放入缓存
+        applyNoPhoneCache.put(new CacheEntry(applyMap.apply_no,applyMap.cellphone))
 
         String op =  applyMap.__op__
         if ("update".equals(op)){

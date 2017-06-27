@@ -6,6 +6,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -45,7 +46,8 @@ class CashLoanApplyToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private IpCache ipCache
 
-    private String updateApplySql = 'update Apply set applyNo=?,createdDatetime=? upsert return after where applyNo=?'
+    @Value("#{snsOrientSqlProp.updateCashLoanApplySql}")
+    private String updateCashLoanApplySql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -76,7 +78,7 @@ class CashLoanApplyToOrientDBServiceImpl implements RealTimeService {
 
         String applyNo = applyMap.apply_no
 
-        String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateApplySql, applyNo, applyMap.created_datetime, applyMap.apply_no))
+        String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateCashLoanApplySql, applyNo, applyMap.created_datetime, applyMap.apply_no))
         if (StringUtils.isNotBlank(applyRid)) {
             applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
         }

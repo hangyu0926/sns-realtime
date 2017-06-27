@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -26,8 +27,11 @@ class MemberCache {
     @Resource
     private OrientSql orientSql
 
-    private String getMemberSql = 'select from Member where memberId=?'
-    private String updateMemberSql = 'update Member set memberId=? upsert return after where memberId=?'
+    @Value("#{snsOrientSqlProp.getMemberSql}")
+    private String getMemberSql
+
+    @Value("#{snsOrientSqlProp.updateMemberSql}")
+    private String updateMemberSql
 
     @Cacheable(value = 'memberCache')
     CacheEntry get(memberId, insertIfNotExist) {

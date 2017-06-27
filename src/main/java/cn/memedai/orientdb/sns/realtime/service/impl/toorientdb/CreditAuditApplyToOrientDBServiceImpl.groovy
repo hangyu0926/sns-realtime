@@ -7,6 +7,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -24,7 +25,8 @@ class CreditAuditApplyToOrientDBServiceImpl implements RealTimeService{
     @Resource
     private ApplyCache applyCache
 
-    private String updateApplySql = 'update Apply set applyNo=?,status=? upsert return after where applyNo=?'
+    @Value("#{snsOrientSqlProp.updateCashLoanApplyPassSql}")
+    private String updateCashLoanApplyPassSql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -36,7 +38,7 @@ class CreditAuditApplyToOrientDBServiceImpl implements RealTimeService{
         }
         Map<String, Object> applyMap = dataList.get(0)
 
-        String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateApplySql, applyMap.APPL_NO, applyMap.PASS, applyMap.APPL_NO))
+        String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateCashLoanApplyPassSql, applyMap.APPL_NO, applyMap.PASS, applyMap.APPL_NO))
         if (StringUtils.isNotBlank(applyRid)) {
             applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
         }

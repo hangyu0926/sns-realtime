@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -25,8 +26,11 @@ class PhoneMarkCache {
     @Resource
     private OrientSql orientSql
 
-    private String getPhoneMarkSql = 'select from PhoneMark where mark=?'
-    private String updatePhoneMarkSql = 'update PhoneMark set mark=? upsert return after where mark=?'
+    @Value("#{snsOrientSqlProp.getPhoneMarkSql}")
+    private String getPhoneMarkSql
+
+    @Value("#{snsOrientSqlProp.updatePhoneMarkSql}")
+    private String updatePhoneMarkSql
 
     @Cacheable(value = 'phoneMarkCache')
     CacheEntry get(mark) {

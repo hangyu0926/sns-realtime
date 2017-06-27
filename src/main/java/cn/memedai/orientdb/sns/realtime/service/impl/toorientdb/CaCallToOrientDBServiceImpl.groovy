@@ -3,6 +3,7 @@ package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 import cn.memedai.orientdb.sns.realtime.cache.*
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
+import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import com.orientechnologies.orient.core.id.ORecordId
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OResultSet
@@ -10,6 +11,7 @@ import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -33,7 +35,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
     private ApplyRidPhoneRidCache applyRidPhoneRidCache
 
     @Resource
-    private ApplyHasDoCache applyHasDoCache
+    private ApplyHasDoCache applyHasDoneCache
 
     @Resource
     private OrientSql orientSql
@@ -41,15 +43,23 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private Sql sql
 
-    private String checkEdgeSql = 'select from (select expand(out_{0}) from {1}) where in = {2}'
+    @Value("#{snsOrientSqlProp.checkCallToSql}")
+    private String checkEdgeSql
 
-    private String createEdgeSql = 'create edge CallTo from {0} to {1} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?'
+    @Value("#{snsOrientSqlProp.createCallToSql}")
+    private String createEdgeSql
 
-    private String updateEdgeSql = 'update edge {0} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?'
+    @Value("#{snsOrientSqlProp.updateCallToSql}")
+    private String updateEdgeSql
 
-    private String selectCallToInfoSql = 'select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where PHONE_NO is not null and APPL_NO =?'
+    @Value("#{sqlProp.selectCallToInfoMySql}")
+    private String selectCallToInfoMySql
 
-    private selectDirectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and direct = "contact_accept_member_num"'
+    @Value("#{sqlProp.selectDirectMemberCountMySql}")
+    private selectDirectMemberCountMySql
+
+    @Value("#{sqlProp.selectPhoneFromApplyMySql}")
+    private selectPhoneFromApplyMySql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -67,7 +77,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
-        if ((applyHasDoCache.get(appNo) != null) && (applyHasDoCache.get(appNo).value != null)) {
+        if ((applyHasDoneCache.get(appNo) != null) && (applyHasDoneCache.get(appNo).value != null)) {
             return
         }
 
@@ -76,7 +86,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
-        int num = sql.firstRow(selectDirectMemberCountSql,[appNo] as Object[]).num
+        int num = sql.firstRow(selectDirectMemberCountMySql,[appNo] as Object[]).num
         if (num > 0){
             return
         }
@@ -95,15 +105,24 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
         if (applyRidPhoneRidCacheEntry != null) {
             fromPhoneRid = applyRidPhoneRidCacheEntry.value
         }
-        if (StringUtils.isBlank(fromPhoneRid)) {
-            return
+        //查mysql 根据apply查phone
+        if (null == fromPhoneRid){
+            String phone = sql.firstRow(selectPhoneFromApplyMySql,[appNo]).phone
+            CacheEntry phoneCacheEntry = phoneCache.get(phone)
+            if (phoneCacheEntry != null) {
+                fromPhoneRid = phoneCacheEntry.value
+                applyRidPhoneRidCache.put(new CacheEntry(appRid,fromPhoneRid))
+            }
         }
 
         String toPhoneRid = null
 
-        sql.rows(selectCallToInfoSql, appNo).each {
+        sql.rows(selectCallToInfoMySql, appNo).each {
             row ->
                 String toPhone = row.PHONE_NO
+                if (null == toPhone){
+                    return
+                }
                 int callCnt = row.CALL_CNT
                 int callLen = row.CALL_LEN
                 int callInCnt = row.CALL_IN_CNT
@@ -118,20 +137,18 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                     return
                 }
 
-                def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
+                def args = [callCnt, callLen, callInCnt, callOutCnt, createTime]
 
                 OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
                 if (CollectionUtils.isEmpty(ocrs)) {
                     orientSql.execute(MessageFormat.format(createEdgeSql, fromPhoneRid, toPhoneRid), args)
                 } else {
-                    ODocument doc = (ODocument) ocrs.get(0)
-                    ORecordId oRecordId = doc.field("@rid")
-                    orientSql.execute(MessageFormat.format(updateEdgeSql, oRecordId.getIdentity().toString()), args)
+                    orientSql.execute(MessageFormat.format(updateEdgeSql, OrientSqlUtil.getRid(ocrs)), args)
                 }
         }
 
         //写入缓存
-        applyHasDoCache.put(new CacheEntry(appNo, true))
+        applyHasDoneCache.put(new CacheEntry(appNo, true))
     }
 
 }

@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -25,8 +26,11 @@ class IpCache {
     @Resource
     private OrientSql orientSql
 
-    private String getIpSql = 'select from Ip where ip=?'
-    private String updateIpSql = 'update Ip set ip=?,ipCity=? upsert return after where ip=?'
+    @Value("#{snsOrientSqlProp.getIpSql}")
+    private String getIpSql
+
+    @Value("#{snsOrientSqlProp.updateIpSql}")
+    private String updateIpSql
 
     @Cacheable(value = 'ipCache')
     CacheEntry get(ip) {

@@ -10,6 +10,7 @@ import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 
@@ -29,32 +30,26 @@ class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
     @Resource
     private Sql sql
 
-    private selectOrderFromApplySql = 'select out("ApplyHasOrder").orderNo as orderNo,out("ApplyHasOrder").originalStatus as orderStatus,status as applyStatus from apply where applyNo = ? unwind orderNo,orderStatus,applyStatus'
+    @Resource
+    private ToMysqlServiceImpl toMysqlService
 
-    private selectMemberSql = 'select out("MemberHasDevice").size() as MemberHasDeviceSize,out("MemberHasIp").size() as MemberHasIpSize,' +
-            'out("MemberHasApply").size() as MemberHasApplySize,out("MemberHasOrder").size() as MemberHasOrderSize,@rid as members0 from member where memberId = ?'
+    @Value("#{snsOrientSqlProp.selectDeviceSql}")
+    private selectDeviceSql
 
-    private selectDirectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and order_no is null and direct = "contact_accept_member_num"'
+    @Value("#{snsOrientSqlProp.selectIpSql}")
+    private selectIpSql
 
-    private updateDirectMemberOrderSql = 'update member_index set order_no = ? where apply_no = ?'
+    @Value("#{sqlProp.selectPhoneTagCountWithOutMemberSql}")
+    private selectPhoneTagCountWithOutMemberSql
 
-    private selectPhoneTagCountSql = 'SELECT COUNT(*) AS num FROM phonetag_index where apply_no = ? and order_no is null'
+    @Value("#{sqlProp.updatePhoneTagMemberSql}")
+    private updatePhoneTagMemberSql
 
-    private updatePhoneTagOrderSql = 'update phonetag_index set order_no = ? where apply_no = ?'
+    @Value("#{sqlProp.selectMemberCountWhereDeviceByApplySql}")
+    private selectMemberCountWhereDeviceByApplySql
 
-    private selectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where order_no = ? and direct = "has_device_num"'
-
-    private updateMemberOrderSql = 'update member_index set apply_no = ? where order_no = ?'
-
-    private selectMemberCountFromApplySql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and direct = "has_device_num"'
-
-
-
-    private selectDeviceSql = 'select @rid as device0 from device where deviceId = ?'
-
-    private selectIpSql = 'select @rid as ip0 from ip where ip = ?'
-
-    private selectDeviceIndexSql = 'SELECT COUNT(*) AS num FROM device_index where apply_no = ? and deviceId = ?'
+    @Value("#{sqlProp.selectDeviceIndexSql}")
+    private selectDeviceIndexSql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null || dataList.size() == 0) {
@@ -76,300 +71,41 @@ class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
             return
         }
 
+        if ("update".equals(op)){
+            return
+        }
+
         String applyStatus = null
 
-        String orderNo = null
+        String orderNo = appNo
         String orderStatus = null
-
-        if (orderNo == null) {
-            OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql, appNo)
-            if (null != orderNoResult && orderNoResult.size() > 0) {
-                //获取到apply关联的order的no以及状态
-                ODocument orderNoDocument = orderNoResult.get(0)
-                orderNo = orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
-                orderStatus = orderNoDocument.field("orderStatus") != null ? orderNoDocument.field("orderStatus").toString() : null
-                applyStatus = orderNoDocument.field("applyStatus") != null ? orderNoDocument.field("applyStatus").toString() : null
-            }
-        }
 
         String op =  applyMap.__op__
         String deviceId = applyMap.device_id
         String ip = applyMap.ip1
 
         if ("insert".equals(op)){
-            //如何申请不为空，去sns中查询是否计算过一度二度联系人指标
-            if (null != appNo && null != orderNo) {
-                int num = sql.firstRow(selectDirectMemberCountSql,[appNo] as Object[]).num
-                if (num > 0){
-                    sql.execute(updateDirectMemberOrderSql,[orderNo,appNo] as Object[])
-                }
-
-                int phoneNum = sql.firstRow(selectPhoneTagCountSql,[appNo] as Object[]).num
-                if (phoneNum > 0){
-                    sql.execute(updatePhoneTagOrderSql,[orderNo,appNo] as Object[])
-                }
+            int memberNum = sql.firstRow(selectPhoneTagCountWithOutMemberSql, [appNo] as Object[]).num
+            if (memberNum > 0) {
+                //当CaCallTo在apply之前来，需要把memberId信息update进去
+                sql.execute(updatePhoneTagMemberSql, [memberId, appNo] as Object[])
             }
 
-            //如果这个applyNo的order跑过则只需要把appNo update进去即可
             int memberCount = 0
-            if (null != orderNo) {
-                memberCount = sql.firstRow(selectMemberCountSql,[orderNo] as Object[]).num
-                if (memberCount > 0){
-                    sql.execute(updateMemberOrderSql,[appNo,orderNo] as Object[])
-                }
-            }
-
-            //如果order是空或者order没有先跑则做统计插入操作
-            if (null == orderNo || memberCount == 0) {
+            memberCount = sql.firstRow(selectMemberCountWhereDeviceByApplySql,[appNo]).num
+            if (memberCount == 0){
                 List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-                structureMemberIndexDatas(memberId,phone,appNo,orderNo,applyStatus,orderStatus,memberIndexDatas)
-                insertMemberIndex(memberIndexDatas)
-            }
-
-
-            //device,ip
-            int deviceNum =  sql.firstRow(selectDeviceIndexSql, [appNo,deviceId] as Object[]).num
-            if (deviceNum > 0) {
-                return
-            }
-
-            List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
-            List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
-            structureDeviceIpIndexDatas(memberId,phone,appNo,orderNo,deviceId,ip,deviceIndexDataList,ipIndexDataList)
-            insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
-        }
-
-        if ("update".equals(op)){
-            List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-            structureMemberIndexDatas(memberId,phone,appNo,orderNo,applyStatus,orderStatus,memberIndexDatas)
-
-            //判断下数据库中是否有值
-            int memberCount = 0
-            memberCount = sql.firstRow(selectMemberCountFromApplySql,[appNo] as Object[]).num
-            if (memberCount > 0){
-                insertMemberIndex(memberIndexDatas)
-            }else{
-                updateMemberIndex(memberIndexDatas)
+                toMysqlService.structureMemberIndexDatas(memberId,phone,appNo,orderNo,applyStatus,orderStatus,memberIndexDatas)
+                toMysqlService.insertMemberIndex(memberIndexDatas)
             }
 
             //device,ip
             List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
             List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
-            structureDeviceIpIndexDatas(memberId,phone,appNo,orderNo,deviceId,ip,deviceIndexDataList,ipIndexDataList)
-            updateDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
-        }
-
-    }
-
-    private void structureMemberIndexDatas(long memberId,String phone,String appNo,String orderNo,String applyStatus,String orderStatus, List<IndexData> memberIndexDatas){
-        OBasicResultSet memberResult = orientSql.execute(selectMemberSql, memberId)
-        if (null != memberResult && memberResult.size() > 0) {
-            ODocument memberDocument = memberResult.get(0)
-            int memberHasDeviceSize = memberDocument.field("MemberHasDeviceSize") != null ? memberDocument.field("MemberHasDeviceSize") : 0
-            int memberHasIp = memberDocument.field("MemberHasIp") != null ? memberDocument.field("MemberHasIp") : 0
-            int memberHasApplySize = memberDocument.field("MemberHasApplySize") != null ? memberDocument.field("MemberHasApplySize") : 0
-            int memberHasOrderSize = memberDocument.field("MemberHasOrderSize") != null ? memberDocument.field("MemberHasOrderSize") : 0
-
-            Set<String> set = []
-            ODocument member = memberDocument.field("members0")
-            ORidBag in_HasApply = member.field("out_MemberHasApply")
-            if (null != in_HasApply && !in_HasApply.isEmpty()) {
-                Iterator<OIdentifiable> it = in_HasApply.iterator()
-                while (it.hasNext()) {
-                    OIdentifiable t = it.next()
-                    ODocument inApply = (ODocument) t
-                    ODocument apply = inApply.field("in")
-                    ORidBag in_HasStore = apply.field("out_ApplyHasStore")
-                    if (null != in_HasStore && !in_HasStore.isEmpty()) {
-                        Iterator<OIdentifiable> it1 = in_HasStore.iterator()
-                        while (it1.hasNext()) {
-                            ODocument inStore = (ODocument) it1.next()
-                            ODocument store = inStore.field("in")
-                            set.add(store.field("storeId"))
-                        }
-                    }
-                }
-            }
-
-            ORidBag in_HasOrder = member.field("out_MemberHasOrder")
-            if (null != in_HasOrder && !in_HasOrder.isEmpty()) {
-                Iterator<OIdentifiable> it = in_HasOrder.iterator()
-                while (it.hasNext()) {
-                    OIdentifiable t = it.next()
-                    ODocument inOrder = (ODocument) t
-                    ODocument order = inOrder.field("in")
-                    ORidBag in_HasStore = order.field("out_OrderHasStore")
-                    if (null != in_HasStore && !in_HasStore.isEmpty()) {
-                        Iterator<OIdentifiable> it1 = in_HasStore.iterator()
-                        while (it1.hasNext()) {
-                            ODocument inStore = (ODocument) it1.next()
-                            ODocument store = inStore.field("in")
-                            set.add(store.field("storeId"))
-                        }
-                    }
-                }
-            }
-
-            addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                    "has_device_num", memberHasDeviceSize, applyStatus, orderStatus)
-            addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                    "has_ip_num", memberHasIp, applyStatus, orderStatus)
-            addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                    "has_merchant_num", set.size(), applyStatus, orderStatus)
-            addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                    "has_appl_num", memberHasApplySize, applyStatus, orderStatus)
-            addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
-                    "has_order_num", memberHasOrderSize, applyStatus, orderStatus)
+            toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,memberId, phone, appNo, orderNo, deviceId,ip)
+            toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
         }
     }
 
-    private void structureDeviceIpIndexDatas(long memberId,String phone,String appNo,String orderNo,String deviceId,String ip,
-                                             List<IndexData> deviceIndexDataList,List<IndexData> ipIndexDataList){
-        int sameDeviceCount = 0
-        OBasicResultSet deviceResult = orientSql.execute(selectDeviceSql, deviceId)
-        if (null != deviceResult && deviceResult.size() > 0) {
-            ODocument deviceDocument = deviceResult.get(0)
-            ODocument device = deviceDocument.field("device0")
-            ORidBag out_HasDevice = device.field("in_MemberHasDevice")
-            if (null != out_HasDevice){
-                sameDeviceCount = out_HasDevice.size()
-            }
-        }
 
-        int sameIpCount = 0
-        OBasicResultSet ipResult = orientSql.execute(selectIpSql, ip)
-        if (null != ipResult && ipResult.size() > 0) {
-            ODocument ipDocument = ipResult.get(0)
-            ODocument ipD = ipDocument.field("ip0")
-            ORidBag out_HasIp = ipD.field("in_MemberHasIp")
-            if (null != out_HasIp){
-                sameIpCount = out_HasIp.size()
-            }
-        }
-
-
-        addIndexDatas(deviceIndexDataList, Long.valueOf(memberId),phone, appNo, orderNo,
-                "equal_device_member_num", sameDeviceCount, deviceId, null);
-
-        addIndexDatas(ipIndexDataList, Long.valueOf(memberId), phone, appNo, orderNo,
-                "equal_ip_member_num", sameIpCount, null, ip);
-    }
-
-    void addIndexDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                       long direct, String deviceId, String ip) {
-        if (null != indexName){
-            IndexData indexData = new IndexData();
-            indexData.setMemberId(memberId);
-            indexData.setMobile(mobile);
-            indexData.setDeviceId(deviceId);
-            indexData.setIp(ip);
-            indexData.setDirect(direct);
-            indexData.setApplyNo(applyNo);
-            indexData.setOrderNo(orderNo);
-            indexData.setIndexName(indexName);
-            indexDatas.add(indexData);
-        }
-    }
-
-    private void addIndexMemberDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                                     long direct, String applyStatus, String orderStatus) {
-        IndexData indexData = new IndexData()
-        indexData.setMemberId(memberId)
-        indexData.setMobile(mobile)
-        indexData.setDirect(direct)
-        indexData.setApplyNo(applyNo)
-        indexData.setOrderNo(orderNo)
-        indexData.setIndexName(indexName)
-        if (null != applyStatus) {
-            indexData.setApplyStatus(Integer.valueOf(applyStatus))
-        }
-        if (null != orderStatus) {
-            indexData.setOrderStatus(Integer.valueOf(orderStatus))
-        }
-        indexDatas.add(indexData)
-    }
-
-    private void insertMemberIndex(List<IndexData> indexDatas) {
-        if (null != indexDatas) {
-            def sql = "insert into member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) " +
-                    "values(?,?,?,?,?,?,now(),?,?)"
-            int indexDataSize = indexDatas.size()
-
-            this.sql.withBatch(indexDataSize, sql) { ps ->
-                for (int i = 0; i < indexDataSize; i++) {
-                    ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(), indexDatas.get(i).getOrderNo(),
-                            indexDatas.get(i).getMobile(), indexDatas.get(i).getIndexName(), indexDatas.get(i).getDirect(),
-                            indexDatas.get(i).getApplyStatus(), indexDatas.get(i).getOrderStatus())
-                }
-            }
-        }
-    }
-
-    private void updateMemberIndex(List<IndexData> indexDatas) {
-        if (null != indexDatas) {
-            def sql = "update member_index set direct = ? ,update_time = now(),apply_status = ?,order_status = ? where apply_no = ? and index_name = ? "
-            int indexDataSize = indexDatas.size()
-
-            this.sql.withBatch(indexDataSize, sql) { ps ->
-                for (int i = 0; i < indexDataSize; i++) {
-                    ps.addBatch(indexDatas.get(i).getDirect(), indexDatas.get(i).getApplyStatus(), indexDatas.get(i).getOrderStatus(),
-                            indexDatas.get(i).getApplyNo(), indexDatas.get(i).getIndexName())
-                }
-            }
-        }
-    }
-
-    void insertDeviceAndIpIndex (List<IndexData> deviceIndexDatas, List<IndexData> ipIndexDatas) {
-        try {
-            def sql = "insert into device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) " +
-                    " values(?,?,?,?,?,?,?,now())"
-            int indexDeviceDataSize = deviceIndexDatas.size()
-
-            this.sql.withBatch(indexDeviceDataSize, sql) { ps ->
-                for (int i = 0; i < indexDeviceDataSize; i++) {
-                    ps.addBatch(deviceIndexDatas.get(i).getMemberId(), deviceIndexDatas.get(i).getApplyNo(), deviceIndexDatas.get(i).getOrderNo(),
-                            deviceIndexDatas.get(i).getMobile(),deviceIndexDatas.get(i).getDeviceId(), deviceIndexDatas.get(i).getIndexName(), deviceIndexDatas.get(i).getDirect())
-                }
-            }
-
-            def ipSql = "insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) " +
-                    " values(?,?,?,?,?,?,?,now())"
-
-            int indexIpDataSize = ipIndexDatas.size()
-
-            this.sql.withBatch(indexIpDataSize, ipSql) { ps ->
-                for (int i = 0; i < indexIpDataSize; i++) {
-                    ps.addBatch(ipIndexDatas.get(i).getMemberId(), ipIndexDatas.get(i).getApplyNo(), ipIndexDatas.get(i).getOrderNo(),
-                            ipIndexDatas.get(i).getMobile(),ipIndexDatas.get(i).getIp(), ipIndexDatas.get(i).getIndexName(), ipIndexDatas.get(i).getDirect())
-                }
-            }
-        } catch (DuplicateKeyException e) {
-            LOG.error(e.toString())
-        }
-    }
-
-    void updateDeviceAndIpIndex (List<IndexData> deviceIndexDatas, List<IndexData> ipIndexDatas) {
-        try {
-            def sql = "update device_index set  direct = ? ,update_time = now() where apply_no = ? and deviceId = ?"
-            int indexDeviceDataSize = deviceIndexDatas.size()
-
-            this.sql.withBatch(indexDeviceDataSize, sql) { ps ->
-                for (int i = 0; i < indexDeviceDataSize; i++) {
-                    ps.addBatch(deviceIndexDatas.get(i).getDirect(), deviceIndexDatas.get(i).getApplyNo(),deviceIndexDatas.get(i).getDeviceId())
-                }
-            }
-
-            def ipSql = "update ip_index set  direct = ? ,update_time = now() where apply_no = ? and ip = ? "
-
-            int indexIpDataSize = ipIndexDatas.size()
-
-            this.sql.withBatch(indexIpDataSize, ipSql) { ps ->
-                for (int i = 0; i < indexIpDataSize; i++) {
-                    ps.addBatch(deviceIndexDatas.get(i).getDirect(), deviceIndexDatas.get(i).getApplyNo(),deviceIndexDatas.get(i).getIp())
-                }
-            }
-        } catch (DuplicateKeyException e) {
-            LOG.error(e.toString())
-        }
-    }
 }

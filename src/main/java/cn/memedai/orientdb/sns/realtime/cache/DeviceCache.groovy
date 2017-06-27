@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -25,8 +26,11 @@ class DeviceCache {
     @Resource
     private OrientSql orientSql
 
-    private String getDeviceSql = 'select from Device where deviceId=?'
-    private String updateDeviceSql = 'update Device set deviceId=? upsert return after where deviceId=?'
+    @Value("#{snsOrientSqlProp.getDeviceSql}")
+    private String getDeviceSql
+
+    @Value("#{snsOrientSqlProp.updateDeviceSql}")
+    private String updateDeviceSql
 
     @Cacheable(value = 'deviceCache')
     CacheEntry get(deviceId) {

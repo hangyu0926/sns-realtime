@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.util.StringUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -26,12 +27,14 @@ class ApplyRidPhoneRidCache {
     @Resource
     private OrientSql orientSql
 
-    private String getPhoneRidSql = 'select expand(in("PhoneHasApply")) from '
+    @Value("#{snsOrientSqlProp.getPhoneRidWithApplyRidSql}")
+    private String getPhoneRidWithApplyRidSql
 
     @Cacheable(value = 'applyRidPhoneRidCache')
     CacheEntry get(appRid) {
-        List<ODocument> result = orientSql.execute(getPhoneRidSql + appRid)
+        List<ODocument> result = orientSql.execute(getPhoneRidWithApplyRidSql + appRid)
         if (CollectionUtils.isEmpty(result)) {
+            //查mysql 根据apply查询phone
             return null
         }
 

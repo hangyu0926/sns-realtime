@@ -1,9 +1,11 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
 import cn.memedai.orientdb.sns.realtime.cache.MemberCache
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -22,7 +24,8 @@ class LoansToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private MemberCache memberCache
 
-    private String updateOverDueSql = 'update Member set isOverdue=true where memberId=?'
+    @Value("#{snsOrientSqlProp.updateOverDueSql}")
+    private String updateOverDueSql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -32,9 +35,10 @@ class LoansToOrientDBServiceImpl implements RealTimeService {
         int size = dataList.size()
         for (def i = 0; i < size; i++) {
             Map<String, Object> loanMap = dataList.get(i)
+            long memberId = loanMap.BORROWER_ID
+            memberCache.get(memberId)
 
             if (null != loanMap.OVERDUE_DAYS && loanMap.OVERDUE_DAYS > 3) {
-                long memberId = loanMap.BORROWER_ID
                 orientSql.execute(updateOverDueSql, memberId)
             }
         }

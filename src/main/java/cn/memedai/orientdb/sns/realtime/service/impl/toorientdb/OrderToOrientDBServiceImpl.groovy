@@ -6,6 +6,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -36,7 +37,12 @@ class OrderToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private OrientSql orientSql
 
-    private String updateOrderSql = 'update Order set orderNo=?,status=?,originalStatus=?,amount=?,createdDatetime=? upsert return after where orderNo=?'
+    //在CtaIpOrientDb中用到
+    @Resource
+    private OrderRidMemberRidCache orderRidMemberRidCache
+
+    @Value("#{snsOrientSqlProp.updateOrderSql}")
+    private String updateOrderSql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -63,14 +69,16 @@ class OrderToOrientDBServiceImpl implements RealTimeService {
         String orderRid = OrientSqlUtil.getRid(orientSql.execute(updateOrderSql, orderMap.order_no, getStatus(orderMap.status), orderMap.status,
                 (orderMap.pay_amount) / 100, orderMap.created_datetime, orderMap.order_no))
 
+        if (StringUtils.isNotBlank(orderRid)) {
+            orderCache.put(new CacheEntry(orderMap.order_no, orderRid))
+            orderRidMemberRidCache.put(new CacheEntry(orderRid, memberRid))
+        }
+
         String op =  orderMap.__op__
         if ("update".equals(op)){
             return
         }
 
-        if (StringUtils.isNotBlank(orderRid)) {
-            orderCache.put(new CacheEntry(orderMap.order_no, orderRid))
-        }
 
         if (StringUtils.isNotBlank(memberRid) && StringUtils.isNotBlank(phoneRid)) {
             orientSql.createEdge('HasPhone', memberRid, phoneRid)

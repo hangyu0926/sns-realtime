@@ -416,6 +416,44 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
             </map>
         </entry>
         <!-- topic End-->
+
+        <!-- topic Start-->
+        <entry key="accounting">
+            <map>
+                <!--table Start-->
+                <entry key="accounting.FSS_LOANS">
+                    <map>
+                        <!--table schema Start-->
+                        <entry key="avroSchema">
+                            <value>
+                                <![CDATA[
+                                    {"namespace": "accounting.FSS_LOANS",
+                                     "type": "record",
+                                     "name": "FSS_LOANS",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "BORROWER_ID", "type": ["long"]},
+                                         {"name": "OVERDUE_DAYS", "type": ["long"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
+                                ]]>
+                            </value>
+                        </entry>
+                        <!--table schema End-->
+                        <!--table service Start-->
+                        <entry key="services">
+                            <list>
+                                <ref bean="loansToOrientDBServiceImpl"/>
+                            </list>
+                        </entry>
+                        <!--table service End-->
+                    </map>
+                </entry>
+                <!-- table End-->
+            </map>
+        </entry>
+        <!-- topic End-->
     </util:map>
 
 </beans>

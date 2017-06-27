@@ -6,14 +6,271 @@
 
     <!-- TODO -->
     <util:properties id="sqlProp">
+        <prop key="selectCallToInfoMySql">
+            <![CDATA[select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where APPL_NO =? and PHONE_NO is not null]]>
+        </prop>
+
+        <prop key="selectFromApplyMysql">
+            <![CDATA[select member_id as memberId,cellphone as phone,order_no as orderNo from network.apply_info where apply_no = ?]]>
+        </prop>
+
+        <prop key="selectPhoneFromApplyMySql">
+            <![CDATA[select cellphone as phone from network.apply_info where apply_no = ?]]>
+        </prop>
+
+        <prop key="selectMemberFromApplyMysql">
+            <![CDATA[select member_id as memberId from network.apply_info where apply_no = ?]]>
+        </prop>
+
+        <prop key="selectOrderFromApplyMysql">
+            <![CDATA[select order_no as orderNo from network.apply_info where apply_no = ?]]>
+        </prop>
+
+
+
+        <prop key="selectFromOrderMysql">
+            <![CDATA[select a.member_id as memberId,a.mobile as phone,b.apply_no as applyNo from network.money_box_order a left join network.apply_info b on a.order_no = b.order_no where a.order_no = ?]]>
+        </prop>
+
+        <prop key="selectMemberFromOrderMysql">
+            <![CDATA[select member_id as memberId from network.money_box_order where order_no = ?]]>
+        </prop>
+
+
+
+        <prop key="selectDirectMemberCountMySql">
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and direct = "contact_accept_member_num"]]>
+        </prop>
+
+        <prop key="selectDirectMemberCountWithOutOrderNoSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and order_no is null and direct = "contact_accept_member_num"]]>
+        </prop>
+
+        <prop key="updateMemberOrderSql">
+            <![CDATA[update member_index set order_no = ? where apply_no = ?]]>
+        </prop>
+
+        <prop key="selectMemberCountSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and direct = "has_appl_num"]]>
+        </prop>
+
+        <prop key="selectMemberCountWhereDeviceSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and direct = "has_device_num"]]>
+        </prop>
+
+        <prop key="selectMemberCountWhereDeviceByApplySql">
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and direct = "has_device_num"]]>
+        </prop>
+
+        <prop key="updateMemberApplySql">
+            <![CDATA[update member_index set apply_no = ? where order_no = ?]]>
+        </prop>
+
+
+
+        <prop key="selectPhoneTagCountWithOutOrderNoSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM phonetag_index where apply_no = ? and order_no is null]]>
+        </prop>
+
+        <prop key="updatePhoneTagOrderSql">
+            <![CDATA[update phonetag_index set order_no = ? where apply_no = ?]]>
+        </prop>
+
+        <prop key="selectPhoneTagCountWithOutMemberSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM phonetag_index where apply_no = ? and member_id is null]]>
+        </prop>
+
+        <prop key="updatePhoneTagMemberSql">
+            <![CDATA[update phonetag_index set member_id = ? where apply_no = ?]]>
+        </prop>
+
+
+
+        <prop key="selectDeviceIndexSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM device_index where apply_no = ? and deviceId = ?]]>
+        </prop>
+
+        <prop key="selectDeviceIndexByOrderSql">
+            <![CDATA[SELECT COUNT(1) AS num FROM device_index where order_no = ? and deviceId = ?]]>
+        </prop>
+
+
         <prop key="insertMemberIndex">
-            <![CDATA[]]>
+            <![CDATA[insert into member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) values(?,?,?,?,?,?,now(),?,?)]]>
+        </prop>
+
+        <prop key="insertPhonetagIndex">
+            <![CDATA[insert into phonetag_index (member_id, apply_no, order_no,mobile,index_name,direct,indirect,create_time) values(?,?,?,?,?,?,?,now())]]>
+        </prop>
+
+        <prop key="insertDeviceIndex">
+            <![CDATA[insert into device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
+        </prop>
+
+        <prop key="insertIpIndex">
+            <![CDATA[insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
     </util:properties>
 
     <util:properties id="snsOrientSqlProp">
-        <prop key="updateMemberOverdueToTrue">
+        <prop key="getApplySql">
+            <![CDATA[select from Apply where applyNo=?]]>
+        </prop>
+
+        <prop key="getOrderSql">
+            <![CDATA[select from Order where orderNo=?]]>
+        </prop>
+
+        <prop key="selectFromApplySql">
+            <![CDATA[select in("PhoneHasApply").phone as phone,in("MemberHasApply").memberId as memberId,out("ApplyHasOrder").orderNo as orderNo from apply where applyNo = ? unwind phone,memberId,orderNo]]>
+        </prop>
+
+        <prop key="selectFromOrderSql">
+            <![CDATA[select in("PhoneHasOrder").phone as phone,in("MemberHasOrder").memberId as memberId,in("ApplyHasOrder").applyNo as applyNo from order where orderNo = ? unwind phone,memberId,applyNo]]>
+        </prop>
+
+        <prop key="selectOrderFromApplySql">
+            <![CDATA[select out("ApplyHasOrder").orderNo as orderNo,out("ApplyHasOrder").originalStatus as orderStatus from apply where applyNo = ? unwind orderNo,orderStatus]]>
+        </prop>
+
+        <prop key="selectApplyFromOrderSql">
+            <![CDATA[select in("ApplyHasOrder").applyNo as applyNo,in("ApplyHasOrder").originalStatus as applyStatus from order where orderNo = ? unwind applyNo,applyStatus]]>
+        </prop>
+
+        <prop key="selectPhoneFromApplySql">
+            <![CDATA[select in("PhoneHasApply").phone as phone,originalStatus as applyStatus from apply where applyNo = ? unwind phone,applyStatus]]>
+        </prop>
+
+        <prop key="getMemberRidWithApplyRidSql">
+            <![CDATA[select expand(in("MemberHasApply")) from ]]>
+        </prop>
+
+        <prop key="getMemberRidWithOrderRidSql">
+            <![CDATA[select expand(in("MemberHasOrder")) from ]]>
+        </prop>
+
+        <prop key="getPhoneRidWithApplyRidSql">
+            <![CDATA[select expand(in("PhoneHasApply")) from ]]>
+        </prop>
+
+        <prop key="updateApplyNoSql">
+            <![CDATA[update Apply set applyNo=? upsert return after where applyNo=?]]>
+        </prop>
+
+        <prop key="updateApplySql">
+            <![CDATA[update Apply set applyNo=?,status=?,originalStatus=?,createdDatetime=? upsert return after where applyNo=?]]>
+        </prop>
+
+        <prop key="updateCashLoanApplySql">
+            <![CDATA[update Apply set applyNo=?,createdDatetime=? upsert return after where applyNo=?]]>
+        </prop>
+
+        <prop key="updateCashLoanApplyPassSql">
+            <![CDATA[update Apply set applyNo=?,status=? upsert return after where applyNo=?]]>
+        </prop>
+
+        <prop key="updateOrderNoSql">
+            <![CDATA[update Order set orderNo=? upsert return after where orderNo=?]]>
+        </prop>
+
+        <prop key="updateOrderSql">
+            <![CDATA[update Order set orderNo=?,status=?,originalStatus=?,amount=?,createdDatetime=? upsert return after where orderNo=?]]>
+        </prop>
+
+        <prop key="checkCallToSql">
+            <![CDATA[select from (select expand(out_{0}) from {1}) where in = {2}]]>
+        </prop>
+
+        <prop key="createCallToSql">
+            <![CDATA[create edge CallTo from {0} to {1} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?]]>
+        </prop>
+
+        <prop key="updateCallToSql">
+            <![CDATA[update edge {0} set callCnt = ?,callLen=?,callInCnt=?,callOutCnt=?,reportTime=?]]>
+        </prop>
+
+        <prop key="updateOverDueSql">
             <![CDATA[update Member set isOverdue=true where memberId=?]]>
+        </prop>
+
+        <prop key="getPhoneSql">
+            <![CDATA[select from Phone where phone=?]]>
+        </prop>
+
+        <prop key="updatePhoneSql">
+            <![CDATA[update Phone set phone=? upsert return after where phone=?]]>
+        </prop>
+
+        <prop key="getPhoneMarkSql">
+            <![CDATA[select from PhoneMark where mark=?]]>
+        </prop>
+
+        <prop key="updatePhoneMarkSql">
+            <![CDATA[update PhoneMark set mark=? upsert return after where mark=?]]>
+        </prop>
+
+        <prop key="getPhoneSourceSql">
+            <![CDATA[select from PhoneSource where source=?]]>
+        </prop>
+
+        <prop key="updatePhoneSourceSql">
+            <![CDATA[update PhoneSource set source=? upsert return after where source=?]]>
+        </prop>
+
+        <prop key="getDeviceSql">
+            <![CDATA[select from Device where deviceId=?]]>
+        </prop>
+
+        <prop key="updateDeviceSql">
+            <![CDATA[update Device set deviceId=? upsert return after where deviceId=?]]>
+        </prop>
+
+        <prop key="getIpSql">
+            <![CDATA[select from Ip where ip=?]]>
+        </prop>
+
+        <prop key="updateIpSql">
+            <![CDATA[update Ip set ip=?,ipCity=? upsert return after where ip=?]]>
+        </prop>
+
+        <prop key="getMemberSql">
+            <![CDATA[select from Member where memberId=?]]>
+        </prop>
+
+        <prop key="updateMemberSql">
+            <![CDATA[update Member set memberId=? upsert return after where memberId=?]]>
+        </prop>
+
+        <prop key="getStoreSql">
+            <![CDATA[select from Store where storeId=?]]>
+        </prop>
+
+        <prop key="updateStoreSql">
+            <![CDATA[update Store set storeId=? upsert return after where storeId=?]]>
+        </prop>
+
+        <prop key="selectMemberHasApplyOrderSql">
+            <![CDATA[select out("MemberHasApply").size() as MemberHasApplySize,out("MemberHasOrder").size() as MemberHasOrderSize,@rid as members0 from member where memberId = ?]]>
+        </prop>
+
+        <prop key="selectMemberHasDeviceIpSql">
+            <![CDATA[select out("MemberHasDevice").size() as MemberHasDeviceSize,out("MemberHasIp").size() as MemberHasIpSize from member where memberId = ?]]>
+        </prop>
+
+        <prop key="selectMemberHasSql">
+            <![CDATA[select out("MemberHasDevice").size() as MemberHasDeviceSize,out("MemberHasIp").size() as MemberHasIpSize,out("MemberHasApply").size() as MemberHasApplySize,out("MemberHasOrder").size() as MemberHasOrderSize,@rid as members0 from member where memberId = ?]]>
+        </prop>
+
+        <prop key="selectCallToFromPhoneSql">
+            <![CDATA[select @rid as phoneRid0,phone as phone, unionall(in_CallTo,out_CallTo) as callTos,in("HasPhone") as members0 from Phone where phone = ?]]>
+        </prop>
+
+        <prop key="selectDeviceSql">
+            <![CDATA[select in("MemberHasDevice").size() as MemberHasDeviceSize  from device where deviceId = ?]]>
+        </prop>
+
+        <prop key="selectIpSql">
+            <![CDATA[select in("MemberHasIp").size() as MemberHasIpSize from ip where ip = ?]]>
         </prop>
     </util:properties>
 

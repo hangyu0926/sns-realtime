@@ -46,7 +46,7 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
         record.put('DEVICE_ID', 'ADFCA33B-BF8A-4FD8-937D-0F1A0ED4F2A9')
         record.put('IP', '117.136.67.71')
         record.put('IP_CITY', '苏州市')
-        record.put('__op__', 'insert') //必须字段
+        record.put('__op__', 'update') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

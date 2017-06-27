@@ -51,7 +51,7 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
         record.put('apply_status', 4000)
         record.put('store_id', '2759')
         record.put('order_no', '1496921804405003')
-        record.put('__op__', 'insert') //必须字段
+        record.put('__op__', 'update') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

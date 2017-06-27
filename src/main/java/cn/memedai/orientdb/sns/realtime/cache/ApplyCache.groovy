@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -26,14 +27,17 @@ class ApplyCache {
     @Resource
     private OrientSql orientSql
 
-    private String getApplySql = 'select from Apply where applyNo=?'
-    private String updateApplySql = 'update Apply set applyNo=? upsert return after where applyNo=?'
+    @Value("#{snsOrientSqlProp.getApplySql}")
+    private String getApplySql
+
+    @Value("#{snsOrientSqlProp.updateApplyNoSql}")
+    private String updateApplyNoSql
 
     @Cacheable(value = 'applyCache')
     CacheEntry get(applyNo) {
         List<ODocument> result = orientSql.execute(getApplySql, applyNo)
         if (CollectionUtils.isEmpty(result)) {
-            String rid = OrientSqlUtil.getRid(orientSql.execute(updateApplySql, applyNo, applyNo))
+            String rid = OrientSqlUtil.getRid(orientSql.execute(updateApplyNoSql, applyNo, applyNo))
             if (StringUtils.isBlank(rid)) {
                 return null
             }

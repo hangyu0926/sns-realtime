@@ -17,6 +17,7 @@ import com.orientechnologies.orient.core.sql.query.OResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -36,6 +37,9 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
     private Sql sql
 
     @Resource
+    private ToMysqlServiceImpl toMysqlService
+
+    @Resource
     private ApplyCache applyCache
 
     @Resource
@@ -45,18 +49,19 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
     private PhoneCache phoneCache
 
     @Resource
-    private ApplyHasDoCache applyHasDoCache
+    private ApplyHasDoCache applyHasDoneCache
 
-    private selectPhoneFromApplySql = 'select in("PhoneHasApply").phone as phone,originalStatus as applyStatus from apply where applyNo = ? unwind phone,applyStatus'
+    @Value("#{snsOrientSqlProp.selectCallToFromPhoneSql}")
+    private selectCallToFromPhoneSql
 
-    private selectOrderFromApplySql = 'select out("ApplyHasOrder").orderNo as orderNo,out("ApplyHasOrder").originalStatus as orderStatus from apply where applyNo = ? unwind orderNo,orderStatus'
-
-    private selectCallToFromPhoneSql = 'select @rid as phoneRid0,phone as phone, unionall(in_CallTo,out_CallTo) as callTos,in("HasPhone") as members0 from Phone where phone = ?'
-
-    private selectDirectMemberCountSql = 'SELECT COUNT(*) AS num FROM member_index where apply_no = ? and direct = "contact_accept_member_num"'
+    @Value("#{sqlProp.selectDirectMemberCountMySql}")
+    private selectDirectMemberCountMySql
 
     @Resource
     private ApplyNoOrderNoCache applyNoOrderNoCache
+
+    @Resource
+    private ApplyNoPhoneCache applyNoPhoneCache
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null || dataList.size() == 0) {
@@ -71,7 +76,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
             return
         }
 
-        if ((applyHasDoCache.get(appNo) != null) && (applyHasDoCache.get(appNo).value != null)) {
+        if ((applyHasDoneCache.get(appNo) != null) && (applyHasDoneCache.get(appNo).value != null)) {
             return
         }
 
@@ -80,34 +85,24 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
             return
         }
 
-        int num = sql.firstRow(selectDirectMemberCountSql,[appNo] as Object[]).num
+        int num = sql.firstRow(selectDirectMemberCountMySql,[appNo] as Object[]).num
         if (num > 0){
             return
         }
 
-        OBasicResultSet phoneResult = orientSql.execute(selectPhoneFromApplySql,appNo)
-        ODocument phoneDocument = phoneResult.get(0)
-        String phone =phoneDocument.field("phone") != null ? phoneDocument.field("phone").toString() : null
-        String applyStatus = phoneDocument.field("applyStatus") != null ? phoneDocument.field("applyStatus").toString() : null
-        if (StringUtils.isBlank(phone)){
-            return
-        }
-
+        String phone = null
+        String applyStatus = null
         String orderNo = null
         String orderStatus = null
-        /*CacheEntry applyNoOrderNoCacheEntry = applyNoOrderNoCache.get(appNo)
+
+        CacheEntry applyNophoneCacheEntry = applyNoPhoneCache.get(appNo)
+        if (applyNophoneCacheEntry != null) {
+            phone = applyNophoneCacheEntry.value
+        }
+
+        CacheEntry applyNoOrderNoCacheEntry = applyNoOrderNoCache.get(appNo)
         if (applyNoOrderNoCacheEntry != null) {
             orderNo = applyNoOrderNoCacheEntry.value
-        }*/
-
-        //如果缓存中没有再去查询
-        if (orderNo == null){
-            OBasicResultSet orderNoResult = orientSql.execute(selectOrderFromApplySql,appNo)
-            if (null != orderNoResult){
-                ODocument orderNoDocument = orderNoResult.get(0)
-                orderNo =  orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
-                orderStatus = orderNoDocument.field("orderStatus") != null ? orderNoDocument.field("orderStatus").toString() : null
-            }
         }
 
         //查询一度二度
@@ -121,11 +116,12 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         ODocument phoneInfo = (ODocument) phoneInfos.get(0)
         ORecordLazyList members0 = phoneInfo.field("members0")
 
-        if (members0.isEmpty()){
-            return
+        String memberId = null
+        if (!members0.isEmpty()){
+            ODocument member = (ODocument) members0.get(0)
+            memberId = member.field("memberId")
         }
-        ODocument member = (ODocument) members0.get(0)
-        String memberId = member.field("memberId")
+
 
         MemberDeviceAndApplyAndOrderBean memberDeviceAndApplyAndOrderBean = new MemberDeviceAndApplyAndOrderBean()
 
@@ -139,7 +135,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         List<String> directMarks = new ArrayList<String>()
 
         for (Map.Entry<String, Integer> en : directSet) {
-            addIndexDatas(indexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+            toMysqlService.addIndexDatas(indexDatas, memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                     IndexNameEnum.fromValue(en.getKey()), en.getValue(), 0)
             directMarks.add(en.getKey())
         }
@@ -153,35 +149,35 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                     }
                 }
             } else {
-                addIndexDatas(indexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+                toMysqlService.addIndexDatas(indexDatas, memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                         IndexNameEnum.fromValue(en.getKey()), 0, en.getValue())
             }
 
         }
 
-        insertPhonetagIndex(indexDatas)
+        toMysqlService.insertPhonetagIndex(indexDatas)
 
         List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
 
-        addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_accept_member_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberNum(),applyStatus,orderStatus)
-        addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_refuse_member_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberNum(),applyStatus,orderStatus)
-        addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_overdue_member_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberNum(),applyStatus,orderStatus)
-        addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_black_member_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberNum(),applyStatus,orderStatus)
 
-        addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_accept_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberCallLenNum(),applyStatus,orderStatus)
-        addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_refuse_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberCallLenNum(),applyStatus,orderStatus)
-        addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_overdue_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberCallLenNum(),applyStatus,orderStatus)
-        addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
                 "contact_black_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberCallLenNum(),applyStatus,orderStatus)
 
-        insertMemberIndex(memberIndexDatas)
+        toMysqlService.insertMemberIndex(memberIndexDatas)
     }
 
     private void queryDirectRelationDataByPhoneNo(String memberRelatedPhoneNo,Map<String, Integer> map, Map<String, Integer> map2,ODocument phoneInfo,MemberDeviceAndApplyAndOrderBean memberDeviceAndApplyAndOrderBean){
@@ -366,8 +362,8 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                         OIdentifiable t = it.next()
                         ODocument member = (ODocument) t
                         ODocument member1 = member.field("out")
-                        Boolean isBlack = member1.field("isBlack") == null ? false : (Boolean) member1.field("isBlack")
-                        Boolean isOverdue = member1.field("isOverdue") == null ? false : (Boolean) member1.field("isOverdue")
+                        def isBlack = member1.field("isBlack") == null ? false :  member1.field("isBlack")
+                        def isOverdue = member1.field("isOverdue") == null ? false : member1.field("isOverdue")
 
                         if (isBlack) {
                             contactBlack++
@@ -498,70 +494,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
     }
 
 
-    private void insertPhonetagIndex(List<IndexData> indexDatas) {
-        if (null != indexDatas) {
-            def sql = "insert into phonetag_index (member_id, apply_no, order_no,mobile,index_name,direct,indirect,create_time) " +
-                    "values(?,?,?,?,?,?,?,now())"
-            int indexDataSize = indexDatas.size()
 
-            this.sql.withBatch(indexDataSize, sql) { ps ->
-                for (int i = 0; i < indexDataSize; i++) {
-                    ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(), indexDatas.get(i).getOrderNo(),
-                            indexDatas.get(i).getMobile(), indexDatas.get(i).getIndexName(), indexDatas.get(i).getDirect(),
-                            indexDatas.get(i).getIndirect())
-                }
-            }
-        }
-    }
-
-    private void insertMemberIndex(List<IndexData> indexDatas) {
-        if (null != indexDatas) {
-            def sql = "insert into member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) " +
-                    "values(?,?,?,?,?,?,now(),?,?)"
-            int indexDataSize = indexDatas.size()
-
-            this.sql.withBatch(indexDataSize, sql) { ps ->
-                for (int i = 0; i < indexDataSize; i++) {
-                    ps.addBatch(indexDatas.get(i).getMemberId(), indexDatas.get(i).getApplyNo(), indexDatas.get(i).getOrderNo(),
-                            indexDatas.get(i).getMobile(), indexDatas.get(i).getIndexName(), indexDatas.get(i).getDirect(),
-                            indexDatas.get(i).getApplyStatus(), indexDatas.get(i).getOrderStatus())
-                }
-            }
-        }
-    }
-
-    private void addIndexDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                                      long direct, long indirect) {
-        if (null != indexName){
-            IndexData indexData = new IndexData()
-            indexData.setMemberId(memberId)
-            indexData.setMobile(mobile)
-            indexData.setDirect(direct)
-            indexData.setIndirect(indirect)
-            indexData.setApplyNo(applyNo)
-            indexData.setOrderNo(orderNo)
-            indexData.setIndexName(indexName)
-            indexDatas.add(indexData)
-        }
-    }
-
-    private void addIndexMemberDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                                            long direct,String applyStatus,String orderStatus) {
-        IndexData indexData = new IndexData()
-        indexData.setMemberId(memberId)
-        indexData.setMobile(mobile)
-        indexData.setDirect(direct)
-        indexData.setApplyNo(applyNo)
-        indexData.setOrderNo(orderNo)
-        indexData.setIndexName(indexName)
-        if (null != applyStatus){
-            indexData.setApplyStatus(Integer.valueOf(applyStatus))
-        }
-        if (null != orderStatus){
-            indexData.setOrderStatus(Integer.valueOf(orderStatus))
-        }
-        indexDatas.add(indexData)
-    }
 
     /**
      * 校验phone合法性
