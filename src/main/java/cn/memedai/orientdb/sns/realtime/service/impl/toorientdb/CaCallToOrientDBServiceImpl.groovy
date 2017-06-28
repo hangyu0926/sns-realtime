@@ -137,7 +137,7 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                     return
                 }
 
-                def args = [callCnt, callLen, callInCnt, callOutCnt, createTime]
+                def args = [callCnt, callLen, callInCnt, callOutCnt, createTime] as Object[]
 
                 OResultSet ocrs = orientSql.execute(MessageFormat.format(checkEdgeSql, "CallTo", fromPhoneRid, toPhoneRid))
                 if (CollectionUtils.isEmpty(ocrs)) {
