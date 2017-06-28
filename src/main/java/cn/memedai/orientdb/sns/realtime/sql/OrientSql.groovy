@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
 import java.text.MessageFormat
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 
 /**
  * Created by kisho on 2017/6/8.
@@ -19,20 +21,28 @@ class OrientSql {
 
     private static final Logger LOG = LoggerFactory.getLogger(OrientSql.class)
 
-    private static ODatabaseDocumentTx tx
-
     private String checkEdgeSql = 'select from (select expand(out_{0}) from {1}) where in = {2}'
     private String createEdgeSql = 'create edge {0} from {1} to {2}'
+
+    private ThreadLocal<ODatabaseDocumentTx> threadLocal = new ThreadLocal<>()
+
+    private Lock lock = new ReentrantLock()
 
     @Resource
     private Properties orientDbConfig
 
     private ODatabaseDocumentTx getTx() {
-        if (tx == null) {
-            tx = new ODatabaseDocumentTx(orientDbConfig.url)
-            tx.open(orientDbConfig.userName, orientDbConfig.password)
+        if (threadLocal.get() == null) {
+            lock.lock()
+            try {
+                ODatabaseDocumentTx tx = new ODatabaseDocumentTx(orientDbConfig.url)
+                tx.open(orientDbConfig.userName, orientDbConfig.password)
+                threadLocal.set(tx)
+            } finally {
+                lock.unlock()
+            }
         }
-        return tx
+        threadLocal.get()
     }
 
     public <RET> RET execute(String sql, Object... args) {

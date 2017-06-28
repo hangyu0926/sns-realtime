@@ -156,7 +156,7 @@ class RealTimeDispatch {
                 kafkaProp.putAll(kafkaConfigMap[topic] == null ? defaultKafkaMap : kafkaConfigMap[topic])
                 topic2KafkaProMap[topic] = kafkaProp
                 topic2KafkaProMap[topic]['group.id'] = 'sns_' + topic
-                topic2LoggerMap[topic] = LoggerFactory.getLogger("${getClass().getName()}#$topic")
+                topic2LoggerMap[topic] = LoggerFactory.getLogger("${RealTimeDispatch.class.getName()}#$topic")
         }
     }
 
