@@ -9,8 +9,11 @@ import org.apache.avro.file.SeekableByteArrayInput
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DatumReader
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.OffsetAndMetadata
+import org.apache.kafka.common.TopicPartition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -40,11 +43,16 @@ class RealTimeDispatch {
     @Resource
     private Map<String, Map<String, Map<String, Object>>> kafkaDispatchConfig
 
+    @Resource
+    private Map<String, ExecutorService> topicDispatchMap
+
     private Map<String, DatumReader<GenericRecord>> table2DatumReaderMap = [:]
 
     private Map<String, List<RealTimeService>> table2ServicesMap = [:]
 
     private Map<String, Properties> topic2KafkaProMap = [:]
+
+    private Map<String, Logger> topic2LoggerMap = [:]
 
     @Resource
     private Sql sql
@@ -64,54 +72,74 @@ class RealTimeDispatch {
         }
     }
 
-    private void startConsumerThread(String topic) {
-        JsonSlurper jsonSlurper = new JsonSlurper()
-        Logger cLog = LoggerFactory.getLogger("${getClass().getName()}#$topic")
-        KafkaConsumer consumer = new KafkaConsumer<>(topic2KafkaProMap[topic])
+    private void startConsumerThread(final String topic) {
+        final KafkaConsumer consumer = new KafkaConsumer<>(topic2KafkaProMap[topic])
         consumer.subscribe([topic])
-        cLog.info("Subscribed the topic {} successfully!", topic)
-        long processdCount = 0
+        LOG.info("Subscribed the topic {} successfully!", topic)
         while (true) {
             try {
-                ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
-                records.each {
-                    record ->
-                        DataFileReader<GenericRecord> dataReader = null
-                        try {
-                            dataReader = new DataFileReader<GenericRecord>(new SeekableByteArrayInput(record.value()), table2DatumReaderMap[record.key()])
-                        } catch (IOException e) {
-                            cLog.error('schema does not match!', e)
-                            cLog.warn('consume result->{},records->{}', 'fail', records.asCollection().toString())
-                            return
+                final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
+                ExecutorService subExecutorService = topicDispatchMap[topic]
+                if (subExecutorService == null) {
+                    startSubConsumer(topic, consumer, records)
+                } else {
+                    subExecutorService.submit(new Runnable() {
+                        @Override
+                        void run() {
+                            startSubConsumer(topic, consumer, records)
                         }
-                        dataReader.each {
-                            data ->
-                                long start = System.currentTimeMillis()
-                                def dateListText = [data.toString()].toString()
-                                def dataList = jsonSlurper.parseText(dateListText)
-                                try {
-                                    //执行service
-                                    table2ServicesMap[record.key()].each {
-                                        service ->
-                                            long start2 = System.currentTimeMillis()
-                                            service.process(dataList)
-                                            cLog.info('{}#process, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
-                                    }
-                                    cLog.info('consumer result->{},processed count->{},topic->{},table->{},used time->{}ms', 'success', ++processdCount, topic, record.key(), (System.currentTimeMillis() - start))
-                                } catch (Throwable e) {
-                                    cLog.error("", e)
-                                    cLog.warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dateListText)
-                                    throw e
-                                }
-                        }
+                    })
                 }
-                consumer.commitAsync()
             } catch (Throwable e) {
                 LOG.error("", e)
                 throw e
             }
         }
 
+    }
+
+    private void startSubConsumer(String topic, KafkaConsumer consumer, ConsumerRecords records) {
+        JsonSlurper jsonSlurper = new JsonSlurper()
+        records.each {
+            record ->
+                DataFileReader<GenericRecord> dataReader = null
+                try {
+                    dataReader = new DataFileReader<GenericRecord>(new SeekableByteArrayInput(record.value()), table2DatumReaderMap[record.key()])
+                } catch (IOException e) {
+                    getLogger(topic).error('schema does not match!', e)
+                    getLogger(topic).warn('consume result->{},records->{}', 'fail', records.asCollection().toString())
+                    return
+                }
+                dataReader.each {
+                    data ->
+                        long start = System.currentTimeMillis()
+                        def dateListText = [data.toString()].toString()
+                        def dataList = jsonSlurper.parseText(dateListText)
+                        try {
+                            //执行service
+                            table2ServicesMap[record.key()].each {
+                                service ->
+                                    long start2 = System.currentTimeMillis()
+                                    service.process(dataList)
+                                    getLogger(topic).info('{}#process, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
+                            }
+                            getLogger(topic).info('consumer result->{},topic->{},table->{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
+                        } catch (Throwable e) {
+                            getLogger(topic).error("", e)
+                            getLogger(topic).warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dateListText)
+                            throw e
+                        }
+                }
+        }
+        commitAsync(consumer, records)
+    }
+
+    private void commitAsync(KafkaConsumer consumer, ConsumerRecords records) {
+        for (TopicPartition partition : records.partitions()) {
+            List<ConsumerRecord<String, String>> partitionRecords = records.records(partition)
+            long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset()
+            consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
+        }
     }
 
     @PostConstruct
@@ -128,7 +156,12 @@ class RealTimeDispatch {
                 kafkaProp.putAll(kafkaConfigMap[topic] == null ? defaultKafkaMap : kafkaConfigMap[topic])
                 topic2KafkaProMap[topic] = kafkaProp
                 topic2KafkaProMap[topic]['group.id'] = 'sns_' + topic
+                topic2LoggerMap[topic] = LoggerFactory.getLogger("${getClass().getName()}#$topic")
         }
+    }
+
+    private Logger getLogger(String topic) {
+        topic2LoggerMap[topic]
     }
 
 }

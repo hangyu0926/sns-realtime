@@ -1,6 +1,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <bean id="executorService" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
         <constructor-arg index="0">
@@ -8,4 +10,19 @@
         </constructor-arg>
     </bean>
 
+    <bean id="creditAuditExecutorService" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+        <constructor-arg index="0">
+            <value>5</value>
+        </constructor-arg>
+    </bean>
+
+    <util:map id="topicDispatchMap">
+        <entry key="credit_audit">
+            <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+                <constructor-arg index="0">
+                    <value>5</value>
+                </constructor-arg>
+            </bean>
+        </entry>
+    </util:map>
 </beans>

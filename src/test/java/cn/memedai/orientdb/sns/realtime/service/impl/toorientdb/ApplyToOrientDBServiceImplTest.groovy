@@ -1,5 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.cache.OrderCache
+import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
@@ -27,8 +29,14 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
     @Resource
     private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
 
-    /*  @Resource
-      private ApplyToOrientDBServiceImpl applyTeleporterService*/
+    @Resource
+    private ApplyToOrientDBServiceImpl applyTeleporterService
+
+    @Resource
+    private OrderCache orderCache
+
+    @Resource
+    private OrientSql orientSql
 
     @Test
     void testProcess() {
@@ -62,4 +70,38 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
         }
         producer.close()
     }
+
+    @Test
+    public void testProcess2() {
+//        record.put('cellphone', '15821180279')
+//        record.put('apply_no', '1485313547297000')
+//        record.put('member_id', 715157L)
+//        record.put('created_datetime', '2017-06-13 00:00:00')
+//        record.put('apply_status', 4000)
+//        record.put('store_id', '2759')
+//        record.put('order_no', '1496921804405003')
+        applyTeleporterService.process([['cellphone'       : '15821180279',
+                                         'apply_no'        : '1485313547297000',
+                                         'member_id'       : 715157L,
+                                         'created_datetime': '2017-06-13 00:00:00',
+                                         'apply_status'    : 4000,
+                                         'store_id'        : '2759',
+                                         'order_no'        : '1496921804405003']
+        ])
+        orderCache.clear()
+        println orderCache.get('1496921804405003').value
+    }
+
+    @Test
+    public void testProcess3() {
+        String sql = 'match {as:phone0,class:Phone, where : (phone=\'13996130866\')}-CallTo-{as:p1}-CallTo-{as:p2},\n' +
+                '    {as:p1}-HasPhoneMark->{as:phoneMark1,optional:true},\n' +
+                '    {as:p2}-HasPhoneMark->{as:phoneMark2,optional:true}\n' +
+                'return $elements'
+        long start = System.currentTimeMillis()
+        orientSql.execute(sql, null)
+        println("used time ${System.currentTimeMillis() - start}ms")
+    }
+
+
 }
