@@ -39,11 +39,11 @@
 
 
         <prop key="selectDirectMemberCountMySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and direct = "contact_accept_member_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "contact_accept_member_num"]]>
         </prop>
 
         <prop key="selectDirectMemberCountWithOutOrderNoSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and order_no is null and direct = "contact_accept_member_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and order_no is null and index_name = "contact_accept_member_num"]]>
         </prop>
 
         <prop key="updateMemberOrderSql">
@@ -51,15 +51,19 @@
         </prop>
 
         <prop key="selectMemberCountSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and direct = "has_appl_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and index_name = "has_appl_num"]]>
+        </prop>
+
+        <prop key="selectMemberCountByApplySql">
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "has_appl_num"]]>
         </prop>
 
         <prop key="selectMemberCountWhereDeviceSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and direct = "has_device_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and index_name = "has_device_num"]]>
         </prop>
 
         <prop key="selectMemberCountWhereDeviceByApplySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and direct = "has_device_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "has_device_num"]]>
         </prop>
 
         <prop key="updateMemberApplySql">

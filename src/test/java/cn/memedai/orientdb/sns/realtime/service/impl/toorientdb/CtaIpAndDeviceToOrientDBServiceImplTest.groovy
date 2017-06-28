@@ -46,7 +46,7 @@ class CtaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContex
         record.put('DEVICE_ID', '869949026162329')
         record.put('IP', '116.228.236.198')
         record.put('IP_CITY', '上海市')
-        record.put('__op__', 'create') //必须字段
+        record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()

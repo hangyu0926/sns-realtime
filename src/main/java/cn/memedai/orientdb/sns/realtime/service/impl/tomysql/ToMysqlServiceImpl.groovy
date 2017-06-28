@@ -82,7 +82,7 @@ class ToMysqlServiceImpl{
         if (null != memberResult && memberResult.size() > 0) {
             ODocument memberDocument = memberResult.get(0)
             int memberHasDeviceSize = memberDocument.field("MemberHasDeviceSize") != null ? memberDocument.field("MemberHasDeviceSize") : 0
-            int memberHasIp = memberDocument.field("MemberHasIp") != null ? memberDocument.field("MemberHasIp") : 0
+            int memberHasIp = memberDocument.field("MemberHasIpSize") != null ? memberDocument.field("MemberHasIpSize") : 0
             int memberHasApplySize = memberDocument.field("MemberHasApplySize") != null ? memberDocument.field("MemberHasApplySize") : 0
             int memberHasOrderSize = memberDocument.field("MemberHasOrderSize") != null ? memberDocument.field("MemberHasOrderSize") : 0
 

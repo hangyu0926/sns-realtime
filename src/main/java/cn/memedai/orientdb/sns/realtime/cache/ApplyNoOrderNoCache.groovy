@@ -46,11 +46,11 @@ class ApplyNoOrderNoCache {
             ODocument orderNoDocument = orderNoResult.get(0)
             orderNo = orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
             if (null == orderNo){
-                orderNo = sql.firstRow(selectFromApplyMysql,[appNo]).orderNo
+                orderNo = sql.firstRow(selectOrderFromApplyMysql,[appNo]).orderNo
             }
             return new CacheEntry(appNo, orderNo)
         }else{
-            orderNo = sql.firstRow(selectFromApplyMysql,[appNo]).orderNo
+            orderNo = sql.firstRow(selectOrderFromApplyMysql,[appNo]).orderNo
             return new CacheEntry(appNo, orderNo)
         }
     }

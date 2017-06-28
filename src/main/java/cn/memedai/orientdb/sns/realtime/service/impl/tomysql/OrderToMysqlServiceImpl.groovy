@@ -36,6 +36,9 @@ class OrderToMysqlServiceImpl implements RealTimeService {
     @Value("#{snsOrientSqlProp.selectApplyFromOrderSql}")
     private selectApplyFromOrderSql
 
+    @Value("#{sqlProp.selectMemberCountSql}")
+    private selectMemberCountSql
+
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null || dataList.size() == 0) {
             return
@@ -76,9 +79,13 @@ class OrderToMysqlServiceImpl implements RealTimeService {
         //如果存在appNo说明apply已经先来了不需要做任何操作,因为关系是在apply的service中新建的
         //如果不存在说明Order先来或者压根没有apply都只要做统计插入即可
         if (null == appNo) {
-            List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-            toMysqlService.structureMemberApplyOrderIndexDatas(memberId, phone, appNo, orderNo, applyStatus, orderStatus, memberIndexDatas)
-            toMysqlService.insertMemberIndex(memberIndexDatas)
+            int memberCount = 0 //查询此orderNo是否跑过，防止重复跑
+            memberCount = sql.firstRow(selectMemberCountSql, [orderNo] as Object[]).num
+            if (memberCount == 0){
+                List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
+                toMysqlService.structureMemberApplyOrderIndexDatas(memberId, phone, appNo, orderNo, applyStatus, orderStatus, memberIndexDatas)
+                toMysqlService.insertMemberIndex(memberIndexDatas)
+            }
         }
     }
 }

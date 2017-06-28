@@ -71,6 +71,7 @@ class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
             return
         }
 
+        String op =  applyMap.__op__
         if ("update".equals(op)){
             return
         }
@@ -80,7 +81,6 @@ class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
         String orderNo = appNo
         String orderStatus = null
 
-        String op =  applyMap.__op__
         String deviceId = applyMap.device_id
         String ip = applyMap.ip1
 
@@ -100,10 +100,14 @@ class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
             }
 
             //device,ip
-            List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
-            List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
-            toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,memberId, phone, appNo, orderNo, deviceId,ip)
-            toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+            //如果同设备中存在该applyNo，说明已经统计过不做操作
+            int num = sql.firstRow(selectDeviceIndexSql,[appNo, deviceId]).num
+            if (num == 0){
+                List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
+                List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
+                toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,Long.valueOf(memberId), phone, appNo, orderNo, deviceId,ip)
+                toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+            }
         }
     }
 

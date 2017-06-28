@@ -50,6 +50,9 @@ class CaIpAndDeviceToMysqlServiceImpl {
     @Value("#{sqlProp.selectMemberCountWhereDeviceSql}")
     private selectMemberCountWhereDeviceSql
 
+    @Value("#{sqlProp.selectMemberCountWhereDeviceByApplySql}")
+    private selectMemberCountWhereDeviceByApplySql
+
     @Value("#{sqlProp.updateMemberApplySql}")
     private updateMemberApplySql
 
@@ -78,15 +81,6 @@ class CaIpAndDeviceToMysqlServiceImpl {
             return
         }
 
-        //如果同设备中存在该applyNo，说明已经统计过不做操作
-        if ("insert".equals(op)){
-            int num = sql.firstRow(selectDeviceIndexSql,[appNo, deviceId]).num
-            if (num > 0){
-                return
-            }
-        }
-
-
         List<ODocument> list = orientSql.execute(selectFromApplySql, appNo)
         if (null != list && list.size() > 0) {
             ODocument orderNoDocument = list.get(0)
@@ -105,28 +99,39 @@ class CaIpAndDeviceToMysqlServiceImpl {
             }
         }
 
-
-        List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
-        List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
-        toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,memberId, phone, appNo, orderNo, deviceId,ip)
-        toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+       //如果同设备中存在该applyNo，说明已经统计过不做操作
+        int num = sql.firstRow(selectDeviceIndexSql,[appNo, deviceId]).num
+        if (num == 0){
+            List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
+            List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
+            toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,Long.valueOf(memberId), phone, appNo, orderNo, deviceId,ip)
+            toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+        }
 
         //如果这个applyNo的order跑过则只需要把appNo update进去即可
         //如果order是空或者order没有先跑则做统计插入操作
+
+        int memberCountByApply = 0 //查询此appNo是否跑过，防止重复跑
+        memberCountByApply = sql.firstRow(selectMemberCountWhereDeviceByApplySql, [appNo] as Object[]).num
+
         if (null != orderNo) {
             int memberCount = 0
             memberCount = sql.firstRow(selectMemberCountWhereDeviceSql, [orderNo] as Object[]).num
             if (memberCount > 0) {
                 sql.execute(updateMemberApplySql, [appNo, orderNo] as Object[])
             } else {
-                List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-                toMysqlService.structureMemberDeviceIpIndexDatas(memberId, phone, appNo, orderNo, null, null, memberIndexDatas)
-                toMysqlService.insertMemberIndex(memberIndexDatas)
+                if (memberCountByApply == 0){
+                    List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
+                    toMysqlService.structureMemberDeviceIpIndexDatas(Long.valueOf(memberId), phone, appNo, orderNo, null, null, memberIndexDatas)
+                    toMysqlService.insertMemberIndex(memberIndexDatas)
+                }
             }
         } else {
-            List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-            toMysqlService.structureMemberDeviceIpIndexDatas(memberId, phone, appNo, orderNo, null, null, memberIndexDatas)
-            toMysqlService.insertMemberIndex(memberIndexDatas)
+            if (memberCountByApply == 0){
+                List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
+                toMysqlService.structureMemberDeviceIpIndexDatas(Long.valueOf(memberId), phone, appNo, orderNo, null, null, memberIndexDatas)
+                toMysqlService.insertMemberIndex(memberIndexDatas)
+            }
         }
     }
 }

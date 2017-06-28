@@ -45,8 +45,11 @@ class CtaIpAndDeviceToMysqlServiceImpl {
     @Value("#{sqlProp.selectDeviceIndexByOrderSql}")
     private selectDeviceIndexByOrderSql
 
+    @Value("#{sqlProp.selectMemberCountWhereDeviceSql}")
+    private selectMemberCountWhereDeviceSql
+
     @Value("#{sqlProp.selectMemberCountWhereDeviceByApplySql}")
-    private selectMemberCountWhereDeviceByApplySql = ''
+    private selectMemberCountWhereDeviceByApplySql
 
     @Value("#{sqlProp.updateMemberOrderSql}")
     private updateMemberOrderSql
@@ -71,14 +74,6 @@ class CtaIpAndDeviceToMysqlServiceImpl {
 
         String op =  applyMap.__op__
 
-        //如果同设备中存在该orderNo，说明已经统计过不做操作
-        if ("insert".equals(op)){
-            int num = sql.firstRow(selectDeviceIndexByOrderSql,[orderNo, deviceId]).num
-            if (num > 0){
-                return
-            }
-        }
-
         OBasicResultSet orderNoResult = orientSql.execute(selectFromOrderSql, orderNo)
         if (null != orderNoResult && orderNoResult.size() > 0) {
             ODocument orderNoDocument = orderNoResult.get(0)
@@ -97,27 +92,41 @@ class CtaIpAndDeviceToMysqlServiceImpl {
             }
         }
 
-        List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
-        List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
-        toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,memberId, phone, appNo, orderNo, deviceId,ip)
-        toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+        //如果同设备中存在该orderNo，说明已经统计过不做操作
+        int num = sql.firstRow(selectDeviceIndexByOrderSql,[orderNo, deviceId]).num
+        if (num == 0){
+            List<IndexData> deviceIndexDataList = new ArrayList<IndexData>()
+            List<IndexData> ipIndexDataList = new ArrayList<IndexData>()
+            toMysqlService.queryDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList,Long.valueOf(memberId), phone, appNo, orderNo, deviceId,ip)
+            toMysqlService.insertDeviceAndIpIndex(deviceIndexDataList,ipIndexDataList)
+        }
+
+
 
         //如果这个orderNo的apply跑过则只需要把orderNo update进去即可
         //如果appNo是空或者apply没有先跑则做统计插入操作
+
+        int memberCount = 0 //查询此orderNo是否跑过，防止重复跑
+        memberCount = sql.firstRow(selectMemberCountWhereDeviceSql, [appNo] as Object[]).num
+
         if (null != appNo) {
-            int memberCount = 0
-            memberCount = sql.firstRow(selectMemberCountWhereDeviceByApplySql, [appNo] as Object[]).num
-            if (memberCount > 0) {
+            int memberCountByApply = 0
+            memberCountByApply = sql.firstRow(selectMemberCountWhereDeviceByApplySql, [appNo] as Object[]).num
+            if (memberCountByApply > 0) {
                 sql.execute(updateMemberOrderSql, [orderNo, appNo] as Object[])
             } else {
-                List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-                toMysqlService.structureMemberDeviceIpIndexDatas(memberId, phone, appNo, orderNo, null, null, memberIndexDatas)
-                toMysqlService.insertMemberIndex(memberIndexDatas)
+                if (memberCount == 0){
+                    List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
+                    toMysqlService.structureMemberDeviceIpIndexDatas(Long.valueOf(memberId), phone, appNo, orderNo, null, null, memberIndexDatas)
+                    toMysqlService.insertMemberIndex(memberIndexDatas)
+                }
             }
         } else {
-            List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-            toMysqlService.structureMemberDeviceIpIndexDatas(memberId, phone, appNo, orderNo, null, null, memberIndexDatas)
-            toMysqlService. insertMemberIndex(memberIndexDatas)
+            if (memberCount == 0){
+                List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
+                toMysqlService.structureMemberDeviceIpIndexDatas(Long.valueOf(memberId), phone, appNo, orderNo, null, null, memberIndexDatas)
+                toMysqlService.insertMemberIndex(memberIndexDatas)
+            }
         }
     }
 }

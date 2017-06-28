@@ -53,7 +53,7 @@ class CashLoanOrderToMysqlServiceImpl implements RealTimeService {
         if (StringUtils.isBlank(orderNo)) {
             return
         }
-        String phone = (String) orderMap.mobile
+        String phone = (String) orderMap.phoneNo
         if (StringUtils.isBlank(phone)) {
             return
         }
@@ -62,6 +62,7 @@ class CashLoanOrderToMysqlServiceImpl implements RealTimeService {
             return
         }
 
+        String op =  orderMap.__op__
         if ("update".equals(op)){
             return
         }
@@ -71,7 +72,7 @@ class CashLoanOrderToMysqlServiceImpl implements RealTimeService {
         String appNo = orderNo
         String applyStatus = null
 
-        String op =  orderMap.__op__
+
 
         if ("insert".equals(op)){
             int memberCount = 0

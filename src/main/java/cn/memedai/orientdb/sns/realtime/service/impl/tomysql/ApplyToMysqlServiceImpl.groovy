@@ -57,6 +57,9 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
     @Value("#{sqlProp.selectMemberCountSql}")
     private selectMemberCountSql
 
+    @Value("#{sqlProp.selectMemberCountByApplySql}")
+    private selectMemberCountByApplySql
+
     @Value("#{sqlProp.updateMemberApplySql}")
     private updateMemberApplySql
 
@@ -125,20 +128,28 @@ class ApplyToMysqlServiceImpl implements RealTimeService {
 
         //如果这个applyNo的order跑过则只需要把appNo update进去即可
         //如果order是空或者order没有先跑则做统计插入操作
+
+        int memberCountByApply = 0 //查询此appNo是否跑过，防止重复跑
+        memberCountByApply = sql.firstRow(selectMemberCountByApplySql, [appNo] as Object[]).num
+
         if (null != orderNo) {
             int memberCount = 0
             memberCount = sql.firstRow(selectMemberCountSql, [orderNo] as Object[]).num
             if (memberCount > 0) {
                 sql.execute(updateMemberApplySql, [appNo, orderNo] as Object[])
             } else {
+                if (memberCountByApply == 0){
+                    List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
+                    toMysqlService.structureMemberApplyOrderIndexDatas(memberId, phone, appNo, orderNo, applyStatus, orderStatus, memberIndexDatas)
+                    toMysqlService.insertMemberIndex(memberIndexDatas)
+                }
+            }
+        } else {
+            if (memberCountByApply == 0){
                 List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
                 toMysqlService.structureMemberApplyOrderIndexDatas(memberId, phone, appNo, orderNo, applyStatus, orderStatus, memberIndexDatas)
                 toMysqlService.insertMemberIndex(memberIndexDatas)
             }
-        } else {
-            List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
-            toMysqlService.structureMemberApplyOrderIndexDatas(memberId, phone, appNo, orderNo, applyStatus, orderStatus, memberIndexDatas)
-            toMysqlService.insertMemberIndex(memberIndexDatas)
         }
     }
 }

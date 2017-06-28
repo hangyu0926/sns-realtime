@@ -76,10 +76,6 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
             return
         }
 
-        if ((applyHasDoneCache.get(appNo) != null) && (applyHasDoneCache.get(appNo).value != null)) {
-            return
-        }
-
         String op =  callToMap.__op__
         if ("update".equals(op)){
             return
