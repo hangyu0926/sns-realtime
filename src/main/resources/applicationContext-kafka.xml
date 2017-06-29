@@ -29,31 +29,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <entry key="wallet">
             <map>
                 <!--table Start-->
-                <entry key="wallet.apply_info">
+                <entry key="apply_info">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "wallet.apply_info",
-                                     "type": "record",
-                                     "name": "apply_info",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string","null"]},
-                                         {"name": "member_id",  "type": ["long"]},
-                                         {"name": "cellphone", "type": "string"},
-                                         {"name": "apply_no", "type": ["string"]},
-                                         {"name": "created_datetime", "type": ["string"]},
-                                         {"name": "apply_status", "type": ["int"]},
-                                         {"name": "store_id", "type": ["string","null"]},
-                                         {"name": "order_no", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -67,31 +44,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 <!-- table End-->
 
                 <!--table Start-->
-                <entry key="wallet.money_box_order">
+                <entry key="money_box_order">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "wallet.money_box_order",
-                                 "type": "record",
-                                 "name": "money_box_order",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "member_id",  "type": ["long"]},
-                                     {"name": "mobile", "type": "string"},
-                                     {"name": "order_no", "type": ["string"]},
-                                     {"name": "created_datetime", "type": ["string"]},
-                                     {"name": "status", "type": ["int"]},
-                                     {"name": "store_id", "type": ["string","null"]},
-                                     {"name": "pay_amount", "type": ["int"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -112,28 +66,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <entry key="credit_audit">
             <map>
                 <!--table Start-->
-                <entry key="credit_audit.ca_appl_member_device">
+                <entry key="ca_appl_member_device">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "credit_audit.ca_appl_member_device",
-                                     "type": "record",
-                                     "name": "ca_appl_member_device",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "APPL_NO", "type": ["string"]},
-                                         {"name": "DEVICE_ID", "type": ["string"]},
-                                         {"name": "IP", "type": ["string"]},
-                                         {"name": "IP_CITY", "type": ["string"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -147,27 +81,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 <!-- table End-->
 
                 <!--table Start-->
-                <entry key="credit_audit.ca_sys_phone_tag_merge">
+                <entry key="ca_sys_phone_tag_merge">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "credit_audit.ca_sys_phone_tag_merge",
-                                 "type": "record",
-                                 "name": "ca_sys_phone_tag_merge",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "PHONE_NO", "type": "string"},
-                                     {"name": "PHONE_TYPE",  "type": ["string"]},
-                                     {"name": "SOURCE", "type": ["string"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -180,31 +95,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 <!-- table End-->
 
                 <!--table Start-->
-                <entry key="credit_audit.ca_bur_operator_contact">
+                <entry key="ca_bur_operator_contact">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "credit_audit.ca_bur_operator_contact",
-                                 "type": "record",
-                                 "name": "ca_bur_operator_contact",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "APPL_NO", "type": "string"},
-                                     {"name": "PHONE_NO",  "type": ["string"]},
-                                     {"name": "CALL_CNT", "type": ["int"]},
-                                     {"name": "CALL_LEN", "type": ["int"]},
-                                     {"name": "CALL_IN_CNT", "type": ["int"]},
-                                     {"name": "CALL_OUT_CNT", "type": ["int"]},
-                                     {"name": "CREATE_TIME", "type": ["string"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -218,26 +110,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 <!-- table End-->
 
                 <!--table Start-->
-                <entry key="credit_audit.ca_str_result">
+                <entry key="ca_str_result">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "credit_audit.ca_str_result",
-                                 "type": "record",
-                                 "name": "ca_str_result",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "APPL_NO", "type": "string"},
-                                     {"name": "PASS",  "type": ["int"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -257,28 +131,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <entry key="credit_trade_audit">
             <map>
                 <!--table Start-->
-                <entry key="credit_trade_audit.cta_order_deviceinfo">
+                <entry key="cta_order_deviceinfo">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "credit_trade_audit.cta_order_deviceinfo",
-                                     "type": "record",
-                                     "name": "cta_order_deviceinfo",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "ORDER_ID", "type": ["string","null"]},
-                                         {"name": "DEVICE_ID", "type": ["string","null"]},
-                                         {"name": "IP", "type": ["string","null"]},
-                                         {"name": "IP_CITY", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -299,32 +153,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <entry key="cashloan">
             <map>
                 <!--table Start-->
-                <entry key="cashloan.apply_info">
+                <entry key="apply_info">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "cashloan.apply_info",
-                                     "type": "record",
-                                     "name": "apply_info",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "member_id", "type": ["long"]},
-                                         {"name": "apply_no", "type": ["string"]},
-                                         {"name": "cellphone", "type": ["string"]},
-                                         {"name": "source", "type": ["string","null"]},
-                                         {"name": "created_datetime", "type": ["string"]},
-                                         {"name": "ip1", "type": ["string","null"]},
-                                         {"name": "ip1_city", "type": ["string","null"]},
-                                         {"name": "device_id", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -337,31 +167,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 </entry>
                 <!-- table End-->
                 <!--table Start-->
-                <entry key="cashloan.cash_loan_order">
+                <entry key="cash_loan_order">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "cashloan.cash_loan_order",
-                                     "type": "record",
-                                     "name": "cash_loan_order",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "member_id", "type": ["long"]},
-                                         {"name": "order_no", "type": ["string"]},
-                                         {"name": "phoneNo", "type": ["string","null"]},
-                                         {"name": "amount", "type": ["int"]},
-                                         {"name": "status", "type": ["string"]},
-                                         {"name": "source", "type": ["string","null"]},
-                                         {"name": "created_datetime", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -382,27 +189,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <entry key="antifraud">
             <map>
                 <!--table Start-->
-                <entry key="antifraud.phone_tag_merge_crawler_all">
+                <entry key="phone_tag_merge_crawler_all">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "antifraud.phone_tag_merge_crawler_all",
-                                     "type": "record",
-                                     "name": "phone_tag_merge_crawler_all",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "phone_no", "type": ["string"]},
-                                         {"name": "phone_type", "type": ["string"]},
-                                         {"name": "source", "type": ["string"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>
@@ -421,26 +209,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <entry key="accounting">
             <map>
                 <!--table Start-->
-                <entry key="accounting.FSS_LOANS">
+                <entry key="FSS_LOANS">
                     <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "accounting.FSS_LOANS",
-                                     "type": "record",
-                                     "name": "FSS_LOANS",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "BORROWER_ID", "type": ["long"]},
-                                         {"name": "OVERDUE_DAYS", "type": ["long"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
                         <!--table service Start-->
                         <entry key="services">
                             <list>

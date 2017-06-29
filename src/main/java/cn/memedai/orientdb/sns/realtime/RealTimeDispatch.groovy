@@ -9,6 +9,7 @@ import org.apache.avro.file.SeekableByteArrayInput
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DatumReader
+import org.apache.commons.lang.StringUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -148,11 +149,25 @@ class RealTimeDispatch {
     @PostConstruct
     private void transfer() {
         def parser = new Schema.Parser()
+        JsonSlurper jsonSlurper = new JsonSlurper()
+        Map table2SchemaMap = [:]
+        new File("${getClass().getResource('/').toString()}avsc".replaceFirst('file:', '')).listFiles().each {
+            Map schemaMap = jsonSlurper.parseText(it.text)
+            String table = "${schemaMap.namespace.substring(schemaMap.namespace.lastIndexOf('.') + 1)}.${schemaMap.name}"
+            table2SchemaMap[table] = it.text
+        }
+        LOG.info('table2SchemaMap->{}', table2SchemaMap)
         kafkaDispatchConfig.each {
             topic, tableConfigInTopic ->
                 tableConfigInTopic.each {
                     table, tableConfig ->
-                        table2DatumReaderMap[table] = new GenericDatumReader<GenericRecord>(parser.parse(tableConfig.avroSchema))
+                        String avroSchema = tableConfig.avroSchema
+                        LOG.info('topic.table->{}', "${topic}.${table}")
+                        if (StringUtils.isEmpty(avroSchema)) {
+                            avroSchema = table2SchemaMap["${topic}.${table}"]
+                        }
+                        LOG.info('avroSchema->{}', avroSchema)
+                        table2DatumReaderMap[table] = new GenericDatumReader<GenericRecord>(parser.parse(avroSchema))
                         table2ServicesMap[table] = tableConfig.services
                 }
                 Properties kafkaProp = new Properties()
@@ -161,6 +176,7 @@ class RealTimeDispatch {
                 topic2KafkaProMap[topic]['group.id'] = 'sns_' + topic
                 topic2LoggerMap[topic] = LoggerFactory.getLogger("${RealTimeDispatch.class.getName()}#$topic")
         }
+        println('xxxxxx= ' + table2DatumReaderMap)
     }
 
     private Logger getLogger(String topic) {

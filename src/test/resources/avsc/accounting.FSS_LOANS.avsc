@@ -1,0 +1,10 @@
+{"namespace": "accounting.FSS_LOANS",
+                                     "type": "record",
+                                     "name": "FSS_LOANS",
+                                     "fields": [
+                                         {"name":"__schemaid__","type":["string"]},
+                                         {"name": "BORROWER_ID", "type": ["long"]},
+                                         {"name": "OVERDUE_DAYS", "type": ["long"]},
+                                         {"name": "__op__", "type": ["string"]}
+                                     ]
+                                    }
