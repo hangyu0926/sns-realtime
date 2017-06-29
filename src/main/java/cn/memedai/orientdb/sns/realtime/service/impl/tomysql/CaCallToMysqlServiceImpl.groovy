@@ -516,31 +516,31 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         }
 
         if (phone.length() >= 2) {
-            if (ConstantHelper.BUSINESS_PHONE_1.equals(phone.substring(0, 1))) {
+            if (ConstantHelper.BUSINESS_PHONE_1.equals(phone.substring(0, 2))) {
                 return false
             }
-            if (ConstantHelper.BUSINESS_PHONE_2.equals(phone.substring(0, 1))) {
+            if (ConstantHelper.BUSINESS_PHONE_2.equals(phone.substring(0, 2))) {
                 return false
             }
         }
 
         if (phone.length() >= 3) {
-            if (ConstantHelper.BUSINESS_PHONE_3.equals(phone.substring(0, 2))) {
+            if (ConstantHelper.BUSINESS_PHONE_3.equals(phone.substring(0, 3))) {
                 return false
             }
-            if (ConstantHelper.BUSINESS_PHONE_4.equals(phone.substring(0, 2))) {
+            if (ConstantHelper.BUSINESS_PHONE_4.equals(phone.substring(0, 3))) {
                 return false
             }
         }
 
         if (phone.length() >= 5) {
-            if (ConstantHelper.BUSINESS_PHONE_5.equals(phone.substring(0, 4))) {
+            if (ConstantHelper.BUSINESS_PHONE_5.equals(phone.substring(0, 5))) {
                 return false
             }
-            if (ConstantHelper.BUSINESS_PHONE_6.equals(phone.substring(0, 4))) {
+            if (ConstantHelper.BUSINESS_PHONE_6.equals(phone.substring(0, 5))) {
                 return false
             }
-            if (ConstantHelper.BUSINESS_PHONE_7.equals(phone.substring(0, 4))) {
+            if (ConstantHelper.BUSINESS_PHONE_7.equals(phone.substring(0, 5))) {
                 return false
             }
         }

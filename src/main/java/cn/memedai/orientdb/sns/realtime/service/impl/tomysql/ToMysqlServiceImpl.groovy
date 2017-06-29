@@ -260,7 +260,7 @@ class ToMysqlServiceImpl{
     }
 
     void addIndexDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                       long direct, long indirect) {
+                       Object direct, Object indirect) {
         if (null != indexName){
             IndexData indexData = new IndexData()
             indexData.setMemberId(memberId)
