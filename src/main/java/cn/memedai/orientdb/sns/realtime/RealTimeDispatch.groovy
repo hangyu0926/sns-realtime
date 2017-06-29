@@ -79,6 +79,9 @@ class RealTimeDispatch {
         while (true) {
             try {
                 final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
+                if (records.size() > 1) {
+                    LOG.info('records size->{}', records.size())
+                }
                 ExecutorService subExecutorService = topicDispatchMap[topic]
                 if (subExecutorService == null) {
                     startSubConsumer(topic, consumer, records)
