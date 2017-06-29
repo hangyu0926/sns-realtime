@@ -76,6 +76,10 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
             return
         }
 
+        if ((applyHasDoneCache.get(appNo) != null) && (applyHasDoneCache.get(appNo).value != null)) {
+            return
+        }
+
         String op =  callToMap.__op__
         if ("update".equals(op)){
             return
@@ -123,7 +127,7 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
         long start = System.currentTimeMillis()
         queryDirectRelationDataByPhoneNo(phone,map,map2,phoneInfo,memberDeviceAndApplyAndOrderBean)
-        LOG.debug('queryDirectRelationDataByPhoneNo used time->{}ms',  (System.currentTimeMillis() - start))
+        LOG.debug('appNo->{} phone->{} queryDirectRelationDataByPhoneNo used time->{}ms',appNo,phone,  (System.currentTimeMillis() - start))
 
         //插入一度和二度联系人指标开始
         List<IndexData> indexDatas = new ArrayList<IndexData>()
@@ -174,6 +178,9 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
                 "contact_black_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberCallLenNum(),applyStatus,orderStatus)
 
         toMysqlService.insertMemberIndex(memberIndexDatas)
+
+        //写入缓存
+        applyHasDoneCache.put(new CacheEntry(appNo, true))
     }
 
     private void queryDirectRelationDataByPhoneNo(String memberRelatedPhoneNo,Map<String, Integer> map, Map<String, Integer> map2,ODocument phoneInfo,MemberDeviceAndApplyAndOrderBean memberDeviceAndApplyAndOrderBean){
@@ -206,7 +213,8 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
         if (ocrs != null && !ocrs.isEmpty()) {
             int ocrSize = ocrs.size()
             for (int j = 0; j < ocrSize; j++) {
-                ODocument ocr = (ODocument) ocrs.get(j)
+                //LOG.debug('ocrSize ->{} j ->{} ',ocrSize,j)
+                  ODocument ocr = (ODocument) ocrs.get(j)
                 //一度联系人的通话时长
                 //通话时长
                 Object directCallLen = ocr.field("callLen")

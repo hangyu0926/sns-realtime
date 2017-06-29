@@ -146,9 +146,6 @@ class CaCallToOrientDBServiceImpl implements RealTimeService {
                     orientSql.execute(MessageFormat.format(updateEdgeSql, OrientSqlUtil.getRid(ocrs)), args)
                 }
         }
-
-        //写入缓存
-        applyHasDoneCache.put(new CacheEntry(appNo, true))
     }
 
 }
