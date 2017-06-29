@@ -159,22 +159,22 @@ class CaCallToMysqlServiceImpl implements RealTimeService {
 
         List<IndexData> memberIndexDatas = new ArrayList<IndexData>()
 
-        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_accept_member_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberNum(),applyStatus,orderStatus)
-        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_refuse_member_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberNum(),applyStatus,orderStatus)
-        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_overdue_member_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberNum(),applyStatus,orderStatus)
-        toMysqlService.addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas, memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_black_member_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberNum(),applyStatus,orderStatus)
 
-        toMysqlService.addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas, memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_accept_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactAcceptMemberCallLenNum(),applyStatus,orderStatus)
-        toMysqlService.addIndexMemberDatas(memberIndexDatas, Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas, memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_refuse_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactRefuseMemberCallLenNum(),applyStatus,orderStatus)
-        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_overdue_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactOverdueMemberCallLenNum(),applyStatus,orderStatus)
-        toMysqlService.addIndexMemberDatas(memberIndexDatas,  Long.valueOf(memberId), phone, appNo, orderNo,
+        toMysqlService.addIndexMemberDatas(memberIndexDatas,  memberId != null ? Long.valueOf(memberId) : null, phone, appNo, orderNo,
                 "contact_black_member_120s_num", memberDeviceAndApplyAndOrderBean.getContactBlackMemberCallLenNum(),applyStatus,orderStatus)
 
         toMysqlService.insertMemberIndex(memberIndexDatas)

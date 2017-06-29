@@ -30,7 +30,7 @@ class AntifraudPhoneTagToOrientDBServiceImplTest extends AbstractJUnit4SpringCon
     void testProcess() {
         String topic = 'antifraud'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['antifraud.phone_tag_merge_crawler_all'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['phone_tag_merge_crawler_all'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -51,7 +51,7 @@ class AntifraudPhoneTagToOrientDBServiceImplTest extends AbstractJUnit4SpringCon
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'antifraud.phone_tag_merge_crawler_all', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'phone_tag_merge_crawler_all', oos.toByteArray()))
         }
         producer.close()
     }

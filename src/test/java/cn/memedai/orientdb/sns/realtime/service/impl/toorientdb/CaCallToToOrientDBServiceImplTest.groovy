@@ -30,7 +30,7 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
     void testProcess() {
         String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_bur_operator_contact'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_bur_operator_contact'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -41,7 +41,12 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('APPL_NO', '1497885791454002')
+         //record.put('APPL_NO', '1497885791454002')
+        record.put('APPL_NO', '1498578768406002')
+        //record.put('APPL_NO', '1498578818266000')
+        //record.put('APPL_NO', '1498578833840002')
+        //record.put('APPL_NO', '1498578898305001')
+        //record.put('APPL_NO', '1498579227034003')
         record.put('PHONE_NO', '1')
         record.put('CALL_CNT', 0)
         record.put('CALL_LEN', 0)
@@ -55,7 +60,7 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_bur_operator_contact', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_bur_operator_contact', oos.toByteArray()))
         }
         producer.close()
     }

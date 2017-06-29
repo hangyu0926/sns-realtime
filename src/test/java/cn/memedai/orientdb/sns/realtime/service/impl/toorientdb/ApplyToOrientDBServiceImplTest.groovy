@@ -41,7 +41,7 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
     @Test
     void testProcess() {
         String topic = 'wallet'
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['wallet.apply_info'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['apply_info'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -66,7 +66,7 @@ class ApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'wallet.apply_info', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'apply_info', oos.toByteArray()))
         }
         producer.close()
     }

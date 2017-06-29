@@ -30,7 +30,7 @@ class CashLoanOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
     void testProcess() {
         String topic = 'cashloan'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['cashloan.cash_loan_order'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['cash_loan_order'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -55,7 +55,7 @@ class CashLoanOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'cashloan.cash_loan_order', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'cash_loan_order', oos.toByteArray()))
         }
         producer.close()
     }

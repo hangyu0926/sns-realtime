@@ -31,7 +31,7 @@ class OrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     void testProcess() {
         String topic = 'wallet'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['wallet.money_box_order'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['money_box_order'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -56,7 +56,7 @@ class OrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'wallet.money_box_order', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'money_box_order', oos.toByteArray()))
         }
 
         producer.close()

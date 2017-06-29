@@ -30,7 +30,7 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
     void testProcess() {
         String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_sys_phone_tag_merge'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_sys_phone_tag_merge'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -51,7 +51,7 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_sys_phone_tag_merge', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_sys_phone_tag_merge', oos.toByteArray()))
         }
         producer.close()
     }

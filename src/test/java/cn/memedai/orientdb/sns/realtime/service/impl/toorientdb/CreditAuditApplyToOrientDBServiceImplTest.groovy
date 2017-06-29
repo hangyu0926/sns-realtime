@@ -30,7 +30,7 @@ class CreditAuditApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringCont
     void testProcess() {
         String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_str_result'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_str_result'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -50,7 +50,7 @@ class CreditAuditApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringCont
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_str_result', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_str_result', oos.toByteArray()))
         }
         producer.close()
     }

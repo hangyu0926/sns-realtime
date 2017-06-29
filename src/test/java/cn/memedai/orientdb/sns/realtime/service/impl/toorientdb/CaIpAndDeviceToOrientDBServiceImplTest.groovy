@@ -31,7 +31,7 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
     void testProcess() {
         String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['credit_audit.ca_appl_member_device'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_appl_member_device'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -53,7 +53,7 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'credit_audit.ca_appl_member_device', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_appl_member_device', oos.toByteArray()))
         }
         producer.close()
     }
