@@ -15,7 +15,7 @@ class BatchTest extends AbstractRealTimeTest {
     private Sql groovySql
 
     @Test
-    void batchTest() {
+    void batchTestWalletApplyInfo() {
         List<Map> dataList = []
         groovySql.eachRow("select * from network.apply_info where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
                 {
@@ -46,6 +46,41 @@ class BatchTest extends AbstractRealTimeTest {
 
         )
         produce('wallet', 'apply_info', dataList)
+    }
+
+
+    @Test
+    void batchTestWalletMoneyBoxOrder() {
+        List<Map> dataList = []
+        groovySql.eachRow("select * from network.money_box_order where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
+                {
+                    row ->
+                        for (int i = 0; i < 10; i++) {
+                            dataList.add([
+                                    'mobile'          : row.mobile,
+                                    'member_id'       : row.member_id,
+                                    'order_no'        : row.order_no,
+                                    'created_datetime': row.created_datetime.toString(),
+                                    'status'          : row.status,
+                                    'store_id'        : row.store_id,
+                                    'pay_amount'      : row.pay_amount,
+                                    '___op___'        : 'insert'
+                            ])
+                            dataList.add([
+                                    'mobile'          : row.mobile,
+                                    'member_id'       : row.member_id,
+                                    'order_no'        : row.order_no,
+                                    'created_datetime': row.created_datetime.toString(),
+                                    'status'          : row.status,
+                                    'store_id'        : row.store_id,
+                                    'pay_amount'      : row.pay_amount,
+                                    '___op___'        : 'update'
+                            ])
+                        }
+                }
+
+        )
+        produce('wallet', 'money_box_order', dataList)
     }
 
 
