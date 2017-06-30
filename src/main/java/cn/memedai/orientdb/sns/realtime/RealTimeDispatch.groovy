@@ -145,10 +145,14 @@ class RealTimeDispatch {
     }
 
     private void commitAsync(KafkaConsumer consumer, ConsumerRecords records) {
-        for (TopicPartition partition : records.partitions()) {
-            List<ConsumerRecord<String, String>> partitionRecords = records.records(partition)
-            long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset()
-            consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
+        try {
+            for (TopicPartition partition : records.partitions()) {
+                List<ConsumerRecord<String, String>> partitionRecords = records.records(partition)
+                long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset()
+                consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
+            }
+        } catch (Exception e) {
+            LOG.error("ignore this exception", e)
         }
     }
 
