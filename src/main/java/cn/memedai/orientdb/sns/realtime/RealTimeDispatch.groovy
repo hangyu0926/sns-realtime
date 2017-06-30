@@ -181,7 +181,7 @@ class RealTimeDispatch {
                     }
                     String toMysqlBean = "${beanNamePrefix}ToMysqlServiceImpl"
                     if (context.containsBean(toMysqlBean)) {
-                        services.add(context.getBean(toOrientDbBean))
+                        services.add(context.getBean(toMysqlBean))
                     }
                     dbtable2ServicesMap[dbtable] = services
                 }
