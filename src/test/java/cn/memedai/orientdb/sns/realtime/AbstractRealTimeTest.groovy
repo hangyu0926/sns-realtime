@@ -64,6 +64,12 @@ abstract class AbstractRealTimeTest extends AbstractJUnit4SpringContextTests {
                     key, value ->
                         record.put(key, value)
                 }
+                if (!data.containsKey('___schemaid___')) {
+                    record.put('___schemaid___', 1)
+                }
+                if (!data.containsKey('___op___')) {
+                    record.put('___op___', 'insert')
+                }
                 dataFileWriter.append(record)
                 dataFileWriter.close()
                 producer.send(new ProducerRecord<String, Byte[]>(topic, table, oos.toByteArray()))
