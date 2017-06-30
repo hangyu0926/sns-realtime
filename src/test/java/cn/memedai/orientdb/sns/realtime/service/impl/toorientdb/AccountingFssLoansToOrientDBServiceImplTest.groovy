@@ -16,21 +16,21 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 import javax.annotation.Resource
 
 /**
- * Created by hangyu on 2017/6/20.
+ * Created by hangyu on 2017/6/15.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class AntifraudPhoneTagToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+class AccountingFssLoansToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
+    private Map<String, Map<String, String>> kafkaDispatchConfig
 
     @Test
     void testProcess() {
-        String topic = 'antifraud'
+        String topic = 'loan'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['phone_tag_merge_crawler_all'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -40,19 +40,15 @@ class AntifraudPhoneTagToOrientDBServiceImplTest extends AbstractJUnit4SpringCon
 
         GenericRecord record = new GenericData.Record(schema)
 
-        record.put('__schemaid__', '123456')
-        record.put('phone_no', '13001007936')
-        record.put('phone_type', '贷款中介1')
-        record.put('source', '59')
-        record.put('__op__', 'insert') //必须字段
+        record.put('BORROWER_ID', 1695737L)
+        record.put('OVERDUE_DAYS', 4)
+        record.put('__op__', 'create') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-        [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'phone_tag_merge_crawler_all', oos.toByteArray()))
-        }
+        producer.send(new ProducerRecord<String, Byte[]>(topic, Integer.toString(10000), oos.toByteArray()))
         producer.close()
     }
 }

@@ -19,18 +19,19 @@ import javax.annotation.Resource
  * Created by hangyu on 2017/6/15.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class LoansToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
+class CreditAuditCaApplMemberDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
+
     @Resource
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String, String>> kafkaDispatchConfig
+    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
 
     @Test
     void testProcess() {
-        String topic = 'loan'
+        String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_appl_member_device'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -40,15 +41,20 @@ class LoansToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
 
         GenericRecord record = new GenericData.Record(schema)
 
-        record.put('BORROWER_ID', 1695737L)
-        record.put('OVERDUE_DAYS', 4)
-        record.put('__op__', 'create') //必须字段
+        record.put('__schemaid__', '123456')
+        record.put('APPL_NO', '1498060857052003')
+        record.put('DEVICE_ID', 'ADFCA33B-BF8A-4FD8-937D-0F1A0ED4F2A9')
+        record.put('IP', '117.136.67.71')
+        record.put('IP_CITY', '苏州市')
+        record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
         dataFileWriter.close()
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-        producer.send(new ProducerRecord<String, Byte[]>(topic, Integer.toString(10000), oos.toByteArray()))
+        [0..10].each {
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_appl_member_device', oos.toByteArray()))
+        }
         producer.close()
     }
 }

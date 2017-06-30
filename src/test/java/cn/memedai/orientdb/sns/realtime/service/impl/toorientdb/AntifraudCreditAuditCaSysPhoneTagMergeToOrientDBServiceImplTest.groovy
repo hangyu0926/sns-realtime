@@ -16,10 +16,10 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 import javax.annotation.Resource
 
 /**
- * Created by hangyu on 2017/6/14.
+ * Created by hangyu on 2017/6/20.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTests{
+class AntifraudCreditAuditCaSysPhoneTagMergeToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 
@@ -28,9 +28,9 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
 
     @Test
     void testProcess() {
-        String topic = 'credit_audit'
+        String topic = 'antifraud'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_sys_phone_tag_merge'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['phone_tag_merge_crawler_all'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -41,9 +41,9 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('PHONE_NO', '13168786240')
-        record.put('PHONE_TYPE', '贷款中介')
-        record.put('SOURCE', '58')
+        record.put('phone_no', '13001007936')
+        record.put('phone_type', '贷款中介1')
+        record.put('source', '59')
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
@@ -51,7 +51,7 @@ class PhoneTagToOrientDBServiceImplTest  extends AbstractJUnit4SpringContextTest
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_sys_phone_tag_merge', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'phone_tag_merge_crawler_all', oos.toByteArray()))
         }
         producer.close()
     }

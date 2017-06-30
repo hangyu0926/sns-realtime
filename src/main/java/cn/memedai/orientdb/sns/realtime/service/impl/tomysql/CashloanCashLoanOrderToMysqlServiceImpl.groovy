@@ -1,19 +1,8 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.tomysql
 
 import cn.memedai.orientdb.sns.realtime.bean.IndexData
-import cn.memedai.orientdb.sns.realtime.cache.ApplyCache
-import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
-import cn.memedai.orientdb.sns.realtime.cache.MemberCache
-import cn.memedai.orientdb.sns.realtime.cache.OrderCache
-import cn.memedai.orientdb.sns.realtime.cache.PhoneCache
-import cn.memedai.orientdb.sns.realtime.cache.StoreCache
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
-import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
-import com.orientechnologies.orient.core.db.record.OIdentifiable
-import com.orientechnologies.orient.core.db.record.ridbag.ORidBag
-import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
@@ -26,9 +15,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CashLoanOrderToMysqlServiceImpl implements RealTimeService {
+class CashloanCashLoanOrderToMysqlServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CashLoanOrderToMysqlServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CashloanCashLoanOrderToMysqlServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

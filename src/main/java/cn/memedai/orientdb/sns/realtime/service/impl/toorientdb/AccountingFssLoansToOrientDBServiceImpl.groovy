@@ -1,6 +1,5 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
-import cn.memedai.orientdb.sns.realtime.cache.CacheEntry
 import cn.memedai.orientdb.sns.realtime.cache.MemberCache
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
@@ -14,9 +13,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class LoansToOrientDBServiceImpl implements RealTimeService {
+class AccountingFssLoansToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(LoansToOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(AccountingFssLoansToOrientDBServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

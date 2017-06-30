@@ -15,9 +15,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CtaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
+class CreditTradeAuditCtaOrderDeviceinfoToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CtaIpAndDeviceToOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CreditTradeAuditCtaOrderDeviceinfoToOrientDBServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

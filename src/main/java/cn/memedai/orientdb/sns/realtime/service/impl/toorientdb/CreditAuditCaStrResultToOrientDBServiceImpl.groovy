@@ -16,8 +16,8 @@ import javax.annotation.Resource
  * Created by hangyu on 2017/6/19.
  */
 @Service
-class CreditAuditApplyToOrientDBServiceImpl implements RealTimeService{
-    private static final LOG = LoggerFactory.getLogger(CreditAuditApplyToOrientDBServiceImpl.class)
+class CreditAuditCaStrResultToOrientDBServiceImpl implements RealTimeService{
+    private static final LOG = LoggerFactory.getLogger(CreditAuditCaStrResultToOrientDBServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

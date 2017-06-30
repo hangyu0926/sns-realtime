@@ -15,9 +15,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
+class CreditAuditCaApplMemberDeviceToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CaIpAndDeviceToOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CreditAuditCaApplMemberDeviceToOrientDBServiceImpl.class)
 
     @Resource
     private OrientSql orientSql
@@ -58,8 +58,8 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
             return
         }
 
-        String op =  caIpAndDeviceMap.__op__
-        if ("update".equals(op)){
+        String op = caIpAndDeviceMap.__op__
+        if ("update".equals(op)) {
             return
         }
 
@@ -75,7 +75,7 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
 
         //对DEVICE_ID加为空判断
         String deviceRid = null
-        if (StringUtils.isNotBlank(caIpAndDeviceMap.DEVICE_ID)){
+        if (StringUtils.isNotBlank(caIpAndDeviceMap.DEVICE_ID)) {
             CacheEntry deviceCacheEntry = deviceCache.get(caIpAndDeviceMap.DEVICE_ID)
             if (deviceCacheEntry != null) {
                 deviceRid = deviceCacheEntry.value
@@ -86,10 +86,9 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
             }
         }
 
-
         //对IP加为空判断
         String ipRid = null
-        if (StringUtils.isNotBlank(caIpAndDeviceMap.IP)){
+        if (StringUtils.isNotBlank(caIpAndDeviceMap.IP)) {
             CacheEntry ipCacheEntry = ipCache.get(caIpAndDeviceMap.IP + "|" + caIpAndDeviceMap.IP_CITY)
             if (ipCacheEntry != null) {
                 ipRid = ipCacheEntry.value
@@ -109,12 +108,12 @@ class CaIpAndDeviceToOrientDBServiceImpl implements RealTimeService {
         }
 
         //查mysql 根据apply查memberId
-        if (null == memberRid){
-            int memberId = sql.firstRow(selectMemberFromApplyMysql,[appNo]).memberId
+        if (null == memberRid) {
+            int memberId = sql.firstRow(selectMemberFromApplyMysql, [appNo]).memberId
             CacheEntry memberCacheEntry = memberCache.get(memberId)
             if (memberCacheEntry != null) {
                 memberRid = memberCacheEntry.value
-                applyRidMemberRidCache.put(new CacheEntry(applyRid,memberRid))
+                applyRidMemberRidCache.put(new CacheEntry(applyRid, memberRid))
             }
         }
 

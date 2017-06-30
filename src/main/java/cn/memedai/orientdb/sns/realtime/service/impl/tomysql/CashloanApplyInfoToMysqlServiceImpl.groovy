@@ -3,15 +3,10 @@ package cn.memedai.orientdb.sns.realtime.service.impl.tomysql
 import cn.memedai.orientdb.sns.realtime.bean.IndexData
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
-import com.orientechnologies.orient.core.db.record.OIdentifiable
-import com.orientechnologies.orient.core.db.record.ridbag.ORidBag
-import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 
 import javax.annotation.Resource
@@ -20,9 +15,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CashLoanApplyToMysqlServiceImpl implements RealTimeService {
+class CashloanApplyInfoToMysqlServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CashLoanApplyToMysqlServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CashloanApplyInfoToMysqlServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

@@ -4,8 +4,6 @@ import cn.memedai.orientdb.sns.realtime.cache.*
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
-import com.orientechnologies.orient.core.id.ORecordId
-import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OResultSet
 import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
@@ -21,9 +19,9 @@ import java.text.MessageFormat
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CaCallToOrientDBServiceImpl implements RealTimeService {
+class CreditAuditCaBurOperatorContactToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CaCallToOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CreditAuditCaBurOperatorContactToOrientDBServiceImpl.class)
 
     @Resource
     private ApplyCache applyCache

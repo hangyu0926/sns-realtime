@@ -12,7 +12,6 @@ import com.orientechnologies.orient.core.db.record.OIdentifiable
 import com.orientechnologies.orient.core.db.record.ORecordLazyList
 import com.orientechnologies.orient.core.db.record.ridbag.ORidBag
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import com.orientechnologies.orient.core.sql.query.OResultSet
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
@@ -26,9 +25,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CaCallToMysqlServiceImpl implements RealTimeService {
+class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CaCallToMysqlServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CreditAuditCaBurOperatorContactToMysqlServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

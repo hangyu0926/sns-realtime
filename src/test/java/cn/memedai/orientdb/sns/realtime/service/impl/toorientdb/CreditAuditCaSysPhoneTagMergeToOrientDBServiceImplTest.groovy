@@ -16,11 +16,10 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 import javax.annotation.Resource
 
 /**
- * Created by hangyu on 2017/6/15.
+ * Created by hangyu on 2017/6/14.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
-
+class CreditAuditCaSysPhoneTagMergeToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 
@@ -31,7 +30,7 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
     void testProcess() {
         String topic = 'credit_audit'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_appl_member_device'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_sys_phone_tag_merge'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -42,10 +41,9 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('APPL_NO', '1498060857052003')
-        record.put('DEVICE_ID', 'ADFCA33B-BF8A-4FD8-937D-0F1A0ED4F2A9')
-        record.put('IP', '117.136.67.71')
-        record.put('IP_CITY', '苏州市')
+        record.put('PHONE_NO', '13168786240')
+        record.put('PHONE_TYPE', '贷款中介')
+        record.put('SOURCE', '58')
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
@@ -53,7 +51,7 @@ class CaIpAndDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_appl_member_device', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_sys_phone_tag_merge', oos.toByteArray()))
         }
         producer.close()
     }
