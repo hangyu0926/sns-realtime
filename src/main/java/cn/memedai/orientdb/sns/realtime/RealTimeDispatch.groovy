@@ -106,7 +106,7 @@ class RealTimeDispatch {
     private void pollAndProcess(String topic, KafkaConsumer consumer) {
         final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
         if (records.size() > 1) {
-            LOG.info('records size->{}', records.size())
+            getLogger(topic).info('records size->{}', records.size())
         }
         JsonSlurper jsonSlurper = new JsonSlurper()
         records.each {
