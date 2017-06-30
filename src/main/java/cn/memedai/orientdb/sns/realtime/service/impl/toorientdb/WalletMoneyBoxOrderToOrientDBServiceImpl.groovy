@@ -15,9 +15,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class OrderToOrientDBServiceImpl implements RealTimeService {
+class WalletMoneyBoxOrderToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(OrderToOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(WalletMoneyBoxOrderToOrientDBServiceImpl.class)
 
     @Resource
     private MemberCache memberCache

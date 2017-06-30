@@ -8,452 +8,68 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 
     <context:component-scan base-package="cn.memedai.orientdb.sns.realtime.service.impl"/>
 
-    <util:map id="defaultKafkaMap">
-        <entry key="bootstrap.servers" value="99.48.88.104:9092"/>
-        <entry key="group.id" value="sns"/><!--此值为前缀，程序为将拼接上数据库实例名-->
-        <entry key="enable.auto.commit" value="false"/>
+    <util:properties id="kafkaProp">
+        <prop key="bootstrap.servers">99.48.88.104:9092</prop>
+        <prop key="group.id">sns</prop><!--此值为前缀，程序为将拼接上数据库实例名-->
+        <prop key="enable.auto.commit">false</prop>
         <!--<sns key="auto.commit.interval.ms" value="1000"/>-->
-        <entry key="key.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer"/>
-        <entry key="value.deserializer" value="org.apache.kafka.common.serialization.ByteArrayDeserializer"/>
-    </util:map>
+        <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
+        <prop key="value.deserializer">org.apache.kafka.common.serialization.ByteArrayDeserializer</prop>
+    </util:properties>
 
-    <!-- key为topic, value为kafka配置-->
-    <util:map id="kafkaConfigMap">
-        <entry key="wallet" value-ref="defaultKafkaMap"/>
-    </util:map>
 
     <!--kafka消费的调度配置-->
-    <!--key为topic: 每个topic对应数据库实例-->
+    <!-- 注意：如下可以不配置，默认基于约定。
+    -->
     <util:map id="kafkaDispatchConfig">
+        <!--配置样例如下。默认可以不配置-->
         <!-- topic Start-->
-        <entry key="wallet">
-            <map>
-                <!--table Start-->
-                <entry key="wallet.apply_info">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "wallet.apply_info",
-                                     "type": "record",
-                                     "name": "apply_info",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string","null"]},
-                                         {"name": "member_id",  "type": ["long"]},
-                                         {"name": "cellphone", "type": "string"},
-                                         {"name": "apply_no", "type": ["string"]},
-                                         {"name": "created_datetime", "type": ["string"]},
-                                         {"name": "apply_status", "type": ["int"]},
-                                         {"name": "store_id", "type": ["string","null"]},
-                                         {"name": "order_no", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="applyToOrientDBServiceImpl"/>
-                                <ref bean="applyToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
+        <!-- 和数据库名称,topic名称一致。与avsc文件中的namespace属性的最后一个"."后的单词一致-->
+        <!--<entry key="wallet">-->
+        <!--<map>-->
+        <!--<entry key="tableConfig">-->
+        <!--<map>-->
+        <!--table Start-->
+        <!-- 表名。与avsc文件中的name属性保持一致-->
+        <!--<entry key="apply_info">-->
+        <!--<map>-->
 
-                <!--table Start-->
-                <entry key="wallet.money_box_order">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "wallet.money_box_order",
-                                 "type": "record",
-                                 "name": "money_box_order",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "member_id",  "type": ["long"]},
-                                     {"name": "mobile", "type": "string"},
-                                     {"name": "order_no", "type": ["string"]},
-                                     {"name": "created_datetime", "type": ["string"]},
-                                     {"name": "status", "type": ["int"]},
-                                     {"name": "store_id", "type": ["string","null"]},
-                                     {"name": "pay_amount", "type": ["int"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="orderToOrientDBServiceImpl"/>
-                                <ref bean="orderToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
+        <!--table service Start-->
+        <!--<entry key="services">-->
+        <!--处理数据的service bean。
+            如果不配置默认根据topic名称+table名称拼接spring bean自动查找相应的bean-->
+        <!--<list>-->
+        <!--<ref bean="applyToOrientDBServiceImpl"/>-->
+        <!--<ref bean="applyToMysqlServiceImpl"/>-->
+        <!--</list>-->
+        <!--</entry>-->
+        <!--table service End-->
+        <!--</map>-->
+        <!--</entry>-->
+        <!-- table End-->
+        <!--</map>-->
+        <!--</entry>-->
+        <!--处理该topic的线程池配置。
+          如果不配置默认一个线程处理-->
+        <!--<entry key="threadPool">-->
+
+        <!--</entry>-->
+        <!--</map>-->
+        <!--</entry>-->
         <!-- topic End-->
 
-
-        <!-- topic Start-->
         <entry key="credit_audit">
             <map>
-                <!--table Start-->
-                <entry key="credit_audit.ca_appl_member_device">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "credit_audit.ca_appl_member_device",
-                                     "type": "record",
-                                     "name": "ca_appl_member_device",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "APPL_NO", "type": ["string"]},
-                                         {"name": "DEVICE_ID", "type": ["string"]},
-                                         {"name": "IP", "type": ["string"]},
-                                         {"name": "IP_CITY", "type": ["string"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="caIpAndDeviceToOrientDBServiceImpl"/>
-                                <ref bean="caIpAndDeviceToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
+                <entry key="threadPool">
+                    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+                        <constructor-arg index="0">
+                            <value>5</value>
+                        </constructor-arg>
+                    </bean>
                 </entry>
-                <!-- table End-->
-
-                <!--table Start-->
-                <entry key="credit_audit.ca_sys_phone_tag_merge">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "credit_audit.ca_sys_phone_tag_merge",
-                                 "type": "record",
-                                 "name": "ca_sys_phone_tag_merge",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "PHONE_NO", "type": "string"},
-                                     {"name": "PHONE_TYPE",  "type": ["string"]},
-                                     {"name": "SOURCE", "type": ["string"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="phoneTagToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-
-                <!--table Start-->
-                <entry key="credit_audit.ca_bur_operator_contact">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "credit_audit.ca_bur_operator_contact",
-                                 "type": "record",
-                                 "name": "ca_bur_operator_contact",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "APPL_NO", "type": "string"},
-                                     {"name": "PHONE_NO",  "type": ["string"]},
-                                     {"name": "CALL_CNT", "type": ["int"]},
-                                     {"name": "CALL_LEN", "type": ["int"]},
-                                     {"name": "CALL_IN_CNT", "type": ["int"]},
-                                     {"name": "CALL_OUT_CNT", "type": ["int"]},
-                                     {"name": "CREATE_TIME", "type": ["string"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="caCallToOrientDBServiceImpl"/>
-                                <ref bean="caCallToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-
-                <!--table Start-->
-                <entry key="credit_audit.ca_str_result">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                {"namespace": "credit_audit.ca_str_result",
-                                 "type": "record",
-                                 "name": "ca_str_result",
-                                 "fields": [
-                                     {"name":"__schemaid__","type":["string"]},
-                                     {"name": "APPL_NO", "type": "string"},
-                                     {"name": "PASS",  "type": ["int"]},
-                                     {"name": "__op__", "type": ["string"]}
-                                 ]
-                                }
-                           ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="creditAuditApplyToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
             </map>
         </entry>
-        <!-- topic End-->
 
-
-        <!-- topic Start-->
-        <entry key="credit_trade_audit">
-            <map>
-                <!--table Start-->
-                <entry key="credit_trade_audit.cta_order_deviceinfo">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "credit_trade_audit.cta_order_deviceinfo",
-                                     "type": "record",
-                                     "name": "cta_order_deviceinfo",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "ORDER_ID", "type": ["string","null"]},
-                                         {"name": "DEVICE_ID", "type": ["string","null"]},
-                                         {"name": "IP", "type": ["string","null"]},
-                                         {"name": "IP_CITY", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="ctaIpAndDeviceToOrientDBServiceImpl"/>
-                                <ref bean="ctaIpAndDeviceToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
-
-
-        <!-- topic Start-->
-        <entry key="cashloan">
-            <map>
-                <!--table Start-->
-                <entry key="cashloan.apply_info">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "cashloan.apply_info",
-                                     "type": "record",
-                                     "name": "apply_info",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "member_id", "type": ["long"]},
-                                         {"name": "apply_no", "type": ["string"]},
-                                         {"name": "cellphone", "type": ["string"]},
-                                         {"name": "source", "type": ["string","null"]},
-                                         {"name": "created_datetime", "type": ["string"]},
-                                         {"name": "ip1", "type": ["string","null"]},
-                                         {"name": "ip1_city", "type": ["string","null"]},
-                                         {"name": "device_id", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="cashLoanApplyToOrientDBServiceImpl"/>
-                                <ref bean="cashLoanApplyToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-                <!--table Start-->
-                <entry key="cashloan.cash_loan_order">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "cashloan.cash_loan_order",
-                                     "type": "record",
-                                     "name": "cash_loan_order",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "member_id", "type": ["long"]},
-                                         {"name": "order_no", "type": ["string"]},
-                                         {"name": "phoneNo", "type": ["string","null"]},
-                                         {"name": "amount", "type": ["int"]},
-                                         {"name": "status", "type": ["string"]},
-                                         {"name": "source", "type": ["string","null"]},
-                                         {"name": "created_datetime", "type": ["string","null"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="cashLoanOrderToOrientDBServiceImpl"/>
-                                <ref bean="cashLoanOrderToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
-
-
-        <!-- topic Start-->
-        <entry key="antifraud">
-            <map>
-                <!--table Start-->
-                <entry key="antifraud.phone_tag_merge_crawler_all">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "antifraud.phone_tag_merge_crawler_all",
-                                     "type": "record",
-                                     "name": "phone_tag_merge_crawler_all",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "phone_no", "type": ["string"]},
-                                         {"name": "phone_type", "type": ["string"]},
-                                         {"name": "source", "type": ["string"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="antifraudPhoneTagToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
-
-        <!-- topic Start-->
-        <entry key="accounting">
-            <map>
-                <!--table Start-->
-                <entry key="accounting.FSS_LOANS">
-                    <map>
-                        <!--table schema Start-->
-                        <entry key="avroSchema">
-                            <value>
-                                <![CDATA[
-                                    {"namespace": "accounting.FSS_LOANS",
-                                     "type": "record",
-                                     "name": "FSS_LOANS",
-                                     "fields": [
-                                         {"name":"__schemaid__","type":["string"]},
-                                         {"name": "BORROWER_ID", "type": ["long"]},
-                                         {"name": "OVERDUE_DAYS", "type": ["long"]},
-                                         {"name": "__op__", "type": ["string"]}
-                                     ]
-                                    }
-                                ]]>
-                            </value>
-                        </entry>
-                        <!--table schema End-->
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="loansToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
     </util:map>
 
 </beans>

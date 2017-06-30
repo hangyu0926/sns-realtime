@@ -9,7 +9,7 @@ import org.apache.avro.file.SeekableByteArrayInput
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DatumReader
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.collections.CollectionUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -17,6 +17,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -33,25 +34,24 @@ class RealTimeDispatch {
     private static final LOG = LoggerFactory.getLogger(RealTimeDispatch.class)
 
     @Resource
+    private ApplicationContext context
+
+    @Resource
     private ExecutorService executorService
 
     @Resource
-    private Map defaultKafkaMap
+    private Properties kafkaProp
 
     @Resource
-    private Map<String, Map> kafkaConfigMap
+    private Map kafkaDispatchConfig
 
-    @Resource
-    private Map<String, Map<String, Map<String, Object>>> kafkaDispatchConfig
+    private Set<String> topics = []
 
-    @Resource
-    private Map<String, ExecutorService> topicDispatchMap
+    private Map<String, DatumReader<GenericRecord>> dbtable2DatumReaderMap = [:]
 
-    private Map<String, DatumReader<GenericRecord>> table2DatumReaderMap = [:]
+    private Map<String, List<RealTimeService>> dbtable2ServicesMap = [:]
 
-    private Map<String, List<RealTimeService>> table2ServicesMap = [:]
-
-    private Map<String, Properties> topic2KafkaProMap = [:]
+    private Map<String, ExecutorService> topic2ThreadPoolMap = [:]
 
     private Map<String, Logger> topic2LoggerMap = [:]
 
@@ -60,39 +60,31 @@ class RealTimeDispatch {
 
     void start() {
         List<Future> futures = []
-        kafkaDispatchConfig.keySet().each {
-            futures.add(executorService.submit(new Runnable() {
-                @Override
-                void run() {
-                    startConsumerThread(it)
-                }
-            }))
+        topics.each {
+            topic ->
+                futures.add(executorService.submit(new Runnable() {
+                    @Override
+                    void run() {
+                        startThread(topic)
+                    }
+                }))
         }
         futures.each {
             it.get()
         }
     }
 
-    private void startConsumerThread(final String topic) {
-        final KafkaConsumer consumer = new KafkaConsumer<>(topic2KafkaProMap[topic])
+    private void startThread(final String topic) {
+        final KafkaConsumer consumer = new KafkaConsumer<>(kafkaProp)
         consumer.subscribe([topic])
         LOG.info("Subscribed the topic {} successfully!", topic)
         while (true) {
             try {
-                final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
-                if (records.size() > 1) {
-                    LOG.info('records size->{}', records.size())
-                }
-                ExecutorService subExecutorService = topicDispatchMap[topic]
+                ExecutorService subExecutorService = topic2ThreadPoolMap[topic]
                 if (subExecutorService == null) {
-                    startSubConsumer(topic, consumer, records)
+                    pollAndProcess(topic, consumer)
                 } else {
-                    subExecutorService.submit(new Runnable() {
-                        @Override
-                        void run() {
-                            startSubConsumer(topic, consumer, records)
-                        }
-                    })
+                    startSubThread(topic, consumer)
                 }
             } catch (Throwable e) {
                 LOG.error("", e)
@@ -102,13 +94,27 @@ class RealTimeDispatch {
 
     }
 
-    private void startSubConsumer(String topic, KafkaConsumer consumer, ConsumerRecords records) {
+    private void startSubThread(String topic, KafkaConsumer consumer) {
+        topic2ThreadPoolMap[topic].submit(new Runnable() {
+            @Override
+            void run() {
+                pollAndProcess(topic, consumer)
+            }
+        })
+    }
+
+    private void pollAndProcess(String topic, KafkaConsumer consumer) {
+        final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
+        if (records.size() > 1) {
+            LOG.info('records size->{}', records.size())
+        }
         JsonSlurper jsonSlurper = new JsonSlurper()
         records.each {
             record ->
                 DataFileReader<GenericRecord> dataReader = null
+                String dbtable = "${topic}${record.key()}"
                 try {
-                    dataReader = new DataFileReader<GenericRecord>(new SeekableByteArrayInput(record.value()), table2DatumReaderMap[record.key()])
+                    dataReader = new DataFileReader<GenericRecord>(new SeekableByteArrayInput(record.value()), dbtable2DatumReaderMap[dbtable])
                 } catch (IOException e) {
                     getLogger(topic).error('schema does not match!', e)
                     getLogger(topic).warn('consume result->{},records->{}', 'fail', records.asCollection().toString())
@@ -121,7 +127,7 @@ class RealTimeDispatch {
                         def dataList = jsonSlurper.parseText(dateListText)
                         try {
                             //执行service
-                            table2ServicesMap[record.key()].each {
+                            dbtable2ServicesMap[dbtable].each {
                                 service ->
                                     long start2 = System.currentTimeMillis()
                                     service.process(dataList)
@@ -147,36 +153,57 @@ class RealTimeDispatch {
     }
 
     @PostConstruct
-    private void transfer() {
+    private void init() {
         def parser = new Schema.Parser()
         JsonSlurper jsonSlurper = new JsonSlurper()
-        Map table2SchemaMap = [:]
         new File("${getClass().getResource('/').toString()}avsc".replaceFirst('file:', '')).listFiles().each {
-            Map schemaMap = jsonSlurper.parseText(it.text)
-            String table = "${schemaMap.namespace.substring(schemaMap.namespace.lastIndexOf('.') + 1)}.${schemaMap.name}"
-            table2SchemaMap[table] = it.text
-        }
-        kafkaDispatchConfig.each {
-            topic, tableConfigInTopic ->
-                tableConfigInTopic.each {
-                    table, tableConfig ->
-                        String avroSchema = tableConfig.avroSchema
-                        if (StringUtils.isEmpty(avroSchema)) {
-                            avroSchema = table2SchemaMap["${topic}.${table}"]
-                        }
-                        table2DatumReaderMap[table] = new GenericDatumReader<GenericRecord>(parser.parse(avroSchema))
-                        table2ServicesMap[table] = tableConfig.services
+            avscFile ->
+                Map schemaMap = jsonSlurper.parseText(avscFile.text)
+                String topic = schemaMap.namespace.substring(schemaMap.namespace.lastIndexOf('.') + 1)
+                String table = schemaMap.name
+                String dbtable = "$topic$table"
+
+                topics.add(topic)
+                dbtable2DatumReaderMap[dbtable] = new GenericDatumReader<GenericRecord>(parser.parse(avscFile.text))
+                topic2ThreadPoolMap[topic] = kafkaDispatchConfig."$topic"?.threadPool
+                List<RealTimeService> services = kafkaDispatchConfig."$topic"?.tableConfig?.services
+                if (CollectionUtils.isEmpty(services)) {
+                    services = []
+                    String beanNamePrefix = "${getUpperCamelCaseWord(topic)}${getUpperCamelCaseWord(table)}"
+                    beanNamePrefix = "${beanNamePrefix.substring(0, 1).toLowerCase()}${beanNamePrefix.substring(1)}"
+                    String toOrientDbBean = "${beanNamePrefix}ToOrientDBServiceImpl"
+                    if (context.containsBean(toOrientDbBean)) {
+                        services.add(context.getBean(toOrientDbBean))
+                    }
+                    String toMysqlBean = "${beanNamePrefix}ToMysqlServiceImpl"
+                    if (context.containsBean(toMysqlBean)) {
+                        services.add(context.getBean(toOrientDbBean))
+                    }
+                    dbtable2ServicesMap[dbtable] = services
                 }
-                Properties kafkaProp = new Properties()
-                kafkaProp.putAll(kafkaConfigMap[topic] == null ? defaultKafkaMap : kafkaConfigMap[topic])
-                topic2KafkaProMap[topic] = kafkaProp
-                topic2KafkaProMap[topic]['group.id'] = 'sns_' + topic
                 topic2LoggerMap[topic] = LoggerFactory.getLogger("${RealTimeDispatch.class.getName()}#$topic")
         }
+
+        LOG.info('********************************init info start********************************')
+        LOG.info("topics->$topics")
+        LOG.info("dbtable2DatumReaderMap->$dbtable2DatumReaderMap")
+        LOG.info("topic2ThreadPoolMap->$topic2ThreadPoolMap")
+        LOG.info("dbtable2ServicesMap->$dbtable2ServicesMap")
+        LOG.info("topic2LoggerMap->$topic2LoggerMap")
+        LOG.info('********************************init info end********************************')
     }
 
     private Logger getLogger(String topic) {
         topic2LoggerMap[topic]
+    }
+
+    private String getUpperCamelCaseWord(String s) {
+        StringBuilder builder = new StringBuilder()
+        s.split("_").each {
+            String tempStr = it.toLowerCase()
+            builder.append(tempStr.substring(0, 1).toUpperCase()).append(tempStr.substring(1))
+        }
+        builder.toString()
     }
 
 }

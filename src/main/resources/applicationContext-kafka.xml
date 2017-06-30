@@ -8,222 +8,68 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 
     <context:component-scan base-package="cn.memedai.orientdb.sns.realtime.service.impl"/>
 
-    <util:map id="defaultKafkaMap">
-        <entry key="bootstrap.servers" value="99.48.88.104:9092"/>
-        <entry key="group.id" value="sns"/><!--此值为前缀，程序为将拼接上数据库实例名-->
-        <entry key="enable.auto.commit" value="false"/>
+    <util:properties id="kafkaProp">
+        <prop key="bootstrap.servers">99.48.88.104:9092</prop>
+        <prop key="group.id">sns</prop><!--此值为前缀，程序为将拼接上数据库实例名-->
+        <prop key="enable.auto.commit">false</prop>
         <!--<sns key="auto.commit.interval.ms" value="1000"/>-->
-        <entry key="key.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer"/>
-        <entry key="value.deserializer" value="org.apache.kafka.common.serialization.ByteArrayDeserializer"/>
-    </util:map>
+        <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
+        <prop key="value.deserializer">org.apache.kafka.common.serialization.ByteArrayDeserializer</prop>
+    </util:properties>
 
-    <!-- key为topic, value为kafka配置-->
-    <util:map id="kafkaConfigMap">
-        <entry key="wallet" value-ref="defaultKafkaMap"/>
-    </util:map>
 
     <!--kafka消费的调度配置-->
-    <!--key为topic: 每个topic对应数据库实例-->
+    <!-- 注意：如下可以不配置，默认基于约定。
+    -->
     <util:map id="kafkaDispatchConfig">
+        <!--配置样例如下。默认可以不配置-->
         <!-- topic Start-->
-        <entry key="wallet">
-            <map>
-                <!--table Start-->
-                <entry key="apply_info">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="applyToOrientDBServiceImpl"/>
-                                <ref bean="applyToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
+        <!-- 和数据库名称,topic名称一致。与avsc文件中的namespace属性的最后一个"."后的单词一致-->
+        <!--<entry key="wallet">-->
+        <!--<map>-->
+        <!--<entry key="tableConfig">-->
+        <!--<map>-->
+        <!--table Start-->
+        <!-- 表名。与avsc文件中的name属性保持一致-->
+        <!--<entry key="apply_info">-->
+        <!--<map>-->
 
-                <!--table Start-->
-                <entry key="money_box_order">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="orderToOrientDBServiceImpl"/>
-                                <ref bean="orderToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
+        <!--table service Start-->
+        <!--<entry key="services">-->
+        <!--处理数据的service bean。
+            如果不配置默认根据topic名称+table名称拼接spring bean自动查找相应的bean-->
+        <!--<list>-->
+        <!--<ref bean="applyToOrientDBServiceImpl"/>-->
+        <!--<ref bean="applyToMysqlServiceImpl"/>-->
+        <!--</list>-->
+        <!--</entry>-->
+        <!--table service End-->
+        <!--</map>-->
+        <!--</entry>-->
+        <!-- table End-->
+        <!--</map>-->
+        <!--</entry>-->
+        <!--处理该topic的线程池配置。
+          如果不配置默认一个线程处理-->
+        <!--<entry key="threadPool">-->
+
+        <!--</entry>-->
+        <!--</map>-->
+        <!--</entry>-->
         <!-- topic End-->
 
-
-        <!-- topic Start-->
         <entry key="credit_audit">
             <map>
-                <!--table Start-->
-                <entry key="ca_appl_member_device">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="caIpAndDeviceToOrientDBServiceImpl"/>
-                                <ref bean="caIpAndDeviceToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
+                <entry key="threadPool">
+                    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+                        <constructor-arg index="0">
+                            <value>5</value>
+                        </constructor-arg>
+                    </bean>
                 </entry>
-                <!-- table End-->
-
-                <!--table Start-->
-                <entry key="ca_sys_phone_tag_merge">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="phoneTagToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-
-                <!--table Start-->
-                <entry key="ca_bur_operator_contact">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="caCallToOrientDBServiceImpl"/>
-                                <ref bean="caCallToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-
-                <!--table Start-->
-                <entry key="ca_str_result">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="creditAuditApplyToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
             </map>
         </entry>
-        <!-- topic End-->
 
-
-        <!-- topic Start-->
-        <entry key="credit_trade_audit">
-            <map>
-                <!--table Start-->
-                <entry key="cta_order_deviceinfo">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="ctaIpAndDeviceToOrientDBServiceImpl"/>
-                                <ref bean="ctaIpAndDeviceToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
-
-
-        <!-- topic Start-->
-        <entry key="cashloan">
-            <map>
-                <!--table Start-->
-                <entry key="apply_info">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="cashLoanApplyToOrientDBServiceImpl"/>
-                                <ref bean="cashLoanApplyToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-                <!--table Start-->
-                <entry key="cash_loan_order">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="cashLoanOrderToOrientDBServiceImpl"/>
-                                <ref bean="cashLoanOrderToMysqlServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
-
-
-        <!-- topic Start-->
-        <entry key="antifraud">
-            <map>
-                <!--table Start-->
-                <entry key="phone_tag_merge_crawler_all">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="antifraudPhoneTagToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
-
-        <!-- topic Start-->
-        <entry key="accounting">
-            <map>
-                <!--table Start-->
-                <entry key="FSS_LOANS">
-                    <map>
-                        <!--table service Start-->
-                        <entry key="services">
-                            <list>
-                                <ref bean="loansToOrientDBServiceImpl"/>
-                            </list>
-                        </entry>
-                        <!--table service End-->
-                    </map>
-                </entry>
-                <!-- table End-->
-            </map>
-        </entry>
-        <!-- topic End-->
     </util:map>
 
 </beans>

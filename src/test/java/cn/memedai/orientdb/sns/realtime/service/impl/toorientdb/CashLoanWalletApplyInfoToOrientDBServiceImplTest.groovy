@@ -19,7 +19,7 @@ import javax.annotation.Resource
  * Created by hangyu on 2017/6/20.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class CashLoanApplyToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+class CashLoanWalletApplyInfoToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
     @Resource
     private Properties kafkaProducerProp
 

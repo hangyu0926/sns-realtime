@@ -3,8 +3,6 @@ package cn.memedai.orientdb.sns.realtime.service.impl.tomysql
 import cn.memedai.orientdb.sns.realtime.bean.IndexData
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
-import com.orientechnologies.orient.core.db.record.OIdentifiable
-import com.orientechnologies.orient.core.db.record.ridbag.ORidBag
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OBasicResultSet
 import groovy.sql.Sql
@@ -20,9 +18,9 @@ import javax.annotation.Resource
  * 某会员的不同申请、某会员的不同订单、某会员的不同门店
  */
 @Service
-class ApplyToMysqlServiceImpl implements RealTimeService {
+class WalletApplyInfoToMysqlServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(ApplyToMysqlServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(WalletApplyInfoToMysqlServiceImpl.class)
 
     @Resource
     private OrientSql orientSql

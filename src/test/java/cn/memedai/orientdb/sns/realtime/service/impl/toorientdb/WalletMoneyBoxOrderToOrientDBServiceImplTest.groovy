@@ -16,10 +16,11 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 import javax.annotation.Resource
 
 /**
- * Created by hangyu on 2017/6/20.
+ * Created by hangyu on 2017/6/14.
  */
 @ContextConfiguration("classpath:applicationContext.xml")
-class CashLoanOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+class WalletMoneyBoxOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+
     @Resource
     private Properties kafkaProducerProp
 
@@ -28,9 +29,9 @@ class CashLoanOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
 
     @Test
     void testProcess() {
-        String topic = 'cashloan'
+        String topic = 'wallet'
 
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['cash_loan_order'].avroSchema)
+        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['money_box_order'].avroSchema)
 
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
@@ -41,13 +42,13 @@ class CashLoanOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
         GenericRecord record = new GenericData.Record(schema)
 
         record.put('__schemaid__', '123456')
-        record.put('member_id', 840835L)
-        record.put('order_no', '0320914418955835')
-        record.put('phoneNo', '1')
-        record.put('amount', 1000)
-        record.put('status', '50')
-        record.put('source', null)
-        record.put('created_datetime', '2017-03-26 11:57:11')
+        record.put('mobile', '15821180279')
+        record.put('member_id', 715157L)
+        record.put('order_no', '1496921804405004')
+        record.put('created_datetime', '2017-06-14 14:20:00')
+        record.put('status', 1051)
+        record.put('store_id', '2759')
+        record.put('pay_amount', 100)
         record.put('__op__', 'insert') //必须字段
 
         dataFileWriter.append(record)
@@ -55,8 +56,9 @@ class CashLoanOrderToOrientDBServiceImplTest extends AbstractJUnit4SpringContext
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
         [0..10].each {
-            producer.send(new ProducerRecord<String, Byte[]>(topic, 'cash_loan_order', oos.toByteArray()))
+            producer.send(new ProducerRecord<String, Byte[]>(topic, 'money_box_order', oos.toByteArray()))
         }
+
         producer.close()
     }
 }
