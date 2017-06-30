@@ -36,7 +36,7 @@
         <appender-ref ref="ROLLING"/>
     </logger>
 
-    <logger name="cn.memedai.orientdb.sns.realtime" level="DEBUG" additivity="false">
+    <logger name="cn.memedai.orientdb.sns.realtime" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ROLLING"/>
     </logger>

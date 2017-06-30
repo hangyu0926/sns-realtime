@@ -95,7 +95,7 @@ class RealTimeDispatch {
     }
 
     private void startSubThread(String topic, KafkaConsumer consumer) {
-        executorService.submit(new Runnable() {
+        topic2ThreadPoolMap[topic].submit(new Runnable() {
             @Override
             void run() {
                 pollAndProcess(topic, consumer)
