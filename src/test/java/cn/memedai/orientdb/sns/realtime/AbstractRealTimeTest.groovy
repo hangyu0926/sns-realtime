@@ -10,6 +10,7 @@ import org.apache.avro.io.DatumWriter
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.junit.Before
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.test.context.ContextConfiguration
@@ -28,26 +29,24 @@ abstract class AbstractRealTimeTest extends AbstractJUnit4SpringContextTests {
     @Resource
     private Properties kafkaProducerProp
 
-    protected Schema getSchema(String topic, String table) {
+    protected Map<String, Schema> dbtable2SchemaMap = [:]
+
+    @Before
+    void setup() {
         JsonSlurper jsonSlurper = new JsonSlurper()
-        Schema schema = null
         new File("${getClass().getResource('/').toString()}avsc".replaceFirst('file:', '')).listFiles().each {
             avscFile ->
-                if (schema != null) {
-                    return
-                }
                 Map schemaMap = jsonSlurper.parseText(avscFile.text)
-                String topic1 = schemaMap.namespace.substring(schemaMap.namespace.lastIndexOf('.') + 1)
-                String table1 = schemaMap.name
-                if (topic1 == topic && table1 == table) {
-                    schema = new Schema.Parser().parse(avscFile.text)
-                }
+                dbtable2SchemaMap["${schemaMap.namespace.substring(schemaMap.namespace.lastIndexOf('.') + 1)}${schemaMap.name}"] = new Schema.Parser().parse(avscFile.text)
         }
-        schema
+    }
+
+    protected Schema getSchema(String topic, String table) {
+        dbtable2SchemaMap["$topic$table"]
     }
 
     protected void produce(String topic, String table, List<Map> dataList) {
-        org.apache.avro.Schema schema = getSchema(topic, table)
+        Schema schema = getSchema(topic, table)
 
         Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
 

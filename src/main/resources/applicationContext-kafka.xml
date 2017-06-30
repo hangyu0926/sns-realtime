@@ -58,17 +58,29 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <!--</entry>-->
         <!-- topic End-->
 
-        <entry key="credit_audit">
-            <map>
-                <entry key="threadPool">
-                    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
-                        <constructor-arg index="0">
-                            <value>5</value>
-                        </constructor-arg>
-                    </bean>
-                </entry>
-            </map>
-        </entry>
+        <!--<entry key="credit_audit">-->
+            <!--<map>-->
+                <!--<entry key="threadPool">-->
+                    <!--<bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">-->
+                        <!--<constructor-arg index="0">-->
+                            <!--<value>2</value>-->
+                        <!--</constructor-arg>-->
+                    <!--</bean>-->
+                <!--</entry>-->
+            <!--</map>-->
+        <!--</entry>-->
+
+        <!--<entry key="wallet">-->
+            <!--<map>-->
+                <!--<entry key="threadPool">-->
+                    <!--<bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">-->
+                        <!--<constructor-arg index="0">-->
+                            <!--<value>2</value>-->
+                        <!--</constructor-arg>-->
+                    <!--</bean>-->
+                <!--</entry>-->
+            <!--</map>-->
+        <!--</entry>-->
 
     </util:map>
 

@@ -1,82 +1,87 @@
 package cn.memedai.orientdb.sns.realtime
 
 import groovy.sql.Sql
-import org.apache.avro.Schema
-import org.apache.avro.file.DataFileWriter
-import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericDatumWriter
-import org.apache.avro.generic.GenericRecord
-import org.apache.avro.io.DatumWriter
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.Test
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.annotation.Resource
-import java.sql.Timestamp
 
-@ContextConfiguration("classpath:applicationContext.xml")
-class BatchTest extends AbstractJUnit4SpringContextTests {
+class BatchTest extends AbstractRealTimeTest {
 
-    @Resource
-    private Properties kafkaProducerProp
-
-    @Resource
-    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
+    private static final Logger LOG = LoggerFactory.getLogger(BatchTest.class)
 
     @Resource
     private Sql groovySql
 
     @Test
-    void batchTest() {
-        Producer<String, String> producer = new KafkaProducer<>(kafkaProducerProp)
-
-        send(producer,
-                'select * from network.apply_info where id >= 643473',
-                'wallet',
-                'wallet.apply_info')
-        //TODO
-        producer.close()
-    }
-
-    private void send(Producer producer, String sql, String topic, String key) {
-        Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic][key].avroSchema)
-        DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema)
-        long i = 0
-        groovySql.eachRow(sql,
+    void batchTestWalletApplyInfo() {
+        List<Map> dataList = []
+        groovySql.eachRow("select * from network.apply_info where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
                 {
                     row ->
-                        GenericRecord record = new GenericData.Record(schema)
-                        record.put('__schemaid__', '123456')
-                        record.put('__op__', 'insert')
-                        schema['fields'].each {
-                            field ->
-                                if (field['name'] == '__schemaid__' || field['name'] == '__op__') {
-                                    return
-                                }
-                                def fieldValue = row.(field['name'])
-                                if (fieldValue != null && fieldValue instanceof Timestamp) {
-                                    fieldValue = fieldValue.toString()
-                                }
-                                record.put(field['name'], fieldValue == null ? null : fieldValue)
+                        dataList.add([
+                                'cellphone'       : row.cellphone,
+                                'apply_no'        : row.apply_no,
+                                'member_id'       : row.member_id,
+                                'created_datetime': row.created_datetime.toString(),
+                                'apply_status'    : row.apply_status,
+                                'store_id'        : row.store_id,
+                                'order_no'        : row.order_no,
+                                '___op___'        : 'insert'
+                        ])
+                        for (int i = 0; i < 10; i++) {
+                            dataList.add([
+                                    'cellphone'       : row.cellphone,
+                                    'apply_no'        : row.apply_no,
+                                    'member_id'       : row.member_id,
+                                    'created_datetime': row.created_datetime.toString(),
+                                    'apply_status'    : row.apply_status,
+                                    'store_id'        : row.store_id,
+                                    'order_no'        : row.order_no,
+                                    '___op___'        : 'update'
+                            ])
                         }
+                }
 
-
-                        DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter)
-                        ByteArrayOutputStream oos = new ByteArrayOutputStream()
-                        dataFileWriter.create(schema, oos)
-                        dataFileWriter.append(record)
-                        producer.send(new ProducerRecord<String, Byte[]>(
-                                topic,
-                                key,
-                                oos.toByteArray()))
-                        println("send the ${++i}")
-                        dataFileWriter.close()
-                })
-
-
+        )
+        produce('wallet', 'apply_info', dataList)
     }
+
+
+    @Test
+    void batchTestWalletMoneyBoxOrder() {
+        List<Map> dataList = []
+        groovySql.eachRow("select * from network.money_box_order where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
+                {
+                    row ->
+                        for (int i = 0; i < 10; i++) {
+                            dataList.add([
+                                    'mobile'          : row.mobile,
+                                    'member_id'       : row.member_id,
+                                    'order_no'        : row.order_no,
+                                    'created_datetime': row.created_datetime.toString(),
+                                    'status'          : row.status,
+                                    'store_id'        : row.store_id,
+                                    'pay_amount'      : row.pay_amount,
+                                    '___op___'        : 'insert'
+                            ])
+                            dataList.add([
+                                    'mobile'          : row.mobile,
+                                    'member_id'       : row.member_id,
+                                    'order_no'        : row.order_no,
+                                    'created_datetime': row.created_datetime.toString(),
+                                    'status'          : row.status,
+                                    'store_id'        : row.store_id,
+                                    'pay_amount'      : row.pay_amount,
+                                    '___op___'        : 'update'
+                            ])
+                        }
+                }
+
+        )
+        produce('wallet', 'money_box_order', dataList)
+    }
+
 
 }
