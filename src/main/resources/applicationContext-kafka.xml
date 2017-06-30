@@ -60,13 +60,13 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 
         <entry key="credit_audit">
             <map>
-                <entry key="threadPool">
-                    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
-                        <constructor-arg index="0">
-                            <value>5</value>
-                        </constructor-arg>
-                    </bean>
-                </entry>
+                <!--<entry key="threadPool">-->
+                    <!--<bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">-->
+                        <!--<constructor-arg index="0">-->
+                            <!--<value>2</value>-->
+                        <!--</constructor-arg>-->
+                    <!--</bean>-->
+                <!--</entry>-->
             </map>
         </entry>
 
