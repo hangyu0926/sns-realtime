@@ -60,17 +60,21 @@ class RealTimeDispatch {
 
     void start() {
         List<Future> futures = []
-        topics.each {
-            topic ->
-                futures.add(executorService.submit(new Runnable() {
-                    @Override
-                    void run() {
-                        startThread(topic)
-                    }
-                }))
-        }
-        futures.each {
-            it.get()
+        try {
+            topics.each {
+                topic ->
+                    futures.add(executorService.submit(new Runnable() {
+                        @Override
+                        void run() {
+                            startThread(topic)
+                        }
+                    }))
+            }
+            futures.each {
+                it.get()
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e)
         }
     }
 
