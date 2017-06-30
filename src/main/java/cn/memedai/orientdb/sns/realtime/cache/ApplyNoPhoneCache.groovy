@@ -2,6 +2,7 @@ package cn.memedai.orientdb.sns.realtime.cache
 
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import com.orientechnologies.orient.core.record.impl.ODocument
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
 import org.slf4j.Logger
@@ -43,11 +44,21 @@ class ApplyNoPhoneCache {
             ODocument orderNoDocument = phoneResult.get(0)
             phone = orderNoDocument.field("phone") != null ? orderNoDocument.field("phone").toString() : null
             if (null == phone){
-                phone = sql.firstRow(selectPhoneFromApplyMySql,[appNo]).phone
+                GroovyRowResult result =  sql.firstRow(selectPhoneFromApplyMySql,[appNo])
+                if (null == result){
+                    return null
+                }else{
+                    phone = result.phone
+                }
             }
             return new CacheEntry(appNo, phone)
         }else{
-            phone = sql.firstRow(selectPhoneFromApplyMySql,[appNo]).phone
+            GroovyRowResult result =  sql.firstRow(selectPhoneFromApplyMySql,[appNo])
+            if (null == result){
+                return null
+            }else{
+                phone = result.phone
+            }
             return new CacheEntry(appNo, phone)
         }
     }

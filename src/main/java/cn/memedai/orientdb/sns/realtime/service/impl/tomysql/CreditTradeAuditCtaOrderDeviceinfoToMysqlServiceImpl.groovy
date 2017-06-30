@@ -90,6 +90,11 @@ class CreditTradeAuditCtaOrderDeviceinfoToMysqlServiceImpl {
             }
         }
 
+        //如果查不到此appNo的记录则过滤掉
+        if (null == memberId || null == phone){
+            return
+        }
+
         //如果同设备中存在该orderNo，说明已经统计过不做操作
         int num = sql.firstRow(selectDeviceIndexByOrderSql,[orderNo, deviceId]).num
         if (num == 0){

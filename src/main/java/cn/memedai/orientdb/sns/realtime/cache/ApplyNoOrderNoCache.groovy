@@ -4,6 +4,7 @@ import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OBasicResultSet
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
@@ -46,11 +47,21 @@ class ApplyNoOrderNoCache {
             ODocument orderNoDocument = orderNoResult.get(0)
             orderNo = orderNoDocument.field("orderNo") != null ? orderNoDocument.field("orderNo").toString() : null
             if (null == orderNo){
-                orderNo = sql.firstRow(selectOrderFromApplyMysql,[appNo]).orderNo
+                GroovyRowResult result =  sql.firstRow(selectOrderFromApplyMysql,[appNo])
+                if (null == result){
+                    return null
+                }else{
+                    orderNo = result.orderNo
+                }
             }
             return new CacheEntry(appNo, orderNo)
         }else{
-            orderNo = sql.firstRow(selectOrderFromApplyMysql,[appNo]).orderNo
+            GroovyRowResult result =  sql.firstRow(selectOrderFromApplyMysql,[appNo])
+            if (null == result){
+                return null
+            }else{
+                orderNo = result.orderNo
+            }
             return new CacheEntry(appNo, orderNo)
         }
     }

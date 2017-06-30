@@ -5,6 +5,7 @@ import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
 import cn.memedai.orientdb.sns.realtime.util.OrientSqlUtil
 import com.orientechnologies.orient.core.sql.query.OResultSet
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang.StringUtils
@@ -105,7 +106,14 @@ class CreditAuditCaBurOperatorContactToOrientDBServiceImpl implements RealTimeSe
         }
         //查mysql 根据apply查phone
         if (null == fromPhoneRid){
-            String phone = sql.firstRow(selectPhoneFromApplyMySql,[appNo]).phone
+            String phone = null
+            GroovyRowResult result =  sql.firstRow(selectPhoneFromApplyMySql,[appNo])
+            if (null == result){
+                return
+            }else{
+                phone = result.phone
+            }
+
             CacheEntry phoneCacheEntry = phoneCache.get(phone)
             if (phoneCacheEntry != null) {
                 fromPhoneRid = phoneCacheEntry.value

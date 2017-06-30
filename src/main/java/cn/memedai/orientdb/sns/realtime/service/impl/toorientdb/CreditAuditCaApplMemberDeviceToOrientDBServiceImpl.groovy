@@ -3,6 +3,7 @@ package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 import cn.memedai.orientdb.sns.realtime.cache.*
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import cn.memedai.orientdb.sns.realtime.sql.OrientSql
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
@@ -109,7 +110,14 @@ class CreditAuditCaApplMemberDeviceToOrientDBServiceImpl implements RealTimeServ
 
         //查mysql 根据apply查memberId
         if (null == memberRid) {
-            int memberId = sql.firstRow(selectMemberFromApplyMysql, [appNo]).memberId
+            int memberId = 0
+            GroovyRowResult result =  sql.firstRow(selectMemberFromApplyMysql, [appNo])
+            if (null == result){
+                return
+            }else{
+                memberId = result.memberId
+            }
+
             CacheEntry memberCacheEntry = memberCache.get(memberId)
             if (memberCacheEntry != null) {
                 memberRid = memberCacheEntry.value

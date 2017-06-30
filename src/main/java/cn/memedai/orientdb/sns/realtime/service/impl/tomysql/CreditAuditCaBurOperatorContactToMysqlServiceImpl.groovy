@@ -97,6 +97,8 @@ class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeServi
         CacheEntry applyNophoneCacheEntry = applyNoPhoneCache.get(appNo)
         if (applyNophoneCacheEntry != null) {
             phone = applyNophoneCacheEntry.value
+        }else{
+            return
         }
 
         CacheEntry applyNoOrderNoCacheEntry = applyNoOrderNoCache.get(appNo)
