@@ -1,5 +1,6 @@
 package cn.memedai.orientdb.sns.realtime
 
+import cn.memedai.orientdb.sns.realtime.service.MailService
 import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import groovy.json.JsonSlurper
 import groovy.sql.Sql
@@ -50,6 +51,9 @@ class RealTimeDispatch {
     @Resource
     private Sql sql
 
+    @Resource
+    private MailService mailService
+
     private ReadWriteLock lock = new ReentrantReadWriteLock()
 
     private List<Throwable> throwables = []
@@ -87,7 +91,7 @@ class RealTimeDispatch {
         }
 
         if (!throwables.isEmpty()) {
-            //TODO process Throwable 发邮件
+            mailService.sendMail(throwables)
         }
 
     }
