@@ -24,6 +24,8 @@ import javax.annotation.PostConstruct
 import javax.annotation.Resource
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * Created by kisho on 2017/6/8.
@@ -45,18 +47,16 @@ class RealTimeDispatch {
     @Resource
     private Map kafkaDispatchConfig
 
+    @Resource
+    private Sql sql
+
+    private ReadWriteLock lock = new ReentrantReadWriteLock()
+
+    private List<Throwable> throwables = []
+
     private Set<String> topics = []
 
     private Map<String, DatumReader<GenericRecord>> dbtable2DatumReaderMap = [:]
-
-    private Map<String, List<RealTimeService>> dbtable2ServicesMap = [:]
-
-    private Map<String, ExecutorService> topic2ThreadPoolMap = [:]
-
-    private Map<String, Logger> topic2LoggerMap = [:]
-
-    @Resource
-    private Sql sql
 
     void start() {
         List<Future> futures = []
@@ -66,36 +66,50 @@ class RealTimeDispatch {
                     futures.add(executorService.submit(new Runnable() {
                         @Override
                         void run() {
-                            startThread(topic)
+                            try {
+                                startThread(topic)
+                            } catch (Throwable e) {
+                                addThrowables(e)
+                            }
                         }
                     }))
             }
+
             futures.each {
                 it.get()
             }
         } catch (Throwable e) {
-            throw new RuntimeException(e)
+            addThrowables(e)
         }
+
+        throwables.each {
+            LOG.error('', it)
+        }
+
+        if (!throwables.isEmpty()) {
+            //TODO process Throwable 发邮件
+        }
+
     }
+
+    private Map<String, List<RealTimeService>> dbtable2ServicesMap = [:]
+
+    private Map<String, ExecutorService> topic2ThreadPoolMap = [:]
+
+    private Map<String, Logger> topic2LoggerMap = [:]
 
     private void startThread(final String topic) {
         final KafkaConsumer consumer = new KafkaConsumer<>(kafkaProp)
         consumer.subscribe([topic])
         LOG.info("Subscribed the topic {} successfully!", topic)
-        while (true) {
-            try {
-                ExecutorService subExecutorService = topic2ThreadPoolMap[topic]
-                if (subExecutorService == null) {
-                    pollAndProcess(topic, consumer)
-                } else {
-                    startSubThread(topic, consumer)
-                }
-            } catch (Throwable e) {
-                LOG.error("", e)
-                throw e
+        while (true && !isTerminated()) {
+            ExecutorService subExecutorService = topic2ThreadPoolMap[topic]
+            if (subExecutorService == null) {
+                pollAndProcess(topic, consumer)
+            } else {
+                startSubThread(topic, consumer)
             }
         }
-
     }
 
     private void startSubThread(String topic, KafkaConsumer consumer) {
@@ -139,7 +153,6 @@ class RealTimeDispatch {
                             }
                             getLogger(topic).info('consumer result->{},topic->{},table->{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
                         } catch (Throwable e) {
-                            getLogger(topic).error("", e)
                             getLogger(topic).warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dateListText)
                             throw e
                         }
@@ -212,6 +225,24 @@ class RealTimeDispatch {
             builder.append(tempStr.substring(0, 1).toUpperCase()).append(tempStr.substring(1))
         }
         builder.toString()
+    }
+
+    private boolean isTerminated() {
+        lock.readLock().lock()
+        try {
+            return !throwables.isEmpty()
+        } finally {
+            lock.readLock().unlock()
+        }
+    }
+
+    private void addThrowables(Throwable e) {
+        lock.writeLock().lock()
+        try {
+            throwables.add(e)
+        } finally {
+            lock.writeLock().unlock()
+        }
     }
 
 }
