@@ -1,5 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.AbstractRealTimeTest
+import groovy.sql.Sql
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
@@ -18,18 +20,20 @@ import javax.annotation.Resource
 /**
  * Created by hangyu on 2017/6/15.
  */
-@ContextConfiguration("classpath:applicationContext.xml")
-class CreditTradeAuditCtaOrderDeviceinfoToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+class CreditTradeAuditCtaOrderDeviceinfoToOrientDBServiceImplTest extends AbstractRealTimeTest{
 
     @Resource
+    private Sql groovySql
+
+  /*  @Resource
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String,  Map<String, String>>> kafkaDispatchConfig
+    private Map<String, Map<String,  Map<String, String>>> kafkaDispatchConfig*/
 
     @Test
     void testProcess() {
-        String topic = 'credit_trade_audit'
+       /* String topic = 'credit_trade_audit'
 
         Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['cta_order_deviceinfo'].avroSchema)
 
@@ -55,6 +59,22 @@ class CreditTradeAuditCtaOrderDeviceinfoToOrientDBServiceImplTest extends Abstra
         [0..10].each {
             producer.send(new ProducerRecord<String, Byte[]>(topic, 'cta_order_deviceinfo', oos.toByteArray()))
         }
-        producer.close()
+        producer.close()*/
+
+        List<Map> dataList = []
+        groovySql.eachRow("select * from credit_trade_audit.cta_order_deviceinfo where CREATE_TIME between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
+                {
+                    row ->
+                        dataList.add([
+                                'ORDER_ID'       : row.ORDER_ID,
+                                'DEVICE_ID'        : row.DEVICE_ID,
+                                'IP'       : row.IP,
+                                'IP_CITY': row.IP_CITY,
+                                '___op___'        : 'insert'
+                        ])
+                }
+
+        )
+        produce('credit_audit', 'cta_order_deviceinfo', dataList)
     }
 }

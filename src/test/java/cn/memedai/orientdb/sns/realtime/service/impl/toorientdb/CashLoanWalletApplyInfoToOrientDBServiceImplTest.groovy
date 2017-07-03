@@ -1,5 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.AbstractRealTimeTest
+import groovy.sql.Sql
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
@@ -18,17 +20,20 @@ import javax.annotation.Resource
 /**
  * Created by hangyu on 2017/6/20.
  */
-@ContextConfiguration("classpath:applicationContext.xml")
-class CashLoanWalletApplyInfoToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
+class CashLoanWalletApplyInfoToOrientDBServiceImplTest extends AbstractRealTimeTest{
+
     @Resource
+    private Sql groovySql
+
+ /*   @Resource
     private Properties kafkaProducerProp
 
     @Resource
-    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
+    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig*/
 
     @Test
     void testProcess() {
-        String topic = 'cashloan'
+       /* String topic = 'cashloan'
 
         Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['apply_info'].avroSchema)
 
@@ -58,6 +63,25 @@ class CashLoanWalletApplyInfoToOrientDBServiceImplTest extends AbstractJUnit4Spr
         [0..10].each {
             producer.send(new ProducerRecord<String, Byte[]>(topic, 'apply_info', oos.toByteArray()))
         }
-        producer.close()
+        producer.close()*/
+
+        List<Map> dataList = []
+        groovySql.eachRow("select * from cashloan.apply_info where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
+                {
+                    row ->
+                        dataList.add([
+                                'member_id'       : row.member_id,
+                                'apply_no'        : row.apply_no,
+                                'cellphone'       : row.cellphone,
+                                'source': row.source,
+                                'created_datetime': row.created_datetime,
+                                'ip1': row.ip1,
+                                'ip1_city': row.ip1_city,
+                                'device_id': row.device_id
+                        ])
+                }
+
+        )
+        produce('cashloan', 'apply_info', dataList)
     }
 }

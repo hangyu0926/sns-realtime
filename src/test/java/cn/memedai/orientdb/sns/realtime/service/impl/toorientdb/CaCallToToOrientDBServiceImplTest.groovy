@@ -1,34 +1,22 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
-import org.apache.avro.Schema
-import org.apache.avro.file.DataFileWriter
-import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericDatumWriter
-import org.apache.avro.generic.GenericRecord
-import org.apache.avro.io.DatumWriter
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.clients.producer.ProducerRecord
+import cn.memedai.orientdb.sns.realtime.AbstractRealTimeTest
+import groovy.sql.Sql
 import org.junit.Test
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests
 
 import javax.annotation.Resource
 
 /**
  * Created by hangyu on 2017/6/14.
  */
-@ContextConfiguration("classpath:applicationContext.xml")
-class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests{
-    @Resource
-    private Properties kafkaProducerProp
+class CaCallToToOrientDBServiceImplTest extends AbstractRealTimeTest {
 
     @Resource
-    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
+    private Sql sql
 
     @Test
     void testProcess() {
-        String topic = 'credit_audit'
+       /* String topic = 'credit_audit'
 
         Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_bur_operator_contact'].avroSchema)
 
@@ -62,6 +50,23 @@ class CaCallToToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests
         [0..10].each {
             producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_bur_operator_contact', oos.toByteArray()))
         }
-        producer.close()
+        producer.close()*/
+
+        def list = []
+        sql.rows("select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from credit_audit.ca_bur_operator_contact where id > 43611474 and  PHONE_NO is not null limit 50000").each {
+            row ->
+                list.add(row.APPL_NO)
+        }
+
+
+        for (i in list)
+        produce('credit_audit', 'ca_bur_operator_contact', [[
+                                                 'APPL_NO'       : i,
+                                                 'PHONE_NO'        : '1',
+                                                 'CALL_CNT'       : 0,
+                                                 'CALL_IN_CNT': 0,
+                                                 'CALL_OUT_CNT'    : 0,
+                                                 'CREATE_TIME'        : '2017-06-19 23:57:10'
+                                         ]])
     }
 }

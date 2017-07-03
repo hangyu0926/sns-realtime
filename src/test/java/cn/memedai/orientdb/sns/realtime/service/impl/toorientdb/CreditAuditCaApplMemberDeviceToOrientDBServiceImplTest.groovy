@@ -1,5 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.service.impl.toorientdb
 
+import cn.memedai.orientdb.sns.realtime.AbstractRealTimeTest
+import groovy.sql.Sql
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
@@ -18,18 +20,14 @@ import javax.annotation.Resource
 /**
  * Created by hangyu on 2017/6/15.
  */
-@ContextConfiguration("classpath:applicationContext.xml")
-class CreditAuditCaApplMemberDeviceToOrientDBServiceImplTest extends AbstractJUnit4SpringContextTests {
+class CreditAuditCaApplMemberDeviceToOrientDBServiceImplTest extends AbstractRealTimeTest {
 
     @Resource
-    private Properties kafkaProducerProp
-
-    @Resource
-    private Map<String, Map<String, Map<String, String>>> kafkaDispatchConfig
+    private Sql groovySql
 
     @Test
     void testProcess() {
-        String topic = 'credit_audit'
+       /* String topic = 'credit_audit'
 
         Schema schema = new Schema.Parser().parse(kafkaDispatchConfig[topic]['ca_appl_member_device'].avroSchema)
 
@@ -55,6 +53,22 @@ class CreditAuditCaApplMemberDeviceToOrientDBServiceImplTest extends AbstractJUn
         [0..10].each {
             producer.send(new ProducerRecord<String, Byte[]>(topic, 'ca_appl_member_device', oos.toByteArray()))
         }
-        producer.close()
+        producer.close()*/
+
+        List<Map> dataList = []
+        groovySql.eachRow("select * from credit_audit.ca_appl_member_device where CREATE_TIME between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
+                {
+                    row ->
+                        dataList.add([
+                                'APPL_NO'       : row.APPL_NO,
+                                'DEVICE_ID'        : row.DEVICE_ID,
+                                'IP'       : row.IP,
+                                'IP_CITY': row.IP_CITY,
+                                '___op___'        : 'insert'
+                                ])
+                }
+
+        )
+        produce('credit_audit', 'ca_appl_member_device', dataList)
     }
 }
