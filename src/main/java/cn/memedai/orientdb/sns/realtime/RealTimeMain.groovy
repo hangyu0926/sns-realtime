@@ -1,5 +1,6 @@
 package cn.memedai.orientdb.sns.realtime
 
+import org.springframework.context.ApplicationContext
 import org.springframework.context.support.ClassPathXmlApplicationContext
 
 /**
@@ -11,9 +12,15 @@ class RealTimeMain {
         /**
          * 反欺诈业务实时数据同步脚本入口
          */
-        new ClassPathXmlApplicationContext('applicationContext.xml')
-                .getBean(RealTimeDispatch.class)
-                .start()
+        ApplicationContext context = null
+        try {
+            context = new ClassPathXmlApplicationContext('applicationContext.xml')
+            context.getBean(RealTimeDispatch.class).start()
+        } finally {
+            if (context != null) {
+                context.close()
+            }
+        }
     }
 
 }

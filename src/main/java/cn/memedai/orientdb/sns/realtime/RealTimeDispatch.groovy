@@ -64,27 +64,26 @@ class RealTimeDispatch {
 
     void start() {
         List<Future> futures = []
-        try {
-            topics.each {
-                topic ->
-                    futures.add(executorService.submit(new Runnable() {
-                        @Override
-                        void run() {
-                            try {
-                                startThread(topic)
-                            } catch (Throwable e) {
-                                addThrowables(e)
-                            }
-                        }
-                    }))
-            }
-
-            futures.each {
-                it.get()
-            }
-        } catch (Throwable e) {
-            addThrowables(e)
+        topics.each {
+            topic ->
+                futures.add(executorService.submit({
+                    try {
+                        startThread(topic)
+                    } catch (Throwable e) {
+                        addThrowables(e)
+                    }
+                }))
         }
+
+        futures.each {
+            try {
+                it.get()
+            } catch (Throwable e) {
+                addThrowables(e)
+            }
+        }
+
+        executorService.shutdownNow()
 
         throwables.each {
             LOG.error('', it)
@@ -93,7 +92,6 @@ class RealTimeDispatch {
         if (!throwables.isEmpty()) {
             mailService.sendMail(throwables)
         }
-
     }
 
     private Map<String, List<RealTimeService>> dbtable2ServicesMap = [:]
@@ -117,11 +115,8 @@ class RealTimeDispatch {
     }
 
     private void startSubThread(String topic, KafkaConsumer consumer) {
-        topic2ThreadPoolMap[topic].submit(new Runnable() {
-            @Override
-            void run() {
-                pollAndProcess(topic, consumer)
-            }
+        topic2ThreadPoolMap[topic].submit({
+            pollAndProcess(topic, consumer)
         })
     }
 
