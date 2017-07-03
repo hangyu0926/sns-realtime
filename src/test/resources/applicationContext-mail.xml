@@ -1,0 +1,22 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <util:properties id="mailProp">
+        <prop key="mail.smtp.host">smtp.163.com</prop>
+        <prop key="mail.smtp.port">25</prop>
+        <prop key="mail.smtp.auth">true</prop>
+
+        <prop key="mail.from.user">mime15821180279@163.com</prop>
+        <prop key="mail.from.password">ComM3416225611</prop>
+        <prop key="mail.from.displayName">Mime OrientDB Teleporter</prop>
+
+        <prop key="mail.subject">OrientDB Teleporter Performance</prop>
+        <prop key="mail.to.user">kisho.dai@mi-me.com</prop>
+        <prop key="shell.path"></prop>
+    </util:properties>
+
+
+</beans>
