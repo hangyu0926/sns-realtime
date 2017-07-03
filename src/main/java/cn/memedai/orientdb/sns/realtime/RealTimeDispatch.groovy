@@ -56,9 +56,9 @@ class RealTimeDispatch {
 
     private ReadWriteLock lock = new ReentrantReadWriteLock()
 
-    private List<Throwable> throwables = []
+    private List<Throwable> throwables = Collections.synchronizedList([])
 
-    private List<Future> futures = []
+    private List<Future> futures = Collections.synchronizedList([])
 
     private Set<String> topics = []
 
@@ -85,8 +85,6 @@ class RealTimeDispatch {
                 executorService.shutdownNow()
             }
         }
-
-        executorService.shutdownNow()
 
         throwables.each {
             LOG.error('', it)
@@ -245,7 +243,7 @@ class RealTimeDispatch {
             futures.each {
                 it.cancel(true)
             }
-
+            executorService.shutdownNow()
         } finally {
             lock.writeLock().unlock()
         }
