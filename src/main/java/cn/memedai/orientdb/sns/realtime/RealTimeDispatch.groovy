@@ -86,8 +86,10 @@ class RealTimeDispatch {
             }
         }
 
+        executorService.shutdownNow()
+
         throwables.each {
-            LOG.error('throwable:', it)
+            LOG.error('', it)
         }
 
         if (!throwables.isEmpty()) {
