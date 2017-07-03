@@ -20,6 +20,15 @@ class MailService {
     @Resource
     private Properties mailProp
 
+    private static final String MAIL_TEMPLATE = "<html>\n" +
+            "<body>\n" +
+            "<h1 align=\"left\">Hi All,</h1>\n" +
+            "    <caption><h1>sns-realtime has exception:</h1></caption>\n" +
+            "    #BODY\n" +
+            "<h2>Thank you</h2>\n" +
+            "</body>\n" +
+            "</html>";
+
     void sendMail(String body) {
         try {
             String subject = mailProp.getProperty("mail.subject")
@@ -48,13 +57,21 @@ class MailService {
                 LOG.info("send mail response : {}", builder1.toString())
             }
         }
+
         catch (Throwable e) {
             LOG.error("send mail exception!", e)
         }
     }
 
     void sendMail(List<Throwable> throwables) {
-        //TODO
+        StringBuffer body = new StringBuffer()
+
+        throwables.each {
+            body.append("<h3>" + it + "</h3>\n").append(it.stackTrace.toString().replace('$', '').replaceAll(',', ',<br/>'))
+        }
+
+        sendMail(MAIL_TEMPLATE.replaceAll("#BODY", body.toString()))
+
     }
 
 }

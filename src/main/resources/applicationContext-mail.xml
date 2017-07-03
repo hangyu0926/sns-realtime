@@ -11,10 +11,10 @@
 
         <prop key="mail.from.user">mime15821180279@163.com</prop>
         <prop key="mail.from.password">ComM3416225611</prop>
-        <prop key="mail.from.displayName">Mime OrientDB Teleporter</prop>
+        <prop key="mail.from.displayName">Mime sns-realtime</prop>
 
         <prop key="mail.subject">sns-realtime</prop>
-        <prop key="mail.to.user">yu.hang@nan-mi.cn</prop>
+        <prop key="mail.to.user">kisho.dai@mi-me.com,ti.zhou@mi-me.com,yu.hang@nan-mi.cn</prop>
         <prop key="shell.path"></prop>
     </util:properties>
 
