@@ -58,17 +58,20 @@ class RealTimeDispatch {
 
     private List<Throwable> throwables = []
 
+    private List<Future> futures = []
+
     private Set<String> topics = []
 
     private Map<String, DatumReader<GenericRecord>> dbtable2DatumReaderMap = [:]
 
     void start() {
-        List<Future> futures = []
         topics.each {
             topic ->
                 futures.add(executorService.submit({
                     try {
                         startThread(topic)
+                    } catch (org.apache.kafka.common.errors.InterruptException ignoreException) {
+
                     } catch (Throwable e) {
                         addThrowables(e)
                     }
@@ -79,14 +82,12 @@ class RealTimeDispatch {
             try {
                 it.get()
             } catch (Throwable e) {
-                addThrowables(e)
+                executorService.shutdownNow()
             }
         }
 
-        executorService.shutdownNow()
-
         throwables.each {
-            LOG.error('', it)
+            LOG.error('throwable:', it)
         }
 
         if (!throwables.isEmpty()) {
@@ -239,6 +240,10 @@ class RealTimeDispatch {
         lock.writeLock().lock()
         try {
             throwables.add(e)
+            futures.each {
+                it.cancel(true)
+            }
+
         } finally {
             lock.writeLock().unlock()
         }
