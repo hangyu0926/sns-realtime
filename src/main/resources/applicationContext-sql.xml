@@ -36,7 +36,9 @@
             <![CDATA[select member_id as memberId from network.money_box_order where order_no = ?]]>
         </prop>
 
-
+        <prop key="selectIdAreaMysql">
+            <![CDATA[select ID_PREFIX,PROVINCE,CITY from credit_audit.ca_sys_value_id_area]]>
+        </prop>
 
         <prop key="selectDirectMemberCountMySql">
             <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "contact_accept_member_num"]]>
@@ -243,6 +245,14 @@
 
         <prop key="updateMemberSql">
             <![CDATA[update Member set memberId=? upsert return after where memberId=?]]>
+        </prop>
+
+        <prop key="updateMemberWithPhoneSql">
+            <![CDATA[update Member set memberId=?,phone=?,isBlack=false,isOverdue=false upsert return after where memberId=?]]>
+        </prop>
+
+        <prop key="updateMemberWithIdCardSql">
+            <![CDATA[update Member set memberId=?,name=?,idNo=?,province=?,city=? upsert return after where memberId=?]]>
         </prop>
 
         <prop key="getStoreSql">

@@ -1,6 +1,7 @@
 package cn.memedai.orientdb.sns.realtime.cache
 
 import groovy.sql.Sql
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
@@ -18,7 +19,8 @@ class IdCache {
     @Resource
     private Sql sql
 
-    private String idSql = 'select ID_PREFIX,PROVINCE,CITY from credit_audit.ca_sys_value_id_area'
+    @Value("#{sqlProp.selectIdAreaMysql}")
+    private String idSql
 
     @Cacheable(value = 'idCache')
     CacheEntry get(idPrefix) {
