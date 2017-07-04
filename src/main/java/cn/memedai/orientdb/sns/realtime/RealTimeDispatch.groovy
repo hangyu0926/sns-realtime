@@ -58,20 +58,19 @@ class RealTimeDispatch {
 
     private List<Throwable> throwables = Collections.synchronizedList([])
 
-    private List<Future> futures = Collections.synchronizedList([])
-
     private Set<String> topics = []
 
     private Map<String, DatumReader<GenericRecord>> dbtable2DatumReaderMap = [:]
 
     void start() {
+        List<Future> futures = []
         topics.each {
             topic ->
                 futures.add(executorService.submit({
                     try {
                         startThread(topic)
                     } catch (org.apache.kafka.common.errors.InterruptException ignoreException) {
-
+                        LOG.warn('{} is interrupted caused by {}', Thread.currentThread(), ignoreException.toString())
                     } catch (Throwable e) {
                         addThrowables(e)
                     }
@@ -105,7 +104,7 @@ class RealTimeDispatch {
         final KafkaConsumer consumer = new KafkaConsumer<>(kafkaProp)
         consumer.subscribe([topic])
         LOG.info("Subscribed the topic {} successfully!", topic)
-        while (true && !isTerminated()) {
+        while (true) {
             ExecutorService subExecutorService = topic2ThreadPoolMap[topic]
             if (subExecutorService == null) {
                 pollAndProcess(topic, consumer)
@@ -227,22 +226,10 @@ class RealTimeDispatch {
         builder.toString()
     }
 
-    private boolean isTerminated() {
-        lock.readLock().lock()
-        try {
-            return !throwables.isEmpty()
-        } finally {
-            lock.readLock().unlock()
-        }
-    }
-
     private void addThrowables(Throwable e) {
         lock.writeLock().lock()
         try {
             throwables.add(e)
-            futures.each {
-                it.cancel(true)
-            }
             executorService.shutdownNow()
         } finally {
             lock.writeLock().unlock()
