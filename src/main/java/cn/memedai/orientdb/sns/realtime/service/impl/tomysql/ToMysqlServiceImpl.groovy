@@ -214,7 +214,7 @@ class ToMysqlServiceImpl{
     }
 
      void addIndexMemberDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                                     long direct, String applyStatus, String orderStatus) {
+                              Object direct, String applyStatus, String orderStatus) {
         IndexData indexData = new IndexData()
         indexData.setMemberId(memberId)
         indexData.setMobile(mobile)
@@ -289,7 +289,7 @@ class ToMysqlServiceImpl{
     }
 
     void addIndexDeviceIpDatas(List<IndexData> indexDatas, long memberId, String mobile, String applyNo, String orderNo, String indexName,
-                               long direct, String deviceId, String ip) {
+                               Object direct, String deviceId, String ip) {
         if (null != indexName){
             IndexData indexData = new IndexData();
             indexData.setMemberId(memberId);
