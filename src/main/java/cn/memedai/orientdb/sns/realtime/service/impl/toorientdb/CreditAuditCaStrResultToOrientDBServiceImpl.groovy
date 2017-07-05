@@ -16,7 +16,7 @@ import javax.annotation.Resource
  * Created by hangyu on 2017/6/19.
  */
 @Service
-class CreditAuditCaStrResultToOrientDBServiceImpl implements RealTimeService{
+class CreditAuditCaStrResultToOrientDBServiceImpl implements RealTimeService {
     private static final LOG = LoggerFactory.getLogger(CreditAuditCaStrResultToOrientDBServiceImpl.class)
 
     @Resource
@@ -40,7 +40,7 @@ class CreditAuditCaStrResultToOrientDBServiceImpl implements RealTimeService{
 
         String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateCashLoanApplyPassSql, applyMap.APPL_NO, applyMap.PASS, applyMap.APPL_NO))
         if (StringUtils.isNotBlank(applyRid)) {
-            applyCache.put(new CacheEntry(applyMap.apply_no, applyRid))
+            applyCache.put(new CacheEntry(applyMap.APPL_NO, applyRid))
         }
     }
 }

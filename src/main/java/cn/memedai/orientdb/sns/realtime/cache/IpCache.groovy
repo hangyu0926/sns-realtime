@@ -35,12 +35,13 @@ class IpCache {
     @Cacheable(value = 'ipCache')
     CacheEntry get(ip) {
         String ipAndipCity = ip
-        String tempIp = ipAndipCity.split("\\|")[0]
-        String tempIpCity =ipAndipCity.split("\\|")[1]
+        String[] tempArr = ipAndipCity.split("\\|")
+        String tempIp = tempArr[0]
+        String tempIpCity = tempArr.length == 1 ? '' : tempArr[1]
 
         List<ODocument> result = orientSql.execute(getIpSql, tempIp)
         if (CollectionUtils.isEmpty(result)) {
-            String rid = OrientSqlUtil.getRid(orientSql.execute(updateIpSql, tempIp,tempIpCity, tempIp))
+            String rid = OrientSqlUtil.getRid(orientSql.execute(updateIpSql, tempIp, tempIpCity, tempIp))
             if (StringUtils.isBlank(rid)) {
                 return null
             }

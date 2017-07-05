@@ -5,11 +5,10 @@ import cn.memedai.orientdb.sns.realtime.service.RealTimeService
 import groovy.json.JsonSlurper
 import groovy.sql.Sql
 import org.apache.avro.Schema
-import org.apache.avro.file.DataFileReader
-import org.apache.avro.file.SeekableByteArrayInput
 import org.apache.avro.generic.GenericDatumReader
-import org.apache.avro.generic.GenericRecord
+import org.apache.avro.io.BinaryDecoder
 import org.apache.avro.io.DatumReader
+import org.apache.avro.io.DecoderFactory
 import org.apache.commons.collections.CollectionUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -60,7 +59,7 @@ class RealTimeDispatch {
 
     private Set<String> topics = []
 
-    private Map<String, DatumReader<GenericRecord>> dbtable2DatumReaderMap = [:]
+    private Map<String, Schema> dbtable2AvroSchemaMap = [:]
 
     void start() {
         List<Future> futures = []
@@ -121,6 +120,7 @@ class RealTimeDispatch {
     }
 
     private void pollAndProcess(String topic, KafkaConsumer consumer) {
+        topic = topic.substring(topic.lastIndexOf('.') + 1)
         final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
         if (records.size() > 1) {
             getLogger(topic).info('records size->{}', records.size())
@@ -128,33 +128,33 @@ class RealTimeDispatch {
         JsonSlurper jsonSlurper = new JsonSlurper()
         records.each {
             record ->
-                DataFileReader<GenericRecord> dataReader = null
-                String dbtable = "${topic}${record.key()}"
+                DatumReader dataReader = null
+                String dbtable = "$topic${record.key()}"
                 try {
-                    dataReader = new DataFileReader<GenericRecord>(new SeekableByteArrayInput(record.value()), dbtable2DatumReaderMap[dbtable])
+                    dataReader = new GenericDatumReader()
+                    dataReader.setSchema(dbtable2AvroSchemaMap[dbtable])
                 } catch (IOException e) {
                     getLogger(topic).error('schema does not match!', e)
                     getLogger(topic).warn('consume result->{},records->{}', 'fail', records.asCollection().toString())
                     return
                 }
-                dataReader.each {
-                    data ->
-                        long start = System.currentTimeMillis()
-                        def dateListText = [data.toString()].toString()
-                        def dataList = jsonSlurper.parseText(dateListText)
-                        try {
-                            //执行service
-                            dbtable2ServicesMap[dbtable].each {
-                                service ->
-                                    long start2 = System.currentTimeMillis()
-                                    service.process(dataList)
-                                    getLogger(topic).info('{}#process, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
-                            }
-                            getLogger(topic).info('consumer result->{},topic->{},table->{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
-                        } catch (Throwable e) {
-                            getLogger(topic).warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dateListText)
-                            throw e
-                        }
+                BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(record.value(), null)
+
+                long start = System.currentTimeMillis()
+                def dataListText = [dataReader.read(null, decoder).toString()].toString()
+                def dataList = jsonSlurper.parseText(dataListText)
+                try {
+                    //执行service
+                    dbtable2ServicesMap[dbtable].each {
+                        service ->
+                            long start2 = System.currentTimeMillis()
+                            service.process(dataList)
+                            getLogger(topic).info('{}#process, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
+                    }
+                    getLogger(topic).info('consumer result->{},topic->{},table->{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
+                } catch (Throwable e) {
+                    getLogger(topic).warn('consume result->{},topic->{},table-{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dataListText)
+                    throw e
                 }
         }
         commitAsync(consumer, records)
@@ -183,8 +183,8 @@ class RealTimeDispatch {
                 String table = schemaMap.name
                 String dbtable = "$topic$table"
 
-                topics.add(topic)
-                dbtable2DatumReaderMap[dbtable] = new GenericDatumReader<GenericRecord>(parser.parse(avscFile.text))
+                topics.add(schemaMap.namespace)
+                dbtable2AvroSchemaMap[dbtable] = parser.parse(avscFile.text)
                 topic2ThreadPoolMap[topic] = kafkaDispatchConfig."$topic"?.threadPool
                 List<RealTimeService> services = kafkaDispatchConfig."$topic"?.tableConfig?.services
                 if (CollectionUtils.isEmpty(services)) {
@@ -206,7 +206,7 @@ class RealTimeDispatch {
 
         LOG.info('********************************init info start********************************')
         LOG.info("topics->$topics")
-        LOG.info("dbtable2DatumReaderMap->$dbtable2DatumReaderMap")
+        LOG.info("dbtable2AvroSchemaMap->$dbtable2AvroSchemaMap")
         LOG.info("topic2ThreadPoolMap->$topic2ThreadPoolMap")
         LOG.info("dbtable2ServicesMap->$dbtable2ServicesMap")
         LOG.info("topic2LoggerMap->$topic2LoggerMap")
