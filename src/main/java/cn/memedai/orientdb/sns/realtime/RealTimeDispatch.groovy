@@ -96,7 +96,7 @@ class RealTimeDispatch {
             LOG.error('', it)
         }
 
-        LOG.info("statistics->$topic2ProcessedStatisticsMap")
+        LOG.info("total statistics->$topic2ProcessedStatisticsMap")
 
         if (!throwables.isEmpty()) {
             mailService.sendMail(throwables)
@@ -153,10 +153,10 @@ class RealTimeDispatch {
                         service ->
                             long start1 = System.currentTimeMillis()
                             service.process(dataList)
-                            getLogger(topic).info('process class->{},this statistics->{},total statistics->{},used time->{}ms', service.getClass().getSimpleName(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start1))
+                            getLogger(topic).info('process class->{},this statistics->{},topic statistics->{},used time->{}ms', service.getClass().getSimpleName(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start1))
                     }
                 } catch (Throwable e) {
-                    getLogger(topic).warn('consume result->{},topic->{},table->{},this statistics->{},total statistics->{},used time->{}ms,record->{}', 'fail', topic, record.key(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start), dataListText)
+                    getLogger(topic).warn('consume result->{},topic->{},table->{},this statistics->{},topic statistics->{},used time->{}ms,record->{}', 'fail', topic, record.key(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start), dataListText)
                     throw e
                 }
         }
@@ -167,7 +167,7 @@ class RealTimeDispatch {
                 long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset()
                 consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
             }
-            getLogger(topic).info('consume result->{},topic->{},this statistics->{},total statistics->{},used time->{}ms', 'success', topic, thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start))
+            getLogger(topic).info('consume result->{},topic->{},this statistics->{},topic statistics->{},used time->{}ms', 'success', topic, thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start))
         } catch (Exception e) {
             LOG.error("ignore this exception", e)
         }
