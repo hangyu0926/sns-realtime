@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
 import javax.annotation.Resource
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
@@ -62,6 +64,14 @@ class RealTimeDispatch {
 
     private Map<String, DatumReader> dbtable2DatumReaderMap = [:]
 
+    private Map<String, List<RealTimeService>> dbtable2ServicesMap = [:]
+
+    private Map<String, ExecutorService> topic2ThreadPoolMap = [:]
+
+    private Map<String, Logger> topic2LoggerMap = [:]
+
+    private Map<String, Map<String, AtomicLong>> topic2ProcessedStatisticsMap = new ConcurrentHashMap<>()
+
     void start() {
         List<Future> futures = []
         topics.each {
@@ -71,6 +81,7 @@ class RealTimeDispatch {
                         startThread(topic)
                     } catch (org.apache.kafka.common.errors.InterruptException ignoreException) {
                         LOG.warn('{} is interrupted caused by {}', Thread.currentThread(), ignoreException.toString())
+                        executorService.shutdownNow()
                     } catch (Throwable e) {
                         addThrowables(e)
                     }
@@ -78,27 +89,19 @@ class RealTimeDispatch {
         }
 
         futures.each {
-            try {
-                it.get()
-            } catch (Throwable e) {
-                executorService.shutdownNow()
-            }
+            it.get()
         }
 
         throwables.each {
             LOG.error('', it)
         }
 
+        LOG.info("statistics->$topic2ProcessedStatisticsMap")
+
         if (!throwables.isEmpty()) {
             mailService.sendMail(throwables)
         }
     }
-
-    private Map<String, List<RealTimeService>> dbtable2ServicesMap = [:]
-
-    private Map<String, ExecutorService> topic2ThreadPoolMap = [:]
-
-    private Map<String, Logger> topic2LoggerMap = [:]
 
     private void startThread(final String topic) {
         final KafkaConsumer consumer = new KafkaConsumer<>(kafkaProp)
@@ -123,9 +126,9 @@ class RealTimeDispatch {
     private void pollAndProcess(String topic, KafkaConsumer consumer) {
         topic = topic.substring(topic.lastIndexOf('.') + 1)
         final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
-        if (records.size() > 1) {
-            getLogger(topic).info('records size->{}', records.size())
-        }
+        topic2ProcessedStatisticsMap[topic]['poll']?.getAndIncrement()
+        Map<String, Object> thisStatistics = ['records': records.size(), 'insert': new AtomicLong(0), 'update': new AtomicLong()]
+        long start = System.currentTimeMillis()
         JsonSlurper jsonSlurper = new JsonSlurper()
         records.each {
             record ->
@@ -140,37 +143,36 @@ class RealTimeDispatch {
                     return
                 }
 
-                long start = System.currentTimeMillis()
                 def dataListText = [avroGenericRecord.toString()].toString()
                 def dataList = jsonSlurper.parseText(dataListText)
                 try {
+                    topic2ProcessedStatisticsMap[topic][dataList[0].___op___]?.getAndIncrement()
+                    thisStatistics[dataList[0].___op___]?.getAndIncrement()
                     //执行service
                     dbtable2ServicesMap[dbtable].each {
                         service ->
-                            long start2 = System.currentTimeMillis()
+                            long start1 = System.currentTimeMillis()
                             service.process(dataList)
-                            getLogger(topic).info('{}#process, used time->{}ms', service.getClass().getSimpleName(), (System.currentTimeMillis() - start2))
+                            getLogger(topic).info('process class->{},this statistics->{},total statistics->{},used time->{}ms', service.getClass().getSimpleName(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start1))
                     }
-                    getLogger(topic).info('consumer result->{},topic->{},table->{},used time->{}ms', 'success', topic, record.key(), (System.currentTimeMillis() - start))
                 } catch (Throwable e) {
-                    getLogger(topic).warn('consume result->{},topic->{},table->{},used time->{}ms,record->{}', 'fail', topic, record.key(), (System.currentTimeMillis() - start), dataListText)
+                    getLogger(topic).warn('consume result->{},topic->{},table->{},this statistics->{},total statistics->{},used time->{}ms,record->{}', 'fail', topic, record.key(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start), dataListText)
                     throw e
                 }
         }
-        commitAsync(consumer, records)
-    }
 
-    private void commitAsync(KafkaConsumer consumer, ConsumerRecords records) {
         try {
             for (TopicPartition partition : records.partitions()) {
                 List<ConsumerRecord<String, String>> partitionRecords = records.records(partition)
                 long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset()
                 consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
             }
+            getLogger(topic).info('consume result->{},topic->{},statistics->{},used time->{}ms', 'success', topic, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start))
         } catch (Exception e) {
             LOG.error("ignore this exception", e)
         }
     }
+
 
     @PostConstruct
     private void init() {
@@ -202,6 +204,8 @@ class RealTimeDispatch {
                     dbtable2ServicesMap[dbtable] = services
                 }
                 topic2LoggerMap[topic] = LoggerFactory.getLogger("${RealTimeDispatch.class.getName()}#$topic")
+
+                topic2ProcessedStatisticsMap[topic] = ['insert': new AtomicLong(0), 'update': new AtomicLong(0), 'poll': new AtomicLong(0)]
         }
 
         LOG.info('********************************init info start********************************')
