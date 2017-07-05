@@ -167,7 +167,7 @@ class RealTimeDispatch {
                 long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset()
                 consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
             }
-            getLogger(topic).info('consume result->{},topic->{},statistics->{},used time->{}ms', 'success', topic, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start))
+            getLogger(topic).info('consume result->{},topic->{},this statistics->{},total statistics->{},used time->{}ms', 'success', topic, thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start))
         } catch (Exception e) {
             LOG.error("ignore this exception", e)
         }
