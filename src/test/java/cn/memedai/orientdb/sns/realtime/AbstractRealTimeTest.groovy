@@ -37,7 +37,7 @@ abstract class AbstractRealTimeTest extends AbstractJUnit4SpringContextTests {
         new File("${getClass().getResource('/').toString()}avsc".replaceFirst('file:', '')).listFiles().each {
             avscFile ->
                 Map schemaMap = jsonSlurper.parseText(avscFile.text)
-                dbtable2SchemaMap["${schemaMap.namespace.substring(schemaMap.namespace.lastIndexOf('.') + 1)}${schemaMap.name}"] = new Schema.Parser().parse(avscFile.text)
+                dbtable2SchemaMap["${schemaMap.namespace}${schemaMap.name}"] = new Schema.Parser().parse(avscFile.text)
         }
     }
 

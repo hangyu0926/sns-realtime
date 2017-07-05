@@ -30,22 +30,22 @@ class BatchTest extends AbstractRealTimeTest {
                                 'order_no'        : row.order_no,
                                 '___op___'        : 'insert'
                         ])
-                        for (int i = 0; i < 10; i++) {
-                            dataList.add([
-                                    'cellphone'       : row.cellphone,
-                                    'apply_no'        : row.apply_no,
-                                    'member_id'       : row.member_id,
-                                    'created_datetime': row.created_datetime.toString(),
-                                    'apply_status'    : row.apply_status,
-                                    'store_id'        : row.store_id,
-                                    'order_no'        : row.order_no,
-                                    '___op___'        : 'update'
-                            ])
-                        }
+//                        for (int i = 0; i < 10; i++) {
+//                            dataList.add([
+//                                    'cellphone'       : row.cellphone,
+//                                    'apply_no'        : row.apply_no,
+//                                    'member_id'       : row.member_id,
+//                                    'created_datetime': row.created_datetime.toString(),
+//                                    'apply_status'    : row.apply_status,
+//                                    'store_id'        : row.store_id,
+//                                    'order_no'        : row.order_no,
+//                                    '___op___'        : 'update'
+//                            ])
+//                        }
                 }
 
         )
-        produce('wallet', 'apply_info', dataList)
+        produce('com.mime.bdp.dts.wallet', 'apply_info', dataList)
     }
 
 
@@ -55,7 +55,7 @@ class BatchTest extends AbstractRealTimeTest {
         groovySql.eachRow("select * from network.money_box_order where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
                 {
                     row ->
-                        for (int i = 0; i < 10; i++) {
+//                        for (int i = 0; i < 10; i++) {
                             dataList.add([
                                     'mobile'          : row.mobile,
                                     'member_id'       : row.member_id,
@@ -66,17 +66,17 @@ class BatchTest extends AbstractRealTimeTest {
                                     'pay_amount'      : row.pay_amount,
                                     '___op___'        : 'insert'
                             ])
-                            dataList.add([
-                                    'mobile'          : row.mobile,
-                                    'member_id'       : row.member_id,
-                                    'order_no'        : row.order_no,
-                                    'created_datetime': row.created_datetime.toString(),
-                                    'status'          : row.status,
-                                    'store_id'        : row.store_id,
-                                    'pay_amount'      : row.pay_amount,
-                                    '___op___'        : 'update'
-                            ])
-                        }
+//                            dataList.add([
+//                                    'mobile'          : row.mobile,
+//                                    'member_id'       : row.member_id,
+//                                    'order_no'        : row.order_no,
+//                                    'created_datetime': row.created_datetime.toString(),
+//                                    'status'          : row.status,
+//                                    'store_id'        : row.store_id,
+//                                    'pay_amount'      : row.pay_amount,
+//                                    '___op___'        : 'update'
+//                            ])
+//                        }
                 }
 
         )

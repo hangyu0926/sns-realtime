@@ -10,7 +10,7 @@ class WalletApplyInfoToOrientDBServiceImplTest extends AbstractRealTimeTest {
 
     @Test
     void testProcess() {
-        produce('wallet', 'apply_info', [[
+        produce('com.mime.bdp.dts.wallet', 'apply_info', [[
                                                  'cellphone'       : '15821180279',
                                                  'apply_no'        : '1485313547297000',
                                                  'member_id'       : 715157L,
