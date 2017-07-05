@@ -52,7 +52,7 @@ class BatchTest extends AbstractRealTimeTest {
     @Test
     void batchTestWalletMoneyBoxOrder() {
         List<Map> dataList = []
-        groovySql.eachRow("select * from network.money_box_order where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59'",
+        groovySql.eachRow("select * from network.money_box_order where created_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' or modified_datetime between '2017-06-29 00:00:00' and '2017-06-29 23:59:59' limit 100",
                 {
                     row ->
 //                        for (int i = 0; i < 10; i++) {

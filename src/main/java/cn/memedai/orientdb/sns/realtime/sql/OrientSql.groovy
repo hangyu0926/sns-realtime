@@ -59,12 +59,13 @@ class OrientSql {
                     Thread.sleep(100 * retry)
                 } catch (InterruptedException e1) {
                     LOG.error('', e1)
+                    throw e1
                 }
                 continue
             } catch (Throwable e) {
                 LOG.error("{} @ {}", sql, e.getMessage())
                 LOG.error("", e)
-                break
+                throw e
             }
         }
         if (LOG.isDebugEnabled()) {
