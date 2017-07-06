@@ -92,10 +92,6 @@ class RealTimeDispatch {
             it.get()
         }
 
-        throwables.each {
-            LOG.error('', it)
-        }
-
         LOG.info("total statistics->$topic2ProcessedStatisticsMap")
 
         if (!throwables.isEmpty()) {
@@ -230,6 +226,7 @@ class RealTimeDispatch {
     }
 
     private void addThrowables(Throwable e) {
+        LOG.error('', e)
         lock.writeLock().lock()
         try {
             throwables.add(e)
