@@ -92,6 +92,6 @@ class DateUtils {
     // date类型转换为long类型
     // date要转换的date类型的时间
      static long dateToLong(Date date) {
-        return date.getTime()
+        return date == null ? 0L : date.getTime()
     }
 }

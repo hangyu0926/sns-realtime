@@ -269,6 +269,10 @@ class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeServi
                                     while (it1.hasNext()) {
                                         OIdentifiable t1 = it1.next()
                                         ODocument phoneMark = (ODocument) t1
+                                        if (null == phoneMark) {
+                                            LOG.error("phoneMark is null ,this phoneMark is {}", phone1.toString())
+                                            continue
+                                        }
                                         ODocument phoneMark1 = phoneMark.field("in")
                                         String mark = phoneMark1.field("mark")
                                         tempMap.put(indirectphone, mark)
@@ -309,6 +313,10 @@ class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeServi
                                     while (it1.hasNext()) {
                                         OIdentifiable t1 = it1.next()
                                         ODocument phoneMark = (ODocument) t1
+                                        if (null == phoneMark) {
+                                            LOG.error("phoneMark is null ,this phoneMark is {}", phone1.toString())
+                                            continue
+                                        }
                                         ODocument phoneMark1 = phoneMark.field("in")
                                         String mark = phoneMark1.field("mark")
                                         tempMap.put(indirectphone, mark)
@@ -366,6 +374,10 @@ class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeServi
                     while (it.hasNext()) {
                         OIdentifiable t = it.next()
                         ODocument member = (ODocument) t
+                        if (null == member) {
+                            LOG.error("member is null {}", in_HasPhone.toString())
+                            continue
+                        }
                         ODocument member1 = member.field("out")
                         def isBlack = member1.field("isBlack") == null ? false :  member1.field("isBlack")
                         def isOverdue = member1.field("isOverdue") == null ? false : member1.field("isOverdue")
@@ -398,6 +410,10 @@ class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeServi
                             while (it1.hasNext()) {
                                 OIdentifiable t1 = it1.next()
                                 ODocument order = (ODocument) t1
+                                if (null == order) {
+                                    LOG.error("order is null {}", out_MemberHasOrder.toString())
+                                    continue
+                                }
                                 ODocument order1 = order.field("in")
                                 Date createdDatetime = order1.field("createdDatetime")
                                 long stringToLong = 0
