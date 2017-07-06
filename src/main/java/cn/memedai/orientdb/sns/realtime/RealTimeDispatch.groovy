@@ -123,8 +123,8 @@ class RealTimeDispatch {
         })
     }
 
-    private void pollAndProcess(String topic, KafkaConsumer consumer) {
-        topic = topic.substring(topic.lastIndexOf('.') + 1)
+    private void pollAndProcess(String originalTopic, KafkaConsumer consumer) {
+        String topic = originalTopic.substring(originalTopic.lastIndexOf('.') + 1)
         final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
         topic2ProcessedStatisticsMap[topic]['poll']?.getAndIncrement()
         Map<String, Object> thisStatistics = ['records': records.size(), 'insert': new AtomicLong(0), 'update': new AtomicLong()]
@@ -133,19 +133,18 @@ class RealTimeDispatch {
         records.each {
             record ->
                 String dbtable = "$topic${record.key()}"
-                GenericRecord avroGenericRecord = null
-                try {
-                    BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(record.value(), null)
-                    avroGenericRecord = dbtable2DatumReaderMap[dbtable].read(null, decoder)
-                } catch (IOException e) {
-                    getLogger(topic).error('schema does not match!', e)
-                    getLogger(topic).warn('consume result->{},records->{}', 'fail', records.asCollection().toString())
+                if (!dbtable2DatumReaderMap.containsKey(dbtable)) {
+                    LOG.debug("ignore:topic->$originalTopic,table->${record.key()}")
                     return
                 }
-
-                def dataListText = [avroGenericRecord.toString()].toString()
-                def dataList = jsonSlurper.parseText(dataListText)
+                String dataListText = null
                 try {
+                    BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(record.value(), null)
+                    GenericRecord avroGenericRecord = dbtable2DatumReaderMap[dbtable].read(null, decoder)
+
+                    dataListText = [avroGenericRecord.toString()].toString()
+                    def dataList = jsonSlurper.parseText(dataListText)
+
                     topic2ProcessedStatisticsMap[topic][dataList[0].___op___]?.getAndIncrement()
                     thisStatistics[dataList[0].___op___]?.getAndIncrement()
                     //执行service
