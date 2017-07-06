@@ -13,7 +13,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <prop key="group.id">sns</prop><!--此值为前缀，程序为将拼接上数据库实例名-->
         <prop key="enable.auto.commit">false</prop>
         <prop key="max.poll.records">100</prop>
-        <prop key="max.poll.interval.ms">3600</prop>
+        <prop key="max.poll.interval.ms">3600000</prop>
         <!--<sns key="auto.commit.interval.ms" value="1000"/>-->
 
         <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
