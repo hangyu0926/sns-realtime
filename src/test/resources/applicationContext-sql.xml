@@ -41,80 +41,80 @@
         </prop>
 
         <prop key="selectDirectMemberCountMySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "contact_accept_member_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and index_name = "contact_accept_member_num"]]>
         </prop>
 
         <prop key="selectDirectMemberCountWithOutOrderNoSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and order_no is null and index_name = "contact_accept_member_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and order_no is null and index_name = "contact_accept_member_num"]]>
         </prop>
 
         <prop key="updateMemberOrderSql">
-            <![CDATA[update member_index set order_no = ? where apply_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.member_index set order_no = ? where apply_no = ?]]>
         </prop>
 
         <prop key="selectMemberCountSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and index_name = "has_appl_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where order_no = ? and index_name = "has_appl_num"]]>
         </prop>
 
         <prop key="selectMemberCountByApplySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "has_appl_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and index_name = "has_appl_num"]]>
         </prop>
 
         <prop key="selectMemberCountWhereDeviceSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where order_no = ? and index_name = "has_device_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where order_no = ? and index_name = "has_device_num"]]>
         </prop>
 
         <prop key="selectMemberCountWhereDeviceByApplySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM member_index where apply_no = ? and index_name = "has_device_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and index_name = "has_device_num"]]>
         </prop>
 
         <prop key="updateMemberApplySql">
-            <![CDATA[update member_index set apply_no = ? where order_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.member_index set apply_no = ? where order_no = ?]]>
         </prop>
 
 
 
         <prop key="selectPhoneTagCountWithOutOrderNoSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM phonetag_index where apply_no = ? and order_no is null]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.phonetag_index where apply_no = ? and order_no is null]]>
         </prop>
 
         <prop key="updatePhoneTagOrderSql">
-            <![CDATA[update phonetag_index set order_no = ? where apply_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.phonetag_index set order_no = ? where apply_no = ?]]>
         </prop>
 
         <prop key="selectPhoneTagCountWithOutMemberSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM phonetag_index where apply_no = ? and member_id is null]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.phonetag_index where apply_no = ? and member_id is null]]>
         </prop>
 
         <prop key="updatePhoneTagMemberSql">
-            <![CDATA[update phonetag_index set member_id = ? where apply_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.phonetag_index set member_id = ? where apply_no = ?]]>
         </prop>
 
 
 
         <prop key="selectDeviceIndexSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM device_index where apply_no = ? and deviceId = ?]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.device_index where apply_no = ? and deviceId = ?]]>
         </prop>
 
         <prop key="selectDeviceIndexByOrderSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM device_index where order_no = ? and deviceId = ?]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.device_index where order_no = ? and deviceId = ?]]>
         </prop>
 
 
         <prop key="insertMemberIndex">
-            <![CDATA[insert into member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) values(?,?,?,?,?,?,now(),?,?)]]>
+            <![CDATA[insert into MERCHANTAUDIT.member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) values(?,?,?,?,?,?,now(),?,?)]]>
         </prop>
 
         <prop key="insertPhonetagIndex">
-            <![CDATA[insert into phonetag_index (member_id, apply_no, order_no,mobile,index_name,direct,indirect,create_time) values(?,?,?,?,?,?,?,now())]]>
+            <![CDATA[insert into MERCHANTAUDIT.phonetag_index (member_id, apply_no, order_no,mobile,index_name,direct,indirect,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
 
         <prop key="insertDeviceIndex">
-            <![CDATA[insert into device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
+            <![CDATA[insert into MERCHANTAUDIT.device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
 
         <prop key="insertIpIndex">
-            <![CDATA[insert into ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
+            <![CDATA[insert into MERCHANTAUDIT.ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
     </util:properties>
 
