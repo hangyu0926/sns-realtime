@@ -13,6 +13,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <prop key="group.id">sns</prop><!--此值为前缀，程序为将拼接上数据库实例名-->
         <prop key="enable.auto.commit">false</prop>
         <prop key="max.poll.records">100</prop>
+        <prop key="max.poll.interval.ms">3600</prop>
         <!--<sns key="auto.commit.interval.ms" value="1000"/>-->
 
         <prop key="key.deserializer">org.apache.kafka.common.serialization.StringDeserializer</prop>
@@ -60,17 +61,17 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <!--</entry>-->
         <!-- topic End-->
 
-        <!--<entry key="credit_audit">-->
-        <!--<map>-->
-        <!--<entry key="threadPool">-->
-        <!--<bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">-->
-        <!--<constructor-arg index="0">-->
-        <!--<value>2</value>-->
-        <!--</constructor-arg>-->
-        <!--</bean>-->
-        <!--</entry>-->
-        <!--</map>-->
-        <!--</entry>-->
+        <entry key="credit_audit">
+            <map>
+                <entry key="threadPool">
+                    <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+                        <constructor-arg index="0">
+                            <value>2</value>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+            </map>
+        </entry>
 
         <!--<entry key="wallet">-->
         <!--<map>-->
