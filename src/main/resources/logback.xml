@@ -14,7 +14,7 @@
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${USER_HOME}/sns-realtime_.%d{yyyy-MM-dd}_%i.log.zip</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
+            <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>20GB</totalSizeCap>
         </rollingPolicy>
