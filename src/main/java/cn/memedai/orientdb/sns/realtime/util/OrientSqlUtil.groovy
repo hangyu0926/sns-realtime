@@ -10,7 +10,11 @@ final class OrientSqlUtil {
 
     static final String getRid(orientResult) {
         if (orientResult instanceof OResultSet) {
-            return orientResult.get(0).field('@rid').getIdentity().toString()
+            if (orientResult.isEmpty()){
+                return null
+            }else{
+                return orientResult.get(0).field('@rid').getIdentity().toString()
+            }
         } else if (orientResult instanceof ODocument) {
             return orientResult.field('@rid').getIdentity().toString()
         }
