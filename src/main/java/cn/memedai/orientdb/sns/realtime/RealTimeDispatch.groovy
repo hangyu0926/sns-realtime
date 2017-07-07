@@ -102,13 +102,14 @@ class RealTimeDispatch {
     private void startThread(final String topic) {
         final KafkaConsumer consumer = new KafkaConsumer<>(kafkaProp)
         consumer.subscribe([topic])
+        String currentTopic = topic.substring(topic.lastIndexOf('.') + 1)
         LOG.info("Subscribed the topic {} successfully!", topic)
         while (true) {
-            ExecutorService subExecutorService = topic2ThreadPoolMap[topic]
+            ExecutorService subExecutorService = topic2ThreadPoolMap[currentTopic]
             if (subExecutorService == null) {
-                pollAndProcess(topic, consumer)
+                pollAndProcess(currentTopic, consumer)
             } else {
-                startSubThread(topic, consumer)
+                startSubThread(currentTopic, consumer)
             }
         }
     }
@@ -119,8 +120,7 @@ class RealTimeDispatch {
         })
     }
 
-    private void pollAndProcess(String originalTopic, KafkaConsumer consumer) {
-        String topic = originalTopic.substring(originalTopic.lastIndexOf('.') + 1)
+    private void pollAndProcess(String topic, KafkaConsumer consumer) {
         final ConsumerRecords records = consumer.poll(Long.MAX_VALUE)
         topic2ProcessedStatisticsMap[topic]['poll']?.getAndIncrement()
         Map<String, Object> thisStatistics = ['records': records.size(), 'insert': new AtomicLong(0), 'update': new AtomicLong()]
@@ -130,7 +130,7 @@ class RealTimeDispatch {
             record ->
                 String dbtable = "$topic${record.key()}"
                 if (!dbtable2DatumReaderMap.containsKey(dbtable)) {
-                    LOG.debug("ignore:topic->$originalTopic,table->${record.key()}")
+                    LOG.debug("ignore:topic->$topic,table->${record.key()}")
                     return
                 }
                 String dataListText = null
