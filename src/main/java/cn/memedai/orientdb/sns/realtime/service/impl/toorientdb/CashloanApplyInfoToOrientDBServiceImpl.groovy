@@ -59,8 +59,8 @@ class CashloanApplyInfoToOrientDBServiceImpl implements RealTimeService {
         }
         Map<String, Object> applyMap = dataList.get(0)
 
-        String op =  applyMap.__op__
-        if ("update".equals(op)){
+        String op = applyMap.__op__
+        if ("update".equals(op)) {
             return
         }
 
@@ -97,7 +97,7 @@ class CashloanApplyInfoToOrientDBServiceImpl implements RealTimeService {
 
         String orderNo = applyNo
         //将apply和order关系放入缓存
-        applyNoOrderNoCache.put(new CacheEntry(applyNo,orderNo))
+        applyNoOrderNoCache.put(new CacheEntry(applyNo, orderNo))
 
         String orderRid = null
         CacheEntry orderCacheEntry = orderCache.get(orderNo)
@@ -119,7 +119,7 @@ class CashloanApplyInfoToOrientDBServiceImpl implements RealTimeService {
             }
         }
 
-        if (StringUtils.isNotBlank(applyMap.source)) {
+        if (applyMap.source != null) {
             String storeRid = null
             String storeId = getStoreId(applyMap.source)
             CacheEntry storeCacheEntry = storeCache.get(storeId)
