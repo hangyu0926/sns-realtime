@@ -10,15 +10,13 @@
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread][%logger{25}]%-5level %msg%n"/>
     <appender name="ROLLING"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${USER_HOME}/sns-realtime.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${USER_HOME}/sns-realtime_%d{yyyy-MM-dd}.log
-            </fileNamePattern>
-            <timeBaseFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>50MB</maxFileSize>
-            </timeBaseFileNamingAndTriggeringPolicy>
-            <maxHistory>100</maxHistory>
+        <file>${USER_HOME}/realtime/sns-realtime.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${USER_HOME}/sns-realtime_.%d{yyyy-MM-dd}_%i.log.zip</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
         </rollingPolicy>
         <layout>
             <pattern>${fileLayoutPattern}</pattern>
@@ -36,7 +34,7 @@
         <appender-ref ref="ROLLING"/>
     </logger>
 
-    <logger name="cn.memedai.orientdb.sns.realtime" level="INFO" additivity="false">
+    <logger name="cn.memedai.orientdb.sns.realtime" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ROLLING"/>
     </logger>
