@@ -7,33 +7,33 @@
     <!-- TODO -->
     <util:properties id="sqlProp">
         <prop key="selectCallToInfoMySql">
-            <![CDATA[select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from credit_audit.ca_bur_operator_contact where APPL_NO =? and PHONE_NO is not null]]>
+            <![CDATA[select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from network.ca_bur_operator_contact where APPL_NO =? and PHONE_NO is not null]]>
         </prop>
 
         <prop key="selectFromApplyMysql">
-            <![CDATA[select member_id as memberId,cellphone as phone,order_no as orderNo from wallet.apply_info where apply_no = ?]]>
+            <![CDATA[select member_id as memberId,cellphone as phone,order_no as orderNo from network.apply_info where apply_no = ?]]>
         </prop>
 
         <prop key="selectPhoneFromApplyMySql">
-            <![CDATA[select cellphone as phone from wallet.apply_info where apply_no = ?]]>
+            <![CDATA[select cellphone as phone from network.apply_info where apply_no = ?]]>
         </prop>
 
         <prop key="selectMemberFromApplyMysql">
-            <![CDATA[select member_id as memberId from wallet.apply_info where apply_no = ?]]>
+            <![CDATA[select member_id as memberId from network.apply_info where apply_no = ?]]>
         </prop>
 
         <prop key="selectOrderFromApplyMysql">
-            <![CDATA[select order_no as orderNo from wallet.apply_info where apply_no = ?]]>
+            <![CDATA[select order_no as orderNo from network.apply_info where apply_no = ?]]>
         </prop>
 
 
 
         <prop key="selectFromOrderMysql">
-            <![CDATA[select a.member_id as memberId,a.mobile as phone,b.apply_no as applyNo from wallet.money_box_order a left join wallet.apply_info b on a.order_no = b.order_no where a.order_no = ?]]>
+            <![CDATA[select a.member_id as memberId,a.mobile as phone,b.apply_no as applyNo from network.money_box_order a left join network.apply_info b on a.order_no = b.order_no where a.order_no = ?]]>
         </prop>
 
         <prop key="selectMemberFromOrderMysql">
-            <![CDATA[select member_id as memberId from wallet.money_box_order where order_no = ?]]>
+            <![CDATA[select member_id as memberId from network.money_box_order where order_no = ?]]>
         </prop>
 
         <prop key="selectIdAreaMysql">
@@ -41,80 +41,80 @@
         </prop>
 
         <prop key="selectDirectMemberCountMySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.member_index where apply_no = ? and index_name = "contact_accept_member_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and index_name = "contact_accept_member_num"]]>
         </prop>
 
         <prop key="selectDirectMemberCountWithOutOrderNoSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.member_index where apply_no = ? and order_no is null and index_name = "contact_accept_member_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and order_no is null and index_name = "contact_accept_member_num"]]>
         </prop>
 
         <prop key="updateMemberOrderSql">
-            <![CDATA[update sns.member_index set order_no = ? where apply_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.member_index set order_no = ? where apply_no = ?]]>
         </prop>
 
         <prop key="selectMemberCountSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.member_index where order_no = ? and index_name = "has_appl_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where order_no = ? and index_name = "has_appl_num"]]>
         </prop>
 
         <prop key="selectMemberCountByApplySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.member_index where apply_no = ? and index_name = "has_appl_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and index_name = "has_appl_num"]]>
         </prop>
 
         <prop key="selectMemberCountWhereDeviceSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.member_index where order_no = ? and index_name = "has_device_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where order_no = ? and index_name = "has_device_num"]]>
         </prop>
 
         <prop key="selectMemberCountWhereDeviceByApplySql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.member_index where apply_no = ? and index_name = "has_device_num"]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.member_index where apply_no = ? and index_name = "has_device_num"]]>
         </prop>
 
         <prop key="updateMemberApplySql">
-            <![CDATA[update sns.member_index set apply_no = ? where order_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.member_index set apply_no = ? where order_no = ?]]>
         </prop>
 
 
 
         <prop key="selectPhoneTagCountWithOutOrderNoSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.phonetag_index where apply_no = ? and order_no is null]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.phonetag_index where apply_no = ? and order_no is null]]>
         </prop>
 
         <prop key="updatePhoneTagOrderSql">
-            <![CDATA[update sns.phonetag_index set order_no = ? where apply_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.phonetag_index set order_no = ? where apply_no = ?]]>
         </prop>
 
         <prop key="selectPhoneTagCountWithOutMemberSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.phonetag_index where apply_no = ? and member_id is null]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.phonetag_index where apply_no = ? and member_id is null]]>
         </prop>
 
         <prop key="updatePhoneTagMemberSql">
-            <![CDATA[update sns.phonetag_index set member_id = ? where apply_no = ?]]>
+            <![CDATA[update MERCHANTAUDIT.phonetag_index set member_id = ? where apply_no = ?]]>
         </prop>
 
 
 
         <prop key="selectDeviceIndexSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.device_index where apply_no = ? and deviceId = ?]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.device_index where apply_no = ? and deviceId = ?]]>
         </prop>
 
         <prop key="selectDeviceIndexByOrderSql">
-            <![CDATA[SELECT COUNT(1) AS num FROM sns.device_index where order_no = ? and deviceId = ?]]>
+            <![CDATA[SELECT COUNT(1) AS num FROM MERCHANTAUDIT.device_index where order_no = ? and deviceId = ?]]>
         </prop>
 
 
         <prop key="insertMemberIndex">
-            <![CDATA[insert into sns.member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) values(?,?,?,?,?,?,now(),?,?)]]>
+            <![CDATA[insert into MERCHANTAUDIT.member_index (member_id, apply_no, order_no,mobile,index_name,direct,create_time,apply_status,order_status) values(?,?,?,?,?,?,now(),?,?)]]>
         </prop>
 
         <prop key="insertPhonetagIndex">
-            <![CDATA[insert into sns.phonetag_index (member_id, apply_no, order_no,mobile,index_name,direct,indirect,create_time) values(?,?,?,?,?,?,?,now())]]>
+            <![CDATA[insert into MERCHANTAUDIT.phonetag_index (member_id, apply_no, order_no,mobile,index_name,direct,indirect,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
 
         <prop key="insertDeviceIndex">
-            <![CDATA[insert into sns.device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
+            <![CDATA[insert into MERCHANTAUDIT.device_index (member_id, apply_no, order_no,mobile,deviceId,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
 
         <prop key="insertIpIndex">
-            <![CDATA[insert into sns.ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
+            <![CDATA[insert into MERCHANTAUDIT.ip_index (member_id, apply_no, order_no,mobile,ip,index_name,direct,create_time) values(?,?,?,?,?,?,?,now())]]>
         </prop>
     </util:properties>
 
