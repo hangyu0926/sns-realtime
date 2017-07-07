@@ -85,7 +85,7 @@ class CashloanCashLoanOrderToOrientDBServiceImpl implements RealTimeService {
             orientSql.createEdge('PhoneHasOrder', phoneRid, orderRid)
         }
 
-        if (orderMap.source != null) {
+        if (StringUtils.isNotBlank(orderMap.source)) {
             String storeRid = null
             String storeId = getStoreId(orderMap.source)
             CacheEntry storeCacheEntry = storeCache.get(storeId)

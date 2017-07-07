@@ -172,7 +172,7 @@
         </prop>
 
         <prop key="updateApplyPassSql">
-            <![CDATA[update Apply set applyNo=?,status=? upsert return after where applyNo=? and status is null]]>
+            <![CDATA[update Apply set applyNo=?,status=? upsert return after where applyNo=? and originalStatus is null]]>
         </prop>
 
         <prop key="updateOrderNoSql">

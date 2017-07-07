@@ -92,7 +92,7 @@ class WalletMoneyBoxOrderToOrientDBServiceImpl implements RealTimeService {
             orientSql.createEdge('PhoneHasOrder', phoneRid, orderRid)
         }
 
-        if (orderMap.store_id != null) {
+        if (StringUtils.isNotBlank(orderMap.store_id)) {
             String storeRid = null
             CacheEntry storeCacheEntry = storeCache.get(orderMap.store_id)
             if (storeCacheEntry != null) {

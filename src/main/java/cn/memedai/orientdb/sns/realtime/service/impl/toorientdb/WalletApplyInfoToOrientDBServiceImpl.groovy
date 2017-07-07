@@ -104,7 +104,7 @@ class WalletApplyInfoToOrientDBServiceImpl implements RealTimeService {
             orientSql.createEdge('PhoneHasApply', phoneRid, applyRid)
         }
 
-        if (applyMap.order_no != null) {
+        if (StringUtils.isNotBlank(applyMap.order_no)) {
             //将apply和order关系放入缓存
             applyNoOrderNoCache.put(new CacheEntry(applyMap.apply_no,applyMap.order_no))
 
@@ -129,7 +129,7 @@ class WalletApplyInfoToOrientDBServiceImpl implements RealTimeService {
             }
         }
 
-        if (applyMap.store_id != null) {
+        if (StringUtils.isNotBlank(applyMap.store_id)) {
             String storeRid = null
             CacheEntry storeCacheEntry = storeCache.get(applyMap.store_id)
             if (storeCacheEntry != null) {

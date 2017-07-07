@@ -119,7 +119,7 @@ class CashloanApplyInfoToOrientDBServiceImpl implements RealTimeService {
             }
         }
 
-        if (applyMap.source != null) {
+        if (StringUtils.isNotBlank(applyMap.source)) {
             String storeRid = null
             String storeId = getStoreId(applyMap.source)
             CacheEntry storeCacheEntry = storeCache.get(storeId)
@@ -133,24 +133,29 @@ class CashloanApplyInfoToOrientDBServiceImpl implements RealTimeService {
         }
 
         String deviceRid = null
-        CacheEntry deviceCacheEntry = deviceCache.get(applyMap.device_id)
-        if (deviceCacheEntry != null) {
-            deviceRid = deviceCacheEntry.value
-        }
+        if (StringUtils.isNotBlank(applyMap.device_id)) {
+            CacheEntry deviceCacheEntry = deviceCache.get(applyMap.device_id)
+            if (deviceCacheEntry != null) {
+                deviceRid = deviceCacheEntry.value
+            }
 
-        if (StringUtils.isNotBlank(deviceRid)) {
-            orientSql.createEdge('ApplyHasDevice', applyRid, deviceRid)
+            if (StringUtils.isNotBlank(deviceRid)) {
+                orientSql.createEdge('ApplyHasDevice', applyRid, deviceRid)
+            }
         }
 
         String ipRid = null
-        CacheEntry ipCacheEntry = ipCache.get(applyMap.ip1 + "|" + applyMap.ip1_city)
-        if (ipCacheEntry != null) {
-            ipRid = ipCacheEntry.value
+        if (StringUtils.isNotBlank(applyMap.ip1)) {
+            CacheEntry ipCacheEntry = ipCache.get(applyMap.ip1 + "|" + applyMap.ip1_city)
+            if (ipCacheEntry != null) {
+                ipRid = ipCacheEntry.value
+            }
+
+            if (StringUtils.isNotBlank(ipRid)) {
+                orientSql.createEdge('ApplyHasIp', applyRid, ipRid)
+            }
         }
 
-        if (StringUtils.isNotBlank(ipRid)) {
-            orientSql.createEdge('ApplyHasIp', applyRid, ipRid)
-        }
 
         if (StringUtils.isNotBlank(memberRid)) {
             if (StringUtils.isNotBlank(deviceRid)) {
