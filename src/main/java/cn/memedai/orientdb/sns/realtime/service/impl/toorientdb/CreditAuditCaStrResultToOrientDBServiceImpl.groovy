@@ -25,8 +25,8 @@ class CreditAuditCaStrResultToOrientDBServiceImpl implements RealTimeService {
     @Resource
     private ApplyCache applyCache
 
-    @Value("#{snsOrientSqlProp.updateCashLoanApplyPassSql}")
-    private String updateCashLoanApplyPassSql
+    @Value("#{snsOrientSqlProp.updateApplyPassSql}")
+    private String updateApplyPassSql
 
     void process(List<Map<String, Object>> dataList) {
         if (dataList == null) {
@@ -38,7 +38,7 @@ class CreditAuditCaStrResultToOrientDBServiceImpl implements RealTimeService {
         }
         Map<String, Object> applyMap = dataList.get(0)
 
-        String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateCashLoanApplyPassSql, applyMap.APPL_NO, applyMap.PASS, applyMap.APPL_NO))
+        String applyRid = OrientSqlUtil.getRid(orientSql.execute(updateApplyPassSql, applyMap.APPL_NO, applyMap.PASS, applyMap.APPL_NO))
         if (StringUtils.isNotBlank(applyRid)) {
             applyCache.put(new CacheEntry(applyMap.APPL_NO, applyRid))
         }
