@@ -2,7 +2,7 @@
                                      "type": "record",
                                      "name": "fss_loans",
                                      "fields": [
-                                         {"name":"___schemaid___","type":["string"]},
+                                         {"name":"___schemaid___","type":["int"]},
                                          {"name": "BORROWER_ID", "type": ["long"]},
                                          {"name": "OVERDUE_DAYS", "type": ["long"]},
                                          {"name": "___op___", "type": ["string"]}
