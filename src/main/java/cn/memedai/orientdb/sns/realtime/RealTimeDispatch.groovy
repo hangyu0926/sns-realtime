@@ -152,6 +152,7 @@ class RealTimeDispatch {
                             getLogger(topic).info('process class->{},this statistics->{},topic statistics->{},used time->{}ms', service.getClass().getSimpleName(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start1))
                     }
                 } catch (Throwable e) {
+                    getLogger(topic).warn("record.value()->${record.value()}")
                     getLogger(topic).warn('consume result->{},topic->{},table->{},this statistics->{},topic statistics->{},used time->{}ms,record->{}', 'fail', topic, table, thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start), dataListText)
                     throw e
                 }

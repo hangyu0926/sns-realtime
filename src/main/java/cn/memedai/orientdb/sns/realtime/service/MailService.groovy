@@ -45,16 +45,17 @@ class MailService {
                         .append(subject)
                         .append(" ")
                         .append(new Base64().encodeAsString(body.getBytes()))
-                LOG.info("execute mail shell : {}", builder.toString())
+//                LOG.info("execute mail shell : {}", builder.toString())
 
                 Process process = Runtime.getRuntime().exec(builder.toString())
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))
-                StringBuilder builder1 = new StringBuilder()
-                String s = null
-                while ((s = br.readLine()) != null) {
-                    builder1.append(s).append("/n")
-                }
-                LOG.info("send mail response : {}", builder1.toString())
+//                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))
+//                StringBuilder builder1 = new StringBuilder()
+//                String s = null
+//                while ((s = br.readLine()) != null) {
+//                    builder1.append(s).append("/n")
+//                }
+//                LOG.info("send mail response : {}", builder1.toString())
+                LOG.info('send mail successfully!')
             }
         }
 
