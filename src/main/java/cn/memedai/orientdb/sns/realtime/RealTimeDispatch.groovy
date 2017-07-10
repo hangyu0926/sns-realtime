@@ -128,9 +128,10 @@ class RealTimeDispatch {
         JsonSlurper jsonSlurper = new JsonSlurper()
         records.each {
             record ->
-                String dbtable = "$topic${record.key()}"
+                String table = record.key().toString().toLowerCase()
+                String dbtable = "$topic${table}"
                 if (!dbtable2DatumReaderMap.containsKey(dbtable)) {
-                    LOG.debug("ignore:topic->$topic,table->${record.key()}")
+                    LOG.debug("ignore:topic->$topic,table->${table}")
                     return
                 }
                 String dataListText = null
@@ -151,7 +152,7 @@ class RealTimeDispatch {
                             getLogger(topic).info('process class->{},this statistics->{},topic statistics->{},used time->{}ms', service.getClass().getSimpleName(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start1))
                     }
                 } catch (Throwable e) {
-                    getLogger(topic).warn('consume result->{},topic->{},table->{},this statistics->{},topic statistics->{},used time->{}ms,record->{}', 'fail', topic, record.key(), thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start), dataListText)
+                    getLogger(topic).warn('consume result->{},topic->{},table->{},this statistics->{},topic statistics->{},used time->{}ms,record->{}', 'fail', topic, table, thisStatistics, topic2ProcessedStatisticsMap[topic], (System.currentTimeMillis() - start), dataListText)
                     throw e
                 }
         }

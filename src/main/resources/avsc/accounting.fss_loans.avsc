@@ -1,6 +1,6 @@
 {"namespace": "com.mime.bdp.dts.accounting",
                                      "type": "record",
-                                     "name": "FSS_LOANS",
+                                     "name": "fss_loans",
                                      "fields": [
                                          {"name":"__schemaid__","type":["string"]},
                                          {"name": "BORROWER_ID", "type": ["long"]},
