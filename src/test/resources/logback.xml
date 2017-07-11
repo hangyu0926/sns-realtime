@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="USER_HOME" value="/home/kisho.dai/logs"/>
+    <property name="USER_HOME" value="/home/kisho.dai/logs/realtime"/>
     <property name="LEVEL" value="DEBUG"/>
     <property name="logFileNamePattern" value="${LOG_FILE_NAME}_%d{yyyy-MM-dd}"/>
     <property name="logFileNamePattern2" value="${LOG_FILE_NAME}_%d{yyyy-MM-dd}_%i"/>
@@ -10,7 +10,7 @@
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread][%logger{25}]%-5level %msg%n"/>
     <appender name="ROLLING"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${USER_HOME}/realtime/sns-realtime.log</file>
+        <file>${USER_HOME}/sns-realtime.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${USER_HOME}/sns-realtime_.%d{yyyy-MM-dd}_%i.log.zip</fileNamePattern>
