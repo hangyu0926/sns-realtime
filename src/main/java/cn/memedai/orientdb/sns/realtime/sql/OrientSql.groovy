@@ -56,7 +56,7 @@ class OrientSql {
                 break
             } catch (ONeedRetryException e) {
                 try {
-                    Thread.sleep(100 * retry)
+                    Thread.sleep(10)
                 } catch (InterruptedException e1) {
                     LOG.error('', e1)
                     throw e1

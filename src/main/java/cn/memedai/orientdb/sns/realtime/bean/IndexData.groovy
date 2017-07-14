@@ -5,7 +5,7 @@ package cn.memedai.orientdb.sns.realtime.bean
  */
 class IndexData {
     //会员编号
-    private long memberId;
+    private Long memberId;
     //手机号码
     private String mobile;
     //申请书编号
@@ -33,11 +33,11 @@ class IndexData {
 
     private int orderStatus;
 
-    public long getMemberId() {
+    public Long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(long memberId) {
+    public void setMemberId(Long memberId) {
         this.memberId = memberId;
     }
 

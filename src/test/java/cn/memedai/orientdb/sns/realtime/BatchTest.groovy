@@ -56,16 +56,16 @@ class BatchTest extends AbstractRealTimeTest {
                 {
                     row ->
 //                        for (int i = 0; i < 10; i++) {
-                            dataList.add([
-                                    'mobile'          : row.mobile,
-                                    'member_id'       : row.member_id,
-                                    'order_no'        : row.order_no,
-                                    'created_datetime': row.created_datetime.toString(),
-                                    'status'          : row.status,
-                                    'store_id'        : row.store_id,
-                                    'pay_amount'      : row.pay_amount,
-                                    '___op___'        : 'insert'
-                            ])
+                        dataList.add([
+                                'mobile'          : row.mobile,
+                                'member_id'       : row.member_id,
+                                'order_no'        : row.order_no,
+                                'created_datetime': row.created_datetime.toString(),
+                                'status'          : row.status,
+                                'store_id'        : row.store_id,
+                                'pay_amount'      : row.pay_amount,
+                                '___op___'        : 'insert'
+                        ])
 //                            dataList.add([
 //                                    'mobile'          : row.mobile,
 //                                    'member_id'       : row.member_id,
@@ -81,6 +81,24 @@ class BatchTest extends AbstractRealTimeTest {
 
         )
         produce('wallet', 'money_box_order', dataList)
+    }
+
+    @Test
+    void batchTestCa() {
+        List dataList = []
+        groovySql.rows("select APPL_NO,PHONE_NO,CALL_CNT,CALL_LEN,CALL_IN_CNT,CALL_OUT_CNT,CREATE_TIME from credit_audit.ca_bur_operator_contact where id > 50700000 and PHONE_NO is not null limit 50000").each {
+            row ->
+                dataList.add([
+                        'APPL_NO'     : row.APPL_NO,
+                        'PHONE_NO'    : row.PHONE_NO,
+                        'CALL_CNT'    : row.CALL_CNT,
+                        'CALL_LEN'    : row.CALL_LEN,
+                        'CALL_IN_CNT' : row.CALL_IN_CNT,
+                        'CALL_OUT_CNT': row.CALL_OUT_CNT,
+                        'CREATE_TIME' : '2017-06-19 23:57:10'
+                ])
+        }
+        produce('com.mime.bdp.dts.credit_audit', 'ca_bur_operator_contact', dataList)
     }
 
 

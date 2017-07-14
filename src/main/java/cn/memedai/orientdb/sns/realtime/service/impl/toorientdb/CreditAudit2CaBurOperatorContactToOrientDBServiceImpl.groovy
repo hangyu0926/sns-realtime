@@ -20,9 +20,9 @@ import java.text.MessageFormat
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CreditAuditCaBurOperatorContactToOrientDBServiceImpl implements RealTimeService {
+class CreditAudit2CaBurOperatorContactToOrientDBServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CreditAuditCaBurOperatorContactToOrientDBServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CreditAudit2CaBurOperatorContactToOrientDBServiceImpl.class)
 
     @Resource
     private ApplyCache applyCache

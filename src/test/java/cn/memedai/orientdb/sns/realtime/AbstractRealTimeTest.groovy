@@ -4,13 +4,8 @@ import groovy.json.JsonSlurper
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
-import org.apache.avro.io.BinaryEncoder
-import org.apache.avro.io.DatumWriter
-import org.apache.avro.io.EncoderFactory
-import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.Before
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -65,16 +60,19 @@ abstract class AbstractRealTimeTest extends AbstractJUnit4SpringContextTests {
                     record.put('___op___', 'insert')
                 }
 
+                record.iterator().each {
+                    print(it)
+                }
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()
-                DatumWriter writer = new SpecificDatumWriter(schema)
-                BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(baos, null)
-
-                writer.write(record, encoder)
-                encoder.flush()
-                baos.flush()
-
-                producer.send(new ProducerRecord<String, Byte[]>(topic, table, baos.toByteArray()))
+//                ByteArrayOutputStream baos = new ByteArrayOutputStream()
+//                DatumWriter writer = new SpecificDatumWriter(schema)
+//                BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(baos, null)
+//
+//                writer.write(record, encoder)
+//                encoder.flush()
+//                baos.flush()
+//
+//                producer.send(new ProducerRecord<String, Byte[]>(topic, table, baos.toByteArray()))
         }
         LOG.info("send successfully")
         producer.close()

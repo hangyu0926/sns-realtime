@@ -12,7 +12,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <prop key="bootstrap.servers">99.48.88.104:9092</prop>
         <prop key="group.id">sns</prop><!--此值为前缀，程序为将拼接上数据库实例名-->
         <prop key="enable.auto.commit">false</prop>
-        <prop key="max.poll.records">100</prop>
+        <prop key="max.poll.records">500</prop>
         <prop key="max.poll.interval.ms">3600000</prop>
         <!--<sns key="auto.commit.interval.ms" value="1000"/>-->
 
@@ -21,69 +21,46 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
     </util:properties>
 
 
+    <util:properties id="kafkaProducerProp">
+        <prop key="bootstrap.servers">99.48.88.104:9092</prop>
+        <prop key="acks">all</prop>
+        <prop key="retries">0</prop>
+        <prop key="batch.size">16384</prop>
+        <prop key="linger.ms">1</prop>
+        <prop key="buffer.memory">33554432</prop>
+        <!--<prop key="auto.commit.interval.ms">1000</prop>-->
+        <prop key="key.serializer">org.apache.kafka.common.serialization.StringSerializer</prop>
+        <prop key="value.serializer">org.apache.kafka.common.serialization.ByteArraySerializer</prop>
+    </util:properties>
+
     <!--kafka消费的调度配置-->
-    <!-- 注意：如下可以不配置，默认基于约定。
-    -->
+    <!-- 注意：如下可以不配置，默认基于约定。-->
     <util:map id="kafkaDispatchConfig">
-        <!--配置样例如下。默认可以不配置-->
-        <!-- topic Start-->
-        <!-- 和数据库名称,topic名称一致。与avsc文件中的namespace属性的最后一个"."后的单词一致-->
-        <!--<entry key="wallet">-->
-        <!--<map>-->
-        <!--<entry key="tableConfig">-->
-        <!--<map>-->
-        <!--table Start-->
-        <!-- 表名。与avsc文件中的name属性保持一致-->
-        <!--<entry key="apply_info">-->
-        <!--<map>-->
-
-        <!--table service Start-->
-        <!--<entry key="services">-->
-        <!--处理数据的service bean。
-            如果不配置默认根据topic名称+table名称拼接spring bean自动查找相应的bean-->
-        <!--<list>-->
-        <!--<ref bean="applyToOrientDBServiceImpl"/>-->
-        <!--<ref bean="applyToMysqlServiceImpl"/>-->
-        <!--</list>-->
-        <!--</entry>-->
-        <!--table service End-->
-        <!--</map>-->
-        <!--</entry>-->
-        <!-- table End-->
-        <!--</map>-->
-        <!--</entry>-->
-        <!--处理该topic的线程池配置。
-          如果不配置默认一个线程处理-->
-        <!--<entry key="threadPool">-->
-
-        <!--</entry>-->
-        <!--</map>-->
-        <!--</entry>-->
-        <!-- topic End-->
-        <!--
-                <entry key="credit_audit">
+        <entry key="credit_audit">
+            <map>
+                <entry key="tableConfig">
                     <map>
-                        <entry key="threadPool">
-                            <bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
-                                <constructor-arg index="0">
-                                    <value>2</value>
-                                </constructor-arg>
-                            </bean>
+                        <entry key="ca_bur_operator_contact">
+                            <map>
+                                <entry key="services">
+                                    <list>
+                                        <ref bean="creditAuditCaBurOperatorContactPreprocessServiceImpl"/>
+                                    </list>
+                                </entry>
+                            </map>
                         </entry>
                     </map>
                 </entry>
-        -->
-        <!--<entry key="wallet">-->
-        <!--<map>-->
-        <!--<entry key="threadPool">-->
-        <!--<bean class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">-->
-        <!--<constructor-arg index="0">-->
-        <!--<value>2</value>-->
-        <!--</constructor-arg>-->
-        <!--</bean>-->
-        <!--</entry>-->
-        <!--</map>-->
-        <!--</entry>-->
+            </map>
+        </entry>
+
+        <entry key="credit_audit2">
+            <map>
+                <entry key="threadCount">
+                    <value>2</value>
+                </entry>
+            </map>
+        </entry>
 
     </util:map>
 

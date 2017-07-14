@@ -25,9 +25,9 @@ import javax.annotation.Resource
  * Created by kisho on 2017/6/8.
  */
 @Service
-class CreditAuditCaBurOperatorContactToMysqlServiceImpl implements RealTimeService {
+class CreditAudit2CaBurOperatorContactToMysqlServiceImpl implements RealTimeService {
 
-    private static final LOG = LoggerFactory.getLogger(CreditAuditCaBurOperatorContactToMysqlServiceImpl.class)
+    private static final LOG = LoggerFactory.getLogger(CreditAudit2CaBurOperatorContactToMysqlServiceImpl.class)
 
     @Resource
     private OrientSql orientSql
